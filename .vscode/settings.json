@@ -1,0 +1,10 @@
+{
+    // Use FVM’s Flutter
+    "dart.flutterSdkPath": ".fvm/flutter_sdk",
+    // Format on save
+    "editor.formatOnSave": true,
+    // Organize imports on save
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    },
+}
