@@ -7,11 +7,13 @@ class App extends RouteManager {
   static const String about = '${App.name}/about';
   static const String contact = '${App.name}/contact';
   static const String news = '${App.name}/news';
+  static const String getappsettings = '${App.name}/getappsettings';
 
   App() {
     addRoute(App.home, (context) => const HomeController());
     addRoute(App.about, (context) => const AboutController());
     addRoute(App.contact, (context) => const ContactController());
     addRoute(App.news, (context) => const NewsController());
+    addRoute(App.getappsettings, (context) => const GetAppSettingsController());
   }
 }

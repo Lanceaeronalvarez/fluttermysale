@@ -41,8 +41,10 @@ class HttpManager {
     CancelToken? token,
     Function(int progress, int total)? progress,
   }) async {
+    debugPrint("Start GET Request");
     Response? response;
     try {
+      debugPrint("Try GET Request");
       response = await _dio.get(
         url,
         queryParameters: params,
@@ -50,10 +52,13 @@ class HttpManager {
         cancelToken: token,
         onReceiveProgress: progress,
       );
+      debugPrint("Success GET Request");
       return response;
     } catch (e) {
-      log(e.toString());
+      debugPrint("Error GET Request");
+      debugPrint(e.toString());
     }
+    debugPrint("Exit GET Request");
     return response!;
   }
 

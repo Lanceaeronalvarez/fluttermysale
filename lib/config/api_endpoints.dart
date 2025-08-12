@@ -20,4 +20,11 @@ class ApiEndpoint {
   static const appRegiaterUrl = AuthApp.register;
   static const appForgetUrl = AuthApp.forget;
   static const appProfileUrl = AuthApp.profile;
+
+  static const akamaiExtension = 'api.ashx/';
+  static const legacyRoot = 'https://ozsale.com.au/';
+  static const legacyApiVersion = '3.31';
+  static const legacyApiUrl = '${legacyRoot}papi/public/v${legacyApiVersion}/';
+  static const getAppSettings = '${legacyApiUrl}${akamaiExtension}GetAppSettings';
+  static const getPublicAppSettings = '${legacyApiUrl}${akamaiExtension}GetPublicAppSettings';
 }

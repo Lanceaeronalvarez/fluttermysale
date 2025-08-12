@@ -40,6 +40,12 @@ class _HomeState extends State<Home> {
               },
               child: const Text('Goto Contact Page'),
             ),
+            ElevatedButton(
+              onPressed: () {
+                Nav.to(context, '/getappsettings');
+              },
+              child: const Text('GetAppSettings'),
+            ),
           ],
         ),
       ),

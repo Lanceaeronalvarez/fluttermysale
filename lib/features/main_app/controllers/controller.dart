@@ -2,3 +2,4 @@ export 'main/home_controller.dart';
 export 'main/about_controller.dart';
 export 'main/contact_controller.dart';
 export 'main/news_controller.dart';
+export 'main/getappsettings_controller.dart';

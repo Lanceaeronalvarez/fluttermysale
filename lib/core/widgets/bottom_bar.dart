@@ -15,12 +15,12 @@ class BottomBar extends StatelessWidget {
   BottomBar({Key? key, this.buttonDatas}) : super(key: key) {
     buttonDatas = buttonDatas ??
         [
-          ButtonData(icon: Icons.home, label: 'Home', link: '/'),
-          ButtonData(icon: Icons.people, label: 'About', link: '/about'),
+          ButtonData(icon: Icons.home, label: 'Shop', link: '/'),
+          ButtonData(icon: Icons.people, label: 'Brands', link: '/about'),
           ButtonData(
-              icon: Icons.contact_mail, label: 'Contact', link: '/contact'),
-          ButtonData(icon: Icons.newspaper, label: 'News', link: '/news'),
-          ButtonData(icon: Icons.ac_unit, label: 'Features', link: '/feature'),
+              icon: Icons.shopping_cart, label: 'Checkout', link: '/contact'),
+          ButtonData(icon: Icons.heart_broken_rounded, label: 'Wishlist', link: '/news'),
+          ButtonData(icon: Icons.account_circle, label: 'Account', link: '/feature'),
         ];
   }
 
