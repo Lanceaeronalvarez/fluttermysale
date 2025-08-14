@@ -11,12 +11,12 @@ void main() async {
   await dotenv.load(fileName: ".env");
   runApp(MultiProvider(
     providers: appProviders,
-    child: const CleanApp(),
+    child: const MysaleApp(),
   ));
 }
 
-class CleanApp extends StatelessWidget {
-  const CleanApp({Key? key}) : super(key: key);
+class MysaleApp extends StatelessWidget {
+  const MysaleApp({Key? key}) : super(key: key);
 
   // This widget is the root of your application.
   @override
@@ -25,7 +25,7 @@ class CleanApp extends StatelessWidget {
     // print("My App: " + tm.isDarkMode.toString());
 
     return MaterialApp(
-      title: 'Clean App',
+      title: 'Mysale',
       debugShowCheckedModeBanner: false,
       theme: MyTheme().lightTheme,
       darkTheme: MyTheme().darkTheme,
