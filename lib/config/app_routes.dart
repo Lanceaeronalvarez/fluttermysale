@@ -6,9 +6,9 @@ import '../features/main_app/app.dart';
 
 class Routes extends RouteManager {
   Routes() {
+    addAll(App().routes);
     addAll(AuthApp().routes);
     addAll(LeadApp().routes);
-    addAll(App().routes);
     addAll(FeatureApp().routes);
   }
 }
