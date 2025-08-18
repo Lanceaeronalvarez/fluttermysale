@@ -6,9 +6,10 @@ import '../../../config/api_endpoints.dart';
 import '../../../config/app_config.dart';
 import '../../../config/app_http.dart';
 import '../models/model.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class GetAppSettingsProvider extends ChangeNotifier {
-  final AppHttp _http = AppHttp(baseUrl: ApiEndpoint.legacyRoot,
+  final AppHttp _http = AppHttp(baseUrl: dotenv.get("SETTINGS_ROOT"),
       headers: {
     'User-Agent': 'TODO'
   });
@@ -25,7 +26,7 @@ class GetAppSettingsProvider extends ChangeNotifier {
     }
 
     Response res = await _http
-        .get(ApiEndpoint.getPublicAppSettings, params: {'countryID': 'au'});
+        .get(ApiEndpoint.getPublicAppSettings(), params: {'countryID': 'au'});
     if (res.statusCode == 200 && res.statusCode != 429) {
       // print(res);
       // _gasm = GetAppSettingsModel.fromJson(res.toString());
