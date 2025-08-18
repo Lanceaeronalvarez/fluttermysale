@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 
 import '../../../../config/config.dart';
 import '../../../../core/core.dart';
+import '../../models/main/banners_model.dart';
+import '../../providers/banners_provider.dart';
+import '../../providers/useragent_provider.dart';
 
 class Shop extends StatefulWidget {
   final String? title;
@@ -21,6 +24,20 @@ class _ShopState extends State<Shop> {
     super.initState();
     var tm = context.read<ThemeProvider>();
     dayAndNight = tm.isDarkMode;
+  }
+
+  Future<void> getBanners(
+      GetBannersRequest request,
+      bool getOnlyFromNetwork,
+      ) async {
+    UserAgentProvider userAgentProvider = Provider.of<UserAgentProvider>(
+      context,
+      listen: false,
+    );
+    String userAgent = await userAgentProvider.userAgent;
+    BannersProvider bannersProvider = BannersProvider(userAgent);
+    ChangeNotifierProvider(create: (context) => bannersProvider);
+    bannersProvider.getBanners(request, getOnlyFromNetwork);
   }
 
   @override

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart';
+import 'package:flutter_mysale/features/main_app/providers/banners_provider.dart';
+import 'package:flutter_mysale/features/main_app/providers/useragent_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../config/config.dart';
@@ -21,6 +24,20 @@ class _ShopState extends State<Shop> {
     super.initState();
     var tm = context.read<ThemeProvider>();
     dayAndNight = tm.isDarkMode;
+  }
+
+  Future<void> getBanners(
+    GetBannersRequest request,
+    bool getOnlyFromNetwork,
+  ) async {
+    UserAgentProvider userAgentProvider = Provider.of<UserAgentProvider>(
+      context,
+      listen: false,
+    );
+    String userAgent = await userAgentProvider.userAgent;
+    BannersProvider bannersProvider = BannersProvider(userAgent);
+    ChangeNotifierProvider(create: (context) => bannersProvider);
+    bannersProvider.getBanners(request, getOnlyFromNetwork);
   }
 
   @override
