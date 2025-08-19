@@ -27,6 +27,67 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
 
   int _currentIndex = 0;
 
+  Widget slidingBanner(SlidingBanners brand) {
+    return SizedBox(
+      child: GestureDetector(
+        onTap: () {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Sliding banner was clicked')));
+        },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              child: Image.network(
+                brand.imageUrl,
+                fit: BoxFit.cover,
+                width: MediaQuery.sizeOf(context).width,
+                height: 250,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              brand.description,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black54,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget slidingBannerIndicator(List<SlidingBanners> brands) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(brands.length, (index) {
+        return Container(
+          child: _currentIndex == index
+              ? Container(
+                  padding: const EdgeInsets.all(5),
+                  child: const CircleAvatar(
+                    backgroundColor: Colors.black,
+                    radius: 5,
+                  ),
+                )
+              : Container(
+                  padding: const EdgeInsets.all(5),
+                  child: const CircleAvatar(
+                    backgroundColor: Colors.grey,
+                    radius: 5,
+                  ),
+                ),
+        );
+      }),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final brands = widget.brands ?? defaultBrands;
@@ -51,65 +112,10 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
               },
             ),
             itemBuilder: (context, index, realIdx) {
-              return SizedBox(
-                child: GestureDetector(
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Sliding banner $index was clicked'),
-                      ),
-                    );
-                  },
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        child: Image.network(
-                          brands[index].imageUrl,
-                          fit: BoxFit.cover,
-                          width: MediaQuery.sizeOf(context).width,
-                          height: 250,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        brands[index].description,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
+              return slidingBanner(brands[index]);
             },
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(brands.length, (index) {
-              return Container(
-                child: _currentIndex == index
-                    ? Container(
-                        padding: const EdgeInsets.all(5),
-                        child: const CircleAvatar(
-                          backgroundColor: Colors.black,
-                          radius: 5,
-                        ),
-                      )
-                    : Container(
-                        padding: const EdgeInsets.all(5),
-                        child: const CircleAvatar(
-                          backgroundColor: Colors.grey,
-                          radius: 5,
-                        ),
-                      ),
-              );
-            }),
-          ),
+          slidingBannerIndicator(brands),
           const SizedBox(height: 8),
         ],
       ),
