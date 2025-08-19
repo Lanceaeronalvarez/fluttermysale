@@ -102,6 +102,59 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
         : const SizedBox();
   }
 
+  Widget normalBanner(NormalBanner banner) {
+    return SizedBox(
+      child: GestureDetector(
+        onTap: () {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Normal banner was clicked')));
+        },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Stack(
+              alignment: AlignmentDirectional.topCenter,
+              children: [
+                Container(
+                  margin: EdgeInsets.only(bottom: 20),
+                  child: Image.network(
+                    banner.imageUrl,
+                    fit: BoxFit.cover,
+                    width: MediaQuery.sizeOf(context).width,
+                    height: 250,
+                  ),
+                ),
+
+                Positioned(
+                  bottom: 0,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      priceDropWidget(banner),
+                      freeShippingWidget(banner),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              banner.description,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black54,
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final banner = widget.brands ?? defaultBrands;
@@ -109,56 +162,7 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(banner.length, (index) {
-        return SizedBox(
-          child: GestureDetector(
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Normal banner $index was clicked')),
-              );
-            },
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Stack(
-                  alignment: AlignmentDirectional.topCenter,
-                  children: [
-                    Container(
-                      margin: EdgeInsets.only(bottom: 20),
-                      child: Image.network(
-                        banner[index].imageUrl,
-                        fit: BoxFit.cover,
-                        width: MediaQuery.sizeOf(context).width,
-                        height: 250,
-                      ),
-                    ),
-
-                    Positioned(
-                      bottom: 0,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          priceDropWidget(banner[index]),
-                          freeShippingWidget(banner[index]),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  banner[index].description,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black54,
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-            ),
-          ),
-        );
+        return normalBanner(banner[index]);
       }),
     );
   }
