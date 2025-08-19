@@ -88,6 +88,26 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
     );
   }
 
+  Widget carouselBuilder(List<SlidingBanners> brands) {
+    return CarouselSlider.builder(
+      itemCount: brands.length,
+      options: CarouselOptions(
+        aspectRatio: 1.4,
+        enlargeCenterPage: false,
+        viewportFraction: 1,
+        autoPlay: true,
+        onPageChanged: (index, reason) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+      ),
+      itemBuilder: (context, index, realIdx) {
+        return slidingBanner(brands[index]);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final brands = widget.brands ?? defaultBrands;
@@ -98,23 +118,7 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          CarouselSlider.builder(
-            itemCount: brands.length,
-            options: CarouselOptions(
-              aspectRatio: 1.4,
-              enlargeCenterPage: false,
-              viewportFraction: 1,
-              autoPlay: true,
-              onPageChanged: (index, reason) {
-                setState(() {
-                  _currentIndex = index;
-                });
-              },
-            ),
-            itemBuilder: (context, index, realIdx) {
-              return slidingBanner(brands[index]);
-            },
-          ),
+          carouselBuilder(brands),
           slidingBannerIndicator(brands),
           const SizedBox(height: 8),
         ],
