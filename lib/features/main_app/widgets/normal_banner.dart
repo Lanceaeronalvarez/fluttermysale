@@ -103,55 +103,73 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
   }
 
   Widget normalBanner(NormalBanner banner) {
-    return SizedBox(
-      child: GestureDetector(
-        onTap: () {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Normal banner was clicked')));
-        },
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Stack(
-              alignment: AlignmentDirectional.topCenter,
-              children: [
-                Container(
-                  margin: EdgeInsets.only(bottom: 20),
-                  child: Image.network(
-                    banner.imageUrl,
-                    fit: BoxFit.cover,
-                    width: MediaQuery.sizeOf(context).width,
-                    height: 250,
-                  ),
-                ),
+    return SizedBox(child: normalBanner(banner));
+  }
 
-                Positioned(
-                  bottom: 0,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      priceDropWidget(banner),
-                      freeShippingWidget(banner),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              banner.description,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black54,
-              ),
-            ),
-            const SizedBox(height: 16),
+  Widget normalBannerGestureDetector(NormalBanner banner) {
+    return GestureDetector(
+      onTap: () {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Normal banner was clicked')));
+      },
+      child: normalBannerView(banner),
+    );
+  }
+
+  Widget normalBannerView(NormalBanner banner) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Stack(
+          alignment: AlignmentDirectional.topCenter,
+          children: [
+            normalBannerImage(banner),
+            normalBannerPriceDropAndFreeAShippingView(banner),
           ],
         ),
+        normalBannerDescription(banner),
+      ],
+    );
+  }
+
+  Widget normalBannerImage(NormalBanner banner) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 20),
+      child: Image.network(
+        banner.imageUrl,
+        fit: BoxFit.cover,
+        width: MediaQuery.sizeOf(context).width,
+        height: 250,
       ),
+    );
+  }
+
+  Widget normalBannerPriceDropAndFreeAShippingView(NormalBanner banner) {
+    return Positioned(
+      bottom: 0,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [priceDropWidget(banner), freeShippingWidget(banner)],
+      ),
+    );
+  }
+
+  Widget normalBannerDescription(NormalBanner banner) {
+    return Column(
+      children: [
+        const SizedBox(height: 8),
+        Text(
+          banner.description,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black54,
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 
