@@ -63,6 +63,45 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
     ),
   ];
 
+  Widget priceDropWidget(NormalBanner banner) {
+    return banner.priceDrop != ""
+        ? Container(
+            padding: EdgeInsets.all(10),
+            margin: EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: Colors.orange,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+            child: Text(
+              banner.priceDrop,
+              style: const TextStyle(color: Colors.white),
+            ),
+          )
+        : const SizedBox();
+  }
+
+  Widget freeShippingWidget(NormalBanner banner) {
+    return banner.freeShipping
+        ? Container(
+            padding: EdgeInsets.all(10),
+            margin: EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: Colors.blue,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.fire_truck, color: Colors.white),
+                SizedBox(width: 2),
+                Text("Free Shipping", style: TextStyle(color: Colors.white)),
+              ],
+            ),
+          )
+        : const SizedBox();
+  }
+
   @override
   Widget build(BuildContext context) {
     final banner = widget.brands ?? defaultBrands;
@@ -98,50 +137,8 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          banner[index].priceDrop != ""
-                              ? Container(
-                                  padding: EdgeInsets.all(10),
-                                  margin: EdgeInsets.all(5),
-                                  decoration: BoxDecoration(
-                                    color: Colors.orange,
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    banner[index].priceDrop,
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                )
-                              : const SizedBox(),
-                          banner[index].freeShipping
-                              ? Container(
-                                  padding: EdgeInsets.all(10),
-                                  margin: EdgeInsets.all(5),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue,
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child: const Row(
-                                    children: [
-                                      Icon(
-                                        Icons.fire_truck,
-                                        color: Colors.white,
-                                      ),
-                                      Text(
-                                        " Free Shipping",
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : const SizedBox(),
+                          priceDropWidget(banner[index]),
+                          freeShippingWidget(banner[index]),
                         ],
                       ),
                     ),
