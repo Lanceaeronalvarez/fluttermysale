@@ -35,30 +35,42 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
             context,
           ).showSnackBar(SnackBar(content: Text('Sliding banner was clicked')));
         },
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              child: Image.network(
-                brand.imageUrl,
-                fit: BoxFit.cover,
-                width: MediaQuery.sizeOf(context).width,
-                height: 250,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              brand.description,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black54,
-              ),
-            ),
-          ],
-        ),
+        child: slidingBannerView(brand),
+      ),
+    );
+  }
+
+  Widget slidingBannerView(SlidingBanners brand) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        slidingBannerImage(brand),
+        const SizedBox(height: 16),
+        slidingBannerDescription(brand),
+      ],
+    );
+  }
+
+  Widget slidingBannerImage(SlidingBanners brand) {
+    return SizedBox(
+      child: Image.network(
+        brand.imageUrl,
+        fit: BoxFit.cover,
+        width: MediaQuery.sizeOf(context).width,
+        height: 250,
+      ),
+    );
+  }
+
+  Widget slidingBannerDescription(SlidingBanners brand) {
+    return Text(
+      brand.description,
+      textAlign: TextAlign.center,
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+        color: Colors.black54,
       ),
     );
   }
