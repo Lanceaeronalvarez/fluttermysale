@@ -34,7 +34,6 @@ class _LeaderBannerWidgetState extends State<LeaderBannerWidget> {
               brands.imageUrl,
               fit: BoxFit.cover,
               width: MediaQuery.sizeOf(context).width,
-              height: 130,
             ),
           ),
         ),
