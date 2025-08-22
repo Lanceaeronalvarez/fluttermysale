@@ -4,8 +4,12 @@ import 'package:provider/provider.dart';
 import '../../../../config/config.dart';
 import '../../../../core/core.dart';
 import '../../models/main/banners_model.dart';
-import '../../providers/banners_provider.dart';
 import '../../providers/bestsellers_provider.dart';
+import '../../providers/leaderboardbanner_provider.dart';
+import '../../providers/shopbanners_provider.dart';
+import '../../providers/slidingbanners_provider.dart';
+import '../../providers/sponsoredbanners_provider.dart';
+import '../../providers/trendingbrands_provider.dart';
 import '../../providers/useragent_provider.dart';
 
 class Shop extends StatefulWidget {
@@ -27,18 +31,67 @@ class _ShopState extends State<Shop> {
     dayAndNight = tm.isDarkMode;
   }
 
-  Future<void> getBanners(
-      GetBannersRequest request,
-      bool getOnlyFromNetwork,
-      ) async {
+  Future<void> getShopBanners(GetBannersRequest request) async {
     UserAgentProvider userAgentProvider = Provider.of<UserAgentProvider>(
       context,
       listen: false,
     );
     String userAgent = await userAgentProvider.userAgent;
-    BannersProvider bannersProvider = BannersProvider(userAgent);
+    ShopBannersProvider bannersProvider = ShopBannersProvider(userAgent);
     ChangeNotifierProvider(create: (context) => bannersProvider);
-    bannersProvider.getBanners(request, getOnlyFromNetwork);
+    bannersProvider.getShopBanners(request);
+  }
+
+  Future<void> getSlidingBanners() async {
+    UserAgentProvider userAgentProvider = Provider.of<UserAgentProvider>(
+      context,
+      listen: false,
+    );
+    String userAgent = await userAgentProvider.userAgent;
+    SlidingBannersProvider bannersProvider = SlidingBannersProvider(userAgent);
+    ChangeNotifierProvider(create: (context) => bannersProvider);
+    bannersProvider.getSlidingBanners();
+  }
+
+  Future<void> getSponsoredBanners(String categoryId) async {
+    UserAgentProvider userAgentProvider = Provider.of<UserAgentProvider>(
+      context,
+      listen: false,
+    );
+    String userAgent = await userAgentProvider.userAgent;
+    SponsoredBannersProvider bannersProvider = SponsoredBannersProvider(
+      userAgent,
+    );
+    ChangeNotifierProvider(create: (context) => bannersProvider);
+    bannersProvider.getSponsoredBanners(categoryId);
+  }
+
+  Future<void> getLeaderboardBanner(String categoryId) async {
+    UserAgentProvider userAgentProvider = Provider.of<UserAgentProvider>(
+      context,
+      listen: false,
+    );
+    String userAgent = await userAgentProvider.userAgent;
+    LeaderboardBannerProvider bannersProvider = LeaderboardBannerProvider(
+      userAgent,
+    );
+    ChangeNotifierProvider(create: (context) => bannersProvider);
+    bannersProvider.getleaderboardBanners(
+      "ShopPage",
+      "MobileBrowser",
+      categoryId,
+    );
+  }
+
+  Future<void> getTrendingBrands(String categoryId) async {
+    UserAgentProvider userAgentProvider = Provider.of<UserAgentProvider>(
+      context,
+      listen: false,
+    );
+    String userAgent = await userAgentProvider.userAgent;
+    TrendingBrandsProvider bannersProvider = TrendingBrandsProvider(userAgent);
+    ChangeNotifierProvider(create: (context) => bannersProvider);
+    bannersProvider.getTrendingBrands(categoryId);
   }
 
   Future<void> getBestSellers(String category) async {

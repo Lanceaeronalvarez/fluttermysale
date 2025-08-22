@@ -8,31 +8,44 @@ import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart'
 import '../../../config/api_endpoints.dart';
 import '../../../config/app_http.dart';
 
-class BannersProvider extends ChangeNotifier {
+class SlidingBannersProvider extends ChangeNotifier {
   final AppHttp _http;
 
-  GetBannersResponse? _model;
+  GetBannersResponse? _slidingBanners;
+
   bool isLoading = false;
 
-  GetBannersResponse get getBannersResponse => _model!;
+  GetBannersResponse get slidingBanners => _slidingBanners!;
 
-  BannersProvider(String userAgent)
+  SlidingBannersProvider(String userAgent)
     : _http = AppHttp(
         baseUrl: dotenv.get("SETTINGS_ROOT"),
         headers: {'User-Agent': userAgent},
       );
 
-  void getBanners(GetBannersRequest request, bool getOnlyFromNetwork) async {
+  void getSlidingBanners() async {
     if (isLoading == true) {
       isLoading = false;
     }
 
+    GetBannersRequest request = GetBannersRequest(
+      null,
+      null,
+      "10",
+      null,
+      null,
+      null,
+      true,
+      true,
+      null,
+    );
+
     Response res = await _http.get(
-      getOnlyFromNetwork ? ApiEndpoint.getSales() : ApiEndpoint.getSales2(),
+      ApiEndpoint.getSales(),
       params: request.toMap(),
     );
     if (res.statusCode == 200 && res.statusCode != 429) {
-      _model = GetBannersResponse.fromJson(jsonDecode(res.toString()));
+      _slidingBanners = GetBannersResponse.fromJson(jsonDecode(res.toString()));
       isLoading = true;
       notifyListeners();
     }
