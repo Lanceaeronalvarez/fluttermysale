@@ -26,7 +26,7 @@ class GetBannersRequest {
   );
 
   Map<String, dynamic> toMap() {
-    return {
+    Map<String, dynamic> map = {
       'lastGroupType': lastGroupType,
       'offset': offset,
       'limit': limit,
@@ -36,6 +36,8 @@ class GetBannersRequest {
       'includePromoSales': includePromoSales,
       'bannergroups': bannergroups,
     };
+    map.removeWhere((k, v) => (v == null));
+    return map;
   }
 }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart';
 import 'package:flutter_mysale/features/main_app/providers/banners_provider.dart';
+import 'package:flutter_mysale/features/main_app/providers/bestsellers_provider.dart';
 import 'package:flutter_mysale/features/main_app/providers/useragent_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -38,6 +39,17 @@ class _ShopState extends State<Shop> {
     BannersProvider bannersProvider = BannersProvider(userAgent);
     ChangeNotifierProvider(create: (context) => bannersProvider);
     bannersProvider.getBanners(request, getOnlyFromNetwork);
+  }
+
+  Future<void> getBestSellers(String category) async {
+    UserAgentProvider userAgentProvider = Provider.of<UserAgentProvider>(
+      context,
+      listen: false,
+    );
+    String userAgent = await userAgentProvider.userAgent;
+    BestSellersProvider bestSellersProvider = BestSellersProvider(userAgent);
+    ChangeNotifierProvider(create: (context) => bestSellersProvider);
+    bestSellersProvider.getBestSellers(category);
   }
 
   @override

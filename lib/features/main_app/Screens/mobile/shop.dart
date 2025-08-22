@@ -5,6 +5,7 @@ import '../../../../config/config.dart';
 import '../../../../core/core.dart';
 import '../../models/main/banners_model.dart';
 import '../../providers/banners_provider.dart';
+import '../../providers/bestsellers_provider.dart';
 import '../../providers/useragent_provider.dart';
 
 class Shop extends StatefulWidget {
@@ -38,6 +39,17 @@ class _ShopState extends State<Shop> {
     BannersProvider bannersProvider = BannersProvider(userAgent);
     ChangeNotifierProvider(create: (context) => bannersProvider);
     bannersProvider.getBanners(request, getOnlyFromNetwork);
+  }
+
+  Future<void> getBestSellers(String category) async {
+    UserAgentProvider userAgentProvider = Provider.of<UserAgentProvider>(
+      context,
+      listen: false,
+    );
+    String userAgent = await userAgentProvider.userAgent;
+    BestSellersProvider bestSellersProvider = BestSellersProvider(userAgent);
+    ChangeNotifierProvider(create: (context) => bestSellersProvider);
+    bestSellersProvider.getBestSellers(category);
   }
 
   @override
