@@ -10,11 +10,6 @@ class App extends RouteManager {
   static const String contact = '${App.name}/contact';
   static const String news = '${App.name}/news';
   static const String getappsettings = '${App.name}/getappsettings';
-  static const String filtercategory = '${App.name}/filtercategory';
-  static const String filtermain = '${App.name}/filtermain';
-  static const String filterprice = '${App.name}/filterprice';
-  static const String filterselect = '${App.name}/filterselect';
-  static const String sort = '${App.name}/sort';
 
   App() {
     addRoute(App.home, (context) => const ShopController());
@@ -22,10 +17,5 @@ class App extends RouteManager {
     addRoute(App.contact, (context) => const ContactController());
     addRoute(App.news, (context) => const NewsController());
     addRoute(App.getappsettings, (context) => const GetAppSettingsController());
-    addRoute(App.filtercategory, (context) => const FilterCategoryController());
-    addRoute(App.filtermain, (context) => const FilterMainController());
-    addRoute(App.filterprice, (context) => const FilterPriceController());
-    addRoute(App.filterselect, (context) => const FilterSelectController());
-    addRoute(App.sort, (context) => const SortController());
   }
 }
