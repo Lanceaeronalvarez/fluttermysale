@@ -23,7 +23,7 @@ class Shop extends StatefulWidget {
 class _ShopState extends State<Shop> {
   bool dayAndNight = false;
 
-  List<bannerModel.Banner?> _normalBannersData = [];
+  List<bannerModel.Banner> _normalBannersData = [];
 
   @override
   void initState() {
@@ -42,10 +42,7 @@ class _ShopState extends State<Shop> {
     ) {
       setState(() {
         data?.groups?.forEach((bannerModel.Group it) {
-          _normalBannersData.addAll(
-            it.banners as Iterable<bannerModel.Banner?>,
-          );
-          ;
+          _normalBannersData.addAll(it.banners as Iterable<bannerModel.Banner>);
         });
       });
     });
