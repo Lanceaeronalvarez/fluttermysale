@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
@@ -31,10 +30,22 @@ class ShopBannersProvider extends ChangeNotifier {
     return ShopBannersProvider(userAgent);
   }
 
-  void getShopBanners(GetBannersRequest request) async {
+  Future<GetBannersResponse?> getShopBanners() async {
     if (isLoading == true) {
       isLoading = false;
     }
+
+    GetBannersRequest request = GetBannersRequest(
+      null,
+      null,
+      "10",
+      null,
+      null,
+      null,
+      true,
+      true,
+      null,
+    );
 
     Response res = await _http.get(
       ApiEndpoint.getSales(),
@@ -44,6 +55,7 @@ class ShopBannersProvider extends ChangeNotifier {
       _shopBanners = GetBannersResponse.fromJson(jsonDecode(res.toString()));
       isLoading = true;
       notifyListeners();
+      return _shopBanners;
     }
   }
 }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart'
+    as bannerModel;
 
 class NormalBannerWidget extends StatefulWidget {
-  final List<NormalBanner>? brands;
+  final List<bannerModel.Banner?> banners;
 
-  const NormalBannerWidget({super.key, this.brands});
+  const NormalBannerWidget({super.key, required this.banners});
 
   @override
   State<NormalBannerWidget> createState() => _NormalBannerWidgetState();
@@ -11,57 +13,57 @@ class NormalBannerWidget extends StatefulWidget {
 
 class _NormalBannerWidgetState extends State<NormalBannerWidget> {
   // Default fallback data
-  final List<NormalBanner> defaultBrands = [
-    NormalBanner(
-      imageUrl:
-          'https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
-      priceDrop: "PRICE DROP 20%",
-      freeShipping: true,
-    ),
-    NormalBanner(
-      imageUrl:
-          'https://images.unsplash.com/photo-1586882829491-b81178aa622e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2850&q=80',
-      description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
-      priceDrop: "PRICE DROP 10%",
-      freeShipping: false,
-    ),
-    NormalBanner(
-      imageUrl:
-          'https://plus.unsplash.com/premium_photo-1728759436968-db4b52249ffa?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
-      priceDrop: "",
-      freeShipping: true,
-    ),
-    NormalBanner(
-      imageUrl:
-          'https://plus.unsplash.com/premium_photo-1676225678979-80df276a983e?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
-      priceDrop: "",
-      freeShipping: false,
-    ),
-    NormalBanner(
-      imageUrl:
-          'https://images.unsplash.com/photo-1670014543406-a26719b352ca?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
-      priceDrop: "PRICE DROP 10%",
-      freeShipping: false,
-    ),
-    NormalBanner(
-      imageUrl:
-          'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
-      priceDrop: "PRICE DROP 20%",
-      freeShipping: true,
-    ),
-    NormalBanner(
-      imageUrl:
-          'https://plus.unsplash.com/premium_photo-1675183689638-a68fe7048da9?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
-      priceDrop: "",
-      freeShipping: false,
-    ),
-  ];
+  // final List<NormalBanner> defaultBrands = [
+  //   NormalBanner(
+  //     imageUrl:
+  //         'https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  //     description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
+  //     priceDrop: "PRICE DROP 20%",
+  //     freeShipping: true,
+  //   ),
+  //   NormalBanner(
+  //     imageUrl:
+  //         'https://images.unsplash.com/photo-1586882829491-b81178aa622e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2850&q=80',
+  //     description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
+  //     priceDrop: "PRICE DROP 10%",
+  //     freeShipping: false,
+  //   ),
+  //   NormalBanner(
+  //     imageUrl:
+  //         'https://plus.unsplash.com/premium_photo-1728759436968-db4b52249ffa?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  //     description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
+  //     priceDrop: "",
+  //     freeShipping: true,
+  //   ),
+  //   NormalBanner(
+  //     imageUrl:
+  //         'https://plus.unsplash.com/premium_photo-1676225678979-80df276a983e?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  //     description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
+  //     priceDrop: "",
+  //     freeShipping: false,
+  //   ),
+  //   NormalBanner(
+  //     imageUrl:
+  //         'https://images.unsplash.com/photo-1670014543406-a26719b352ca?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  //     description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
+  //     priceDrop: "PRICE DROP 10%",
+  //     freeShipping: false,
+  //   ),
+  //   NormalBanner(
+  //     imageUrl:
+  //         'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  //     description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
+  //     priceDrop: "PRICE DROP 20%",
+  //     freeShipping: true,
+  //   ),
+  //   NormalBanner(
+  //     imageUrl:
+  //         'https://plus.unsplash.com/premium_photo-1675183689638-a68fe7048da9?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  //     description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
+  //     priceDrop: "",
+  //     freeShipping: false,
+  //   ),
+  // ];
 
   Widget priceDropWidget(NormalBanner banner) {
     return banner.priceDrop != ""
@@ -102,11 +104,11 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
         : const SizedBox();
   }
 
-  Widget normalBanner(NormalBanner banner) {
-    return SizedBox(child: normalBanner(banner));
+  Widget normalBanner(bannerModel.Banner banner) {
+    return SizedBox(child: normalBannerGestureDetector(banner));
   }
 
-  Widget normalBannerGestureDetector(NormalBanner banner) {
+  Widget normalBannerGestureDetector(bannerModel.Banner banner) {
     return GestureDetector(
       onTap: () {
         ScaffoldMessenger.of(
@@ -117,7 +119,7 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
     );
   }
 
-  Widget normalBannerView(NormalBanner banner) {
+  Widget normalBannerView(bannerModel.Banner banner) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -125,7 +127,7 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
           alignment: AlignmentDirectional.topCenter,
           children: [
             normalBannerImage(banner),
-            normalBannerPriceDropAndFreeAShippingView(banner),
+            // normalBannerPriceDropAndFreeAShippingView(banner),
           ],
         ),
         normalBannerDescription(banner),
@@ -133,11 +135,11 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
     );
   }
 
-  Widget normalBannerImage(NormalBanner banner) {
+  Widget normalBannerImage(bannerModel.Banner banner) {
     return Container(
       margin: EdgeInsets.only(bottom: 20),
       child: Image.network(
-        banner.imageUrl,
+        banner.image ?? "",
         fit: BoxFit.cover,
         width: MediaQuery.sizeOf(context).width,
         height: 250,
@@ -145,22 +147,22 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
     );
   }
 
-  Widget normalBannerPriceDropAndFreeAShippingView(NormalBanner banner) {
-    return Positioned(
-      bottom: 0,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [priceDropWidget(banner), freeShippingWidget(banner)],
-      ),
-    );
-  }
+  // Widget normalBannerPriceDropAndFreeAShippingView(bannerModel.Banner banner) {
+  //   return Positioned(
+  //     bottom: 0,
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.center,
+  //       children: [priceDropWidget(banner), freeShippingWidget(banner)],
+  //     ),
+  //   );
+  // }
 
-  Widget normalBannerDescription(NormalBanner banner) {
+  Widget normalBannerDescription(bannerModel.Banner banner) {
     return Column(
       children: [
         const SizedBox(height: 8),
         Text(
-          banner.description,
+          banner.description ?? "",
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 16,
@@ -175,12 +177,12 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final banner = widget.brands ?? defaultBrands;
+    final banner = widget.banners!;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(banner.length, (index) {
-        return normalBanner(banner[index]);
+        return normalBanner(banner[index]!);
       }),
     );
   }
