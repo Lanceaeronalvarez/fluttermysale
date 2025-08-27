@@ -2,7 +2,9 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
 import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart';
 
 import '../../../config/api_endpoints.dart';
@@ -18,10 +20,16 @@ class BestSellersProvider extends ChangeNotifier {
   GetBestSellersResponse get getBannersResponse => _model!;
 
   BestSellersProvider(String userAgent)
-      : _http = AppHttp(
-    baseUrl: dotenv.get("SETTINGS_ROOT"),
-    headers: {'User-Agent': userAgent},
-  );
+    : _http = AppHttp(
+        baseUrl: dotenv.get("SETTINGS_ROOT"),
+        headers: {'User-Agent': userAgent},
+      );
+
+  static Future<BestSellersProvider> withUserAgent(BuildContext context) async {
+    UserAgentHelper userAgentHelper = UserAgentHelper(context);
+    String userAgent = await userAgentHelper.userAgent;
+    return BestSellersProvider(userAgent);
+  }
 
   void getBestSellers(String category) async {
     if (isLoading == true) {
