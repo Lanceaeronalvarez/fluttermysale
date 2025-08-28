@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
@@ -33,7 +32,7 @@ class LeaderboardBannerProvider extends ChangeNotifier {
     return LeaderboardBannerProvider(userAgent);
   }
 
-  void getleaderboardBanners(
+  Future<GetBannersResponse?> getleaderboardBanners(
     String pageName,
     String frontEnd,
     String category,
@@ -59,6 +58,7 @@ class LeaderboardBannerProvider extends ChangeNotifier {
       );
       isLoading = true;
       notifyListeners();
+      return _leaderboardBanners;
     }
   }
 }
