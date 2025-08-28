@@ -4,6 +4,7 @@ export 'filter/filter_price_controller.dart';
 export 'filter/filter_select_controller.dart';
 export 'filter/sort_controller.dart';
 export 'main/about_controller.dart';
+export 'main/category_controller.dart';
 export 'main/contact_controller.dart';
 export 'main/getappsettings_controller.dart';
 export 'main/home_controller.dart';
