@@ -17,6 +17,33 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
     super.initState();
   }
 
+  String appendBannerSizeUrl(String? url) {
+    int width = 475;
+    int height = 325;
+
+    if (url != null) {
+      String removedExtension = url.substring(0, url.lastIndexOf("."));
+      String extension = "";
+
+      int i = url.lastIndexOf('.');
+      if (i > 0) {
+        extension = url.substring(i + 1);
+      }
+
+      url = "${removedExtension}_${width}x${height}.${extension}";
+
+      if (url.contains("?")) {
+        url = "${url}&width=800";
+      } else {
+        url = "$url?width=800";
+      }
+      print("bannerrul $url");
+      return url;
+    } else {
+      return "";
+    }
+  }
+
   Widget normalBannerGestureDetector(bannerModel.Banner banner) {
     return GestureDetector(
       onTap: () {
@@ -41,10 +68,8 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
     return Container(
       margin: EdgeInsets.only(bottom: 20),
       child: Image.network(
-        banner.image ?? "",
-        fit: BoxFit.cover,
-        width: MediaQuery.sizeOf(context).width,
-        height: 250,
+        appendBannerSizeUrl(banner.image),
+        fit: BoxFit.contain,
       ),
     );
   }
@@ -52,7 +77,6 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
   Widget normalBannerDescription(bannerModel.Banner banner) {
     return Column(
       children: [
-        const SizedBox(height: 8),
         Text(
           banner.description ?? "",
           textAlign: TextAlign.center,

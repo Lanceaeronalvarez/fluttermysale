@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/features/main_app/widgets/normal_banner.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../config/config.dart';
 import '../../../../core/core.dart';
-import '../../models/main/banners_model.dart';
+import '../../models/main/banners_model.dart' as bannerModel;
 import '../../providers/bestsellers_provider.dart';
 import '../../providers/leaderboardbanner_provider.dart';
 import '../../providers/shopbanners_provider.dart';
@@ -23,18 +24,45 @@ class Shop extends StatefulWidget {
 class _ShopState extends State<Shop> {
   bool dayAndNight = false;
 
+  List<bannerModel.Banner> _normalBannersData = [];
+
+  bannerModel.GetBannersRequest request = bannerModel.GetBannersRequest(
+    null,
+    null,
+    "50",
+    null,
+    null,
+    null,
+    true,
+    true,
+    null,
+  );
+
   @override
   void initState() {
     super.initState();
     var tm = context.read<ThemeProvider>();
     dayAndNight = tm.isDarkMode;
+    getShopBanners(request);
   }
 
-  Future<void> getShopBanners(GetBannersRequest request) async {
+  Future<void> getShopBanners(bannerModel.GetBannersRequest request) async {
     ShopBannersProvider bannersProvider =
         await ShopBannersProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
-    bannersProvider.getShopBanners();
+    bannersProvider.getShopBanners(request).then((
+      bannerModel.GetBannersResponse? data,
+    ) {
+      setState(() {
+        data?.groups?.forEach((bannerModel.Group it) {
+          if (it.type == "main") {
+            _normalBannersData.addAll(
+              it.banners as Iterable<bannerModel.Banner>,
+            );
+          }
+        });
+      });
+    });
   }
 
   Future<void> getSlidingBanners() async {
@@ -90,6 +118,10 @@ class _ShopState extends State<Shop> {
   }
 
   Widget _shopScrollView() {
-    return SingleChildScrollView(child: Column(children: []));
+    return SingleChildScrollView(
+      child: Column(
+        children: [NormalBannerWidget(banners: _normalBannersData)],
+      ),
+    );
   }
 }

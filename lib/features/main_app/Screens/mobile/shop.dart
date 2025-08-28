@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/features/main_app/widgets/normal_banner.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../config/config.dart';
@@ -25,24 +26,41 @@ class _ShopState extends State<Shop> {
 
   List<bannerModel.Banner> _normalBannersData = [];
 
+  bannerModel.GetBannersRequest request = bannerModel.GetBannersRequest(
+    null,
+    null,
+    "10",
+    null,
+    null,
+    null,
+    true,
+    true,
+    null,
+  );
+
   @override
   void initState() {
     super.initState();
     var tm = context.read<ThemeProvider>();
     dayAndNight = tm.isDarkMode;
     getSlidingBanners();
+    getShopBanners(request);
   }
 
-  Future<void> getShopBanners() async {
+  Future<void> getShopBanners(bannerModel.GetBannersRequest request) async {
     ShopBannersProvider bannersProvider =
         await ShopBannersProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
-    bannersProvider.getShopBanners().then((
+    bannersProvider.getShopBanners(request).then((
       bannerModel.GetBannersResponse? data,
     ) {
       setState(() {
         data?.groups?.forEach((bannerModel.Group it) {
-          _normalBannersData.addAll(it.banners as Iterable<bannerModel.Banner>);
+          if (it.type == "main") {
+            _normalBannersData.addAll(
+              it.banners as Iterable<bannerModel.Banner>,
+            );
+          }
         });
       });
     });
@@ -101,6 +119,10 @@ class _ShopState extends State<Shop> {
   }
 
   Widget _shopScrollView() {
-    return SingleChildScrollView(child: Column(children: []));
+    return SingleChildScrollView(
+      child: Column(
+        children: [NormalBannerWidget(banners: _normalBannersData)],
+      ),
+    );
   }
 }

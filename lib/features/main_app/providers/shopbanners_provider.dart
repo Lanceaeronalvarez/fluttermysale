@@ -30,22 +30,10 @@ class ShopBannersProvider extends ChangeNotifier {
     return ShopBannersProvider(userAgent);
   }
 
-  Future<GetBannersResponse?> getShopBanners() async {
+  Future<GetBannersResponse?> getShopBanners(GetBannersRequest request) async {
     if (isLoading == true) {
       isLoading = false;
     }
-
-    GetBannersRequest request = GetBannersRequest(
-      null,
-      null,
-      "10",
-      null,
-      null,
-      null,
-      true,
-      true,
-      null,
-    );
 
     Response res = await _http.get(
       ApiEndpoint.getSales(),
