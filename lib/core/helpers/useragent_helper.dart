@@ -5,7 +5,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-class UserAgentProvider {
+class UserAgentHelper {
   static String? _userAgent;
   final BuildContext _context;
 
@@ -13,10 +13,10 @@ class UserAgentProvider {
     if (_userAgent == null) {
       await _prepare(_context);
     }
-    return userAgent!;
+    return _userAgent!;
   }
 
-  UserAgentProvider(BuildContext context) : _context = context;
+  UserAgentHelper(BuildContext context) : _context = context;
 
   Future<bool> _prepare(BuildContext context) async {
     final deviceNames = DeviceMarketingNames();
