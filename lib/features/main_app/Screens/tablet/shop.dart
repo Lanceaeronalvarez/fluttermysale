@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/features/main_app/widgets/sliding_banner.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../config/config.dart';
 import '../../../../core/core.dart';
-import '../../models/main/banners_model.dart';
+import '../../models/main/banners_model.dart' as bannerModel;
 import '../../providers/bestsellers_provider.dart';
 import '../../providers/leaderboardbanner_provider.dart';
 import '../../providers/shopbanners_provider.dart';
@@ -23,14 +24,17 @@ class Shop extends StatefulWidget {
 class _ShopState extends State<Shop> {
   bool dayAndNight = false;
 
+  List<bannerModel.Banner> _slidingBannersData = [];
+
   @override
   void initState() {
     super.initState();
     var tm = context.read<ThemeProvider>();
     dayAndNight = tm.isDarkMode;
+    getSlidingBanners();
   }
 
-  Future<void> getShopBanners(GetBannersRequest request) async {
+  Future<void> getShopBanners(bannerModel.GetBannersRequest request) async {
     ShopBannersProvider bannersProvider =
         await ShopBannersProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
@@ -41,7 +45,17 @@ class _ShopState extends State<Shop> {
     SlidingBannersProvider bannersProvider =
         await SlidingBannersProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
-    bannersProvider.getSlidingBanners();
+    bannersProvider.getSlidingBanners().then((
+      bannerModel.GetBannersResponse? data,
+    ) {
+      setState(() {
+        data?.groups?.forEach((bannerModel.Group group) {
+          _slidingBannersData.addAll(
+            group.banners as Iterable<bannerModel.Banner>,
+          );
+        });
+      });
+    });
   }
 
   Future<void> getSponsoredBanners(String categoryId) async {
@@ -90,6 +104,10 @@ class _ShopState extends State<Shop> {
   }
 
   Widget _shopScrollView() {
-    return SingleChildScrollView(child: Column(children: []));
+    return SingleChildScrollView(
+      child: Column(
+        children: [SlidingBannerWidget(banners: _slidingBannersData)],
+      ),
+    );
   }
 }
