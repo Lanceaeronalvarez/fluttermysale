@@ -31,25 +31,29 @@ class _ShopState extends State<Shop> {
   }
 
   Future<void> getShopBanners(GetBannersRequest request) async {
-    ShopBannersProvider bannersProvider = await ShopBannersProvider.withUserAgent(context);
+    ShopBannersProvider bannersProvider =
+        await ShopBannersProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
     bannersProvider.getShopBanners(request);
   }
 
   Future<void> getSlidingBanners() async {
-    SlidingBannersProvider bannersProvider = await SlidingBannersProvider.withUserAgent(context);
+    SlidingBannersProvider bannersProvider =
+        await SlidingBannersProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
     bannersProvider.getSlidingBanners();
   }
 
   Future<void> getSponsoredBanners(String categoryId) async {
-    SponsoredBannersProvider bannersProvider = await SponsoredBannersProvider.withUserAgent(context);
+    SponsoredBannersProvider bannersProvider =
+        await SponsoredBannersProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
     bannersProvider.getSponsoredBanners(categoryId);
   }
 
   Future<void> getLeaderboardBanner(String categoryId) async {
-    LeaderboardBannerProvider bannersProvider = await LeaderboardBannerProvider.withUserAgent(context);
+    LeaderboardBannerProvider bannersProvider =
+        await LeaderboardBannerProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
     bannersProvider.getleaderboardBanners(
       "ShopPage",
@@ -59,13 +63,15 @@ class _ShopState extends State<Shop> {
   }
 
   Future<void> getTrendingBrands(String categoryId) async {
-    TrendingBrandsProvider bannersProvider = await TrendingBrandsProvider.withUserAgent(context);
+    TrendingBrandsProvider bannersProvider =
+        await TrendingBrandsProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
     bannersProvider.getTrendingBrands(categoryId);
   }
 
   Future<void> getBestSellers(String category) async {
-    BestSellersProvider bestSellersProvider = await BestSellersProvider.withUserAgent(context);
+    BestSellersProvider bestSellersProvider =
+        await BestSellersProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bestSellersProvider);
     bestSellersProvider.getBestSellers(category);
   }
@@ -78,8 +84,12 @@ class _ShopState extends State<Shop> {
         title: Text("Tablet: ${widget.title!}"),
         actions: actionsMenu(context),
       ),
-      body: const Center(child: Text("Shop Page")),
+      body: _shopScrollView(),
       bottomNavigationBar: BottomBar(),
     );
+  }
+
+  Widget _shopScrollView() {
+    return SingleChildScrollView(child: Column(children: []));
   }
 }
