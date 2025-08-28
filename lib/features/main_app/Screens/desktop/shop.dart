@@ -84,8 +84,12 @@ class _ShopState extends State<Shop> {
         title: Text("Desktop: ${widget.title!}"),
         actions: actionsMenu(context),
       ),
-      body: const Center(child: Text("Shop Page")),
+      body: _shopScrollView(),
       bottomNavigationBar: BottomBar(),
     );
+  }
+
+  Widget _shopScrollView() {
+    return SingleChildScrollView(child: Column(children: []));
   }
 }
