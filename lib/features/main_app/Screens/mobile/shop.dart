@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/features/main_app/widgets/sliding_banner.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../config/config.dart';
@@ -97,8 +98,16 @@ class _ShopState extends State<Shop> {
         title: Text("Mobile: ${widget.title!}"),
         actions: actionsMenu(context),
       ),
-      body: const Center(child: Text("Shop Page")),
+      body: _shopScrollView(),
       bottomNavigationBar: BottomBar(),
+    );
+  }
+
+  Widget _shopScrollView() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [SlidingBannerWidget(banners: _slidingBannersData)],
+      ),
     );
   }
 }
