@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/features/main_app/widgets/leader_banner.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../config/config.dart';
@@ -23,7 +24,7 @@ class Shop extends StatefulWidget {
 class _ShopState extends State<Shop> {
   bool dayAndNight = false;
 
-  late bannerModel.Banner? _leaderBannerData;
+  bannerModel.Banner? _leaderBannerData;
 
   @override
   void initState() {
@@ -31,9 +32,10 @@ class _ShopState extends State<Shop> {
     var tm = context.read<ThemeProvider>();
     dayAndNight = tm.isDarkMode;
     getSlidingBanners();
+    getLeaderboardBanner("");
   }
 
-  Future<void> getShopBanners(GetBannersRequest request) async {
+  Future<void> getShopBanners(bannerModel.GetBannersRequest request) async {
     ShopBannersProvider bannersProvider =
         await ShopBannersProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
@@ -97,6 +99,8 @@ class _ShopState extends State<Shop> {
   }
 
   Widget _shopScrollView() {
-    return SingleChildScrollView(child: Column(children: []));
+    return SingleChildScrollView(
+      child: Column(children: [LeaderBannerWidget(banner: _leaderBannerData)]),
+    );
   }
 }

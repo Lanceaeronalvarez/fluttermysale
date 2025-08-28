@@ -26,11 +26,13 @@ class _LeaderBannerWidgetState extends State<LeaderBannerWidget> {
             //TODO: on tap loginc
           },
           child: SizedBox(
-            child: Image.network(
-              banner?.image ?? "",
-              fit: BoxFit.cover,
-              width: MediaQuery.sizeOf(context).width,
-            ),
+            child: banner?.image != null
+                ? Image.network(
+                    banner!.image!,
+                    fit: BoxFit.cover,
+                    width: MediaQuery.sizeOf(context).width,
+                  )
+                : SizedBox(),
           ),
         ),
       ),

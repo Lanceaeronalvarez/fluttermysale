@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/features/main_app/widgets/leader_banner.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../config/config.dart';
 import '../../../../core/core.dart';
-import '../../models/main/banners_model.dart';
+import '../../models/main/banners_model.dart' as bannerModel;
 import '../../providers/bestsellers_provider.dart';
 import '../../providers/leaderboardbanner_provider.dart';
 import '../../providers/shopbanners_provider.dart';
@@ -23,14 +24,18 @@ class Shop extends StatefulWidget {
 class _ShopState extends State<Shop> {
   bool dayAndNight = false;
 
+  bannerModel.Banner? _leaderBannerData;
+
   @override
   void initState() {
     super.initState();
     var tm = context.read<ThemeProvider>();
     dayAndNight = tm.isDarkMode;
+    getSlidingBanners();
+    getLeaderboardBanner("");
   }
 
-  Future<void> getShopBanners(GetBannersRequest request) async {
+  Future<void> getShopBanners(bannerModel.GetBannersRequest request) async {
     ShopBannersProvider bannersProvider =
         await ShopBannersProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
@@ -55,11 +60,15 @@ class _ShopState extends State<Shop> {
     LeaderboardBannerProvider bannersProvider =
         await LeaderboardBannerProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
-    bannersProvider.getleaderboardBanners(
-      "ShopPage",
-      "DesktopBrowser",
-      categoryId,
-    );
+    bannersProvider
+        .getleaderboardBanners("ShopPage", "MobileBrowser", categoryId)
+        .then((bannerModel.GetBannersResponse? data) {
+          data?.groups?.forEach((bannerModel.Group group) {
+            setState(() {
+              _leaderBannerData = group.banners?[0];
+            });
+          });
+        });
   }
 
   Future<void> getTrendingBrands(String categoryId) async {
@@ -90,6 +99,8 @@ class _ShopState extends State<Shop> {
   }
 
   Widget _shopScrollView() {
-    return SingleChildScrollView(child: Column(children: []));
+    return SingleChildScrollView(
+      child: Column(children: [LeaderBannerWidget(banner: _leaderBannerData)]),
+    );
   }
 }
