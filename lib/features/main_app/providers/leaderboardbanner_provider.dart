@@ -18,6 +18,8 @@ class LeaderboardBannerProvider extends ChangeNotifier {
 
   GetBannersResponse get leaderboardBanners => _leaderboardBanners!;
 
+  BannerData? _leaderBannerData;
+
   LeaderboardBannerProvider(String userAgent)
     : _http = AppHttp(
         baseUrl: dotenv.get("SETTINGS_ROOT"),
@@ -32,7 +34,7 @@ class LeaderboardBannerProvider extends ChangeNotifier {
     return LeaderboardBannerProvider(userAgent);
   }
 
-  Future<GetBannersResponse?> getleaderboardBanners(
+  Future<BannerData?> getleaderboardBanners(
     String pageName,
     String frontEnd,
     String category,
@@ -58,7 +60,10 @@ class LeaderboardBannerProvider extends ChangeNotifier {
       );
       isLoading = true;
       notifyListeners();
-      return _leaderboardBanners;
+      _leaderboardBanners?.groups?.forEach((Group group) {
+        _leaderBannerData = group.banners?[0];
+      });
+      return _leaderBannerData;
     }
   }
 }

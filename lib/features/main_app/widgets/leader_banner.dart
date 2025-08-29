@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart'
-    as bannerModel;
+import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart';
 
 class LeaderBannerWidget extends StatefulWidget {
-  final bannerModel.Banner? banner;
+  final BannerData? banner;
 
   const LeaderBannerWidget({super.key, this.banner});
 

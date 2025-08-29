@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../config/config.dart';
 import '../../../../core/core.dart';
-import '../../models/main/banners_model.dart' as bannerModel;
+import '../../models/main/banners_model.dart';
 import '../../providers/bestsellers_provider.dart';
 import '../../providers/leaderboardbanner_provider.dart';
 import '../../providers/shopbanners_provider.dart';
@@ -24,8 +24,6 @@ class Shop extends StatefulWidget {
 class _ShopState extends State<Shop> {
   bool dayAndNight = false;
 
-  bannerModel.Banner? _leaderBannerData;
-
   @override
   void initState() {
     super.initState();
@@ -35,7 +33,7 @@ class _ShopState extends State<Shop> {
     getLeaderboardBanner("");
   }
 
-  Future<void> getShopBanners(bannerModel.GetBannersRequest request) async {
+  Future<void> getShopBanners(GetBannersRequest request) async {
     ShopBannersProvider bannersProvider =
         await ShopBannersProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
@@ -56,19 +54,15 @@ class _ShopState extends State<Shop> {
     bannersProvider.getSponsoredBanners(categoryId);
   }
 
-  Future<void> getLeaderboardBanner(String categoryId) async {
+  Future<BannerData?> getLeaderboardBanner(String categoryId) async {
     LeaderboardBannerProvider bannersProvider =
         await LeaderboardBannerProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
-    bannersProvider
-        .getleaderboardBanners("ShopPage", "MobileBrowser", categoryId)
-        .then((bannerModel.GetBannersResponse? data) {
-          data?.groups?.forEach((bannerModel.Group group) {
-            setState(() {
-              _leaderBannerData = group.banners?[0];
-            });
-          });
-        });
+    return bannersProvider.getleaderboardBanners(
+      "ShopPage",
+      "MobileBrowser",
+      categoryId,
+    );
   }
 
   Future<void> getTrendingBrands(String categoryId) async {
@@ -100,7 +94,20 @@ class _ShopState extends State<Shop> {
 
   Widget _shopScrollView() {
     return SingleChildScrollView(
-      child: Column(children: [LeaderBannerWidget(banner: _leaderBannerData)]),
+      child: Column(children: [_createLeaderBoardBanner()]),
+    );
+  }
+
+  Widget _createLeaderBoardBanner() {
+    return FutureBuilder<BannerData?>(
+      future: getLeaderboardBanner(""),
+      builder: (BuildContext context, AsyncSnapshot<BannerData?> snapshot) {
+        if (snapshot.hasData) {
+          return LeaderBannerWidget(banner: snapshot.data);
+        } else {
+          return SizedBox();
+        }
+      },
     );
   }
 }
