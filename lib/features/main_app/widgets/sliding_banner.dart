@@ -15,6 +15,34 @@ class SlidingBannerWidget extends StatefulWidget {
 class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
   int _currentIndex = 0;
 
+  String appendBannerSizeUrl(String? url) {
+    // will move to utils
+    int width = 475;
+    int height = 325;
+    int resolutionOverride = 800;
+
+    if (url != null) {
+      String removedExtension = url.substring(0, url.lastIndexOf("."));
+      String extension = "";
+
+      int i = url.lastIndexOf('.');
+      if (i > 0) {
+        extension = url.substring(i + 1);
+      }
+
+      url = "${removedExtension}_${width}x${height}.${extension}";
+
+      if (url.contains("?")) {
+        url = "$url&width=$resolutionOverride";
+      } else {
+        url = "$url?width=$resolutionOverride";
+      }
+      return url;
+    } else {
+      return "";
+    }
+  }
+
   Widget slidingBanner(bannerModel.Banner banner) {
     return SizedBox(
       child: GestureDetector(
@@ -41,7 +69,7 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
   Widget slidingBannerImage(bannerModel.Banner banner) {
     return SizedBox(
       child: Image.network(
-        banner.image ?? "",
+        appendBannerSizeUrl(banner.image),
         fit: BoxFit.cover,
         width: MediaQuery.sizeOf(context).width,
         height: 250,
