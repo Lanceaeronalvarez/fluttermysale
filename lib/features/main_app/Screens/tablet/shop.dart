@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../config/config.dart';
 import '../../../../core/core.dart';
-import '../../models/main/banners_model.dart' as bannerModel;
+import '../../models/main/banners_model.dart';
 import '../../providers/bestsellers_provider.dart';
 import '../../providers/leaderboardbanner_provider.dart';
 import '../../providers/shopbanners_provider.dart';
@@ -24,38 +24,25 @@ class Shop extends StatefulWidget {
 class _ShopState extends State<Shop> {
   bool dayAndNight = false;
 
-  List<bannerModel.Banner> _slidingBannersData = [];
-
   @override
   void initState() {
     super.initState();
     var tm = context.read<ThemeProvider>();
     dayAndNight = tm.isDarkMode;
-    getSlidingBanners();
   }
 
-  Future<void> getShopBanners(bannerModel.GetBannersRequest request) async {
+  Future<void> getShopBanners(GetBannersRequest request) async {
     ShopBannersProvider bannersProvider =
         await ShopBannersProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
     bannersProvider.getShopBanners(request);
   }
 
-  Future<void> getSlidingBanners() async {
+  Future<List<BannerData>?> getSlidingBanners() async {
     SlidingBannersProvider bannersProvider =
         await SlidingBannersProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
-    bannersProvider.getSlidingBanners().then((
-      bannerModel.GetBannersResponse? data,
-    ) {
-      setState(() {
-        data?.groups?.forEach((bannerModel.Group group) {
-          _slidingBannersData.addAll(
-            group.banners as Iterable<bannerModel.Banner>,
-          );
-        });
-      });
-    });
+    return bannersProvider.getSlidingBanners();
   }
 
   Future<void> getSponsoredBanners(String categoryId) async {
@@ -105,9 +92,21 @@ class _ShopState extends State<Shop> {
 
   Widget _shopScrollView() {
     return SingleChildScrollView(
-      child: Column(
-        children: [SlidingBannerWidget(banners: _slidingBannersData)],
-      ),
+      child: Column(children: [_createLeaderBoardBanner()]),
+    );
+  }
+
+  Widget _createLeaderBoardBanner() {
+    return FutureBuilder<List<BannerData>?>(
+      future: getSlidingBanners(),
+      builder:
+          (BuildContext context, AsyncSnapshot<List<BannerData>?> snapshot) {
+            if (snapshot.hasData) {
+              return SlidingBannerWidget(banners: snapshot.data);
+            } else {
+              return SizedBox();
+            }
+          },
     );
   }
 }

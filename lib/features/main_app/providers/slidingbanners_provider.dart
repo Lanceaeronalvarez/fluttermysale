@@ -18,6 +18,8 @@ class SlidingBannersProvider extends ChangeNotifier {
 
   GetBannersResponse get slidingBanners => _slidingBanners!;
 
+  List<BannerData> _slidingBannersData = [];
+
   SlidingBannersProvider(String userAgent)
     : _http = AppHttp(
         baseUrl: dotenv.get("SETTINGS_ROOT"),
@@ -32,7 +34,7 @@ class SlidingBannersProvider extends ChangeNotifier {
     return SlidingBannersProvider(userAgent);
   }
 
-  Future<GetBannersResponse?> getSlidingBanners() async {
+  Future<List<BannerData>?> getSlidingBanners() async {
     if (isLoading == true) {
       isLoading = false;
     }
@@ -57,7 +59,12 @@ class SlidingBannersProvider extends ChangeNotifier {
       _slidingBanners = GetBannersResponse.fromJson(jsonDecode(res.toString()));
       isLoading = true;
       notifyListeners();
-      return _slidingBanners;
+
+      _slidingBanners?.groups?.forEach((Group group) {
+        _slidingBannersData.addAll(group.banners as Iterable<BannerData>);
+      });
+
+      return _slidingBannersData;
     }
   }
 }

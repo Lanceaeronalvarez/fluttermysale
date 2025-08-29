@@ -1,10 +1,9 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart'
-    as bannerModel;
+import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart';
 
 class SlidingBannerWidget extends StatefulWidget {
-  final List<bannerModel.Banner>? banners;
+  final List<BannerData>? banners;
 
   const SlidingBannerWidget({super.key, this.banners});
 
@@ -43,7 +42,7 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
     }
   }
 
-  Widget slidingBanner(bannerModel.Banner banner) {
+  Widget slidingBanner(BannerData banner) {
     return SizedBox(
       child: GestureDetector(
         onTap: () {
@@ -54,7 +53,7 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
     );
   }
 
-  Widget slidingBannerView(bannerModel.Banner banner) {
+  Widget slidingBannerView(BannerData banner) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
@@ -66,7 +65,7 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
     );
   }
 
-  Widget slidingBannerImage(bannerModel.Banner banner) {
+  Widget slidingBannerImage(BannerData banner) {
     return SizedBox(
       child: Image.network(
         appendBannerSizeUrl(banner.image),
@@ -77,7 +76,7 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
     );
   }
 
-  Widget slidingBannerDescription(bannerModel.Banner banner) {
+  Widget slidingBannerDescription(BannerData banner) {
     return Text(
       banner.description ?? "",
       textAlign: TextAlign.center,
@@ -89,7 +88,7 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
     );
   }
 
-  Widget slidingBannerIndicator(List<bannerModel.Banner> banners) {
+  Widget slidingBannerIndicator(List<BannerData> banners) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(banners.length, (index) {
@@ -114,7 +113,7 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
     );
   }
 
-  Widget carouselBuilder(List<bannerModel.Banner> banners) {
+  Widget carouselBuilder(List<BannerData> banners) {
     return CarouselSlider.builder(
       itemCount: banners.length,
       options: CarouselOptions(
