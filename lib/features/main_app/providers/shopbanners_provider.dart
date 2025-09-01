@@ -18,6 +18,8 @@ class ShopBannersProvider extends ChangeNotifier {
 
   GetBannersResponse get shopBanners => _shopBanners!;
 
+  List<BannerData> normalBannersData = [];
+
   ShopBannersProvider(String userAgent)
     : _http = AppHttp(
         baseUrl: dotenv.get("SETTINGS_ROOT"),
@@ -30,7 +32,7 @@ class ShopBannersProvider extends ChangeNotifier {
     return ShopBannersProvider(userAgent);
   }
 
-  Future<GetBannersResponse?> getShopBanners(GetBannersRequest request) async {
+  Future<List<BannerData>?> getShopBanners(GetBannersRequest request) async {
     if (isLoading == true) {
       isLoading = false;
     }
@@ -43,7 +45,14 @@ class ShopBannersProvider extends ChangeNotifier {
       _shopBanners = GetBannersResponse.fromJson(jsonDecode(res.toString()));
       isLoading = true;
       notifyListeners();
-      return _shopBanners;
+
+      _shopBanners?.groups?.forEach((Group it) {
+        if (it.type == "main") {
+          normalBannersData.addAll(it.banners as Iterable<BannerData>);
+        }
+      });
+
+      return normalBannersData;
     }
   }
 }

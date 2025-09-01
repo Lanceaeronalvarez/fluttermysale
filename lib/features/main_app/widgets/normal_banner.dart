@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart'
-    as bannerModel;
+import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart';
 
 class NormalBannerWidget extends StatefulWidget {
-  final List<bannerModel.Banner?> banners;
+  final List<BannerData>? banners;
 
   const NormalBannerWidget({super.key, required this.banners});
 
@@ -44,61 +43,64 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
     }
   }
 
-  Widget normalBannerGestureDetector(bannerModel.Banner banner) {
+  Widget normalBannerGestureDetector(BannerData banner) {
     return GestureDetector(
       onTap: () {
         //TODO
       },
-      child: normalBannerView(banner),
+      child: Container(
+        color: Colors.white,
+        width: MediaQuery.of(context).size.width,
+        child: normalBannerView(banner),
+      ),
     );
   }
 
-  Widget normalBanner(bannerModel.Banner banner) {
+  Widget normalBanner(BannerData banner) {
     return SizedBox(child: normalBannerGestureDetector(banner));
   }
 
-  Widget normalBannerView(bannerModel.Banner banner) {
+  Widget normalBannerView(BannerData banner) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [normalBannerImage(banner), normalBannerDescription(banner)],
     );
   }
 
-  Widget normalBannerImage(bannerModel.Banner banner) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 20),
-      child: Image.network(
-        appendBannerSizeUrl(banner.image),
-        fit: BoxFit.contain,
-      ),
+  Widget normalBannerImage(BannerData banner) {
+    return Image.network(
+      appendBannerSizeUrl(banner.image),
+      fit: BoxFit.contain,
     );
   }
 
-  Widget normalBannerDescription(bannerModel.Banner banner) {
+  Widget normalBannerDescription(BannerData banner) {
     return Column(
       children: [
-        Text(
-          banner.description ?? "",
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black54,
+        Container(
+          padding: const EdgeInsets.all(20),
+          child: Text(
+            banner.description ?? "",
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black54,
+            ),
           ),
         ),
-        const SizedBox(height: 16),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final banner = widget.banners;
+    final banners = widget.banners ?? [];
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(banner.length, (index) {
-        return normalBanner(banner[index]!);
+      children: List.generate(banners.length, (index) {
+        return normalBanner(banners[index]);
       }),
     );
   }

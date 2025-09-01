@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../config/config.dart';
 import '../../../../core/core.dart';
-import '../../models/main/banners_model.dart' as bannerModel;
+import '../../models/main/banners_model.dart';
 import '../../providers/bestsellers_provider.dart';
 import '../../providers/leaderboardbanner_provider.dart';
 import '../../providers/shopbanners_provider.dart';
@@ -24,9 +24,9 @@ class Shop extends StatefulWidget {
 class _ShopState extends State<Shop> {
   bool dayAndNight = false;
 
-  List<bannerModel.Banner> _normalBannersData = [];
+  List<BannerData>? _normalBannersData = [];
 
-  bannerModel.GetBannersRequest request = bannerModel.GetBannersRequest(
+  GetBannersRequest request = GetBannersRequest(
     null,
     null,
     "10",
@@ -47,23 +47,11 @@ class _ShopState extends State<Shop> {
     getShopBanners(request);
   }
 
-  Future<void> getShopBanners(bannerModel.GetBannersRequest request) async {
+  Future<List<BannerData>?> getShopBanners(GetBannersRequest request) async {
     ShopBannersProvider bannersProvider =
         await ShopBannersProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
-    bannersProvider.getShopBanners(request).then((
-      bannerModel.GetBannersResponse? data,
-    ) {
-      setState(() {
-        data?.groups?.forEach((bannerModel.Group it) {
-          if (it.type == "main") {
-            _normalBannersData.addAll(
-              it.banners as Iterable<bannerModel.Banner>,
-            );
-          }
-        });
-      });
-    });
+    return bannersProvider.getShopBanners(request);
   }
 
   Future<void> getSlidingBanners() async {
@@ -120,9 +108,21 @@ class _ShopState extends State<Shop> {
 
   Widget _shopScrollView() {
     return SingleChildScrollView(
-      child: Column(
-        children: [NormalBannerWidget(banners: _normalBannersData)],
-      ),
+      child: Column(children: [_createNormalBanner()]),
+    );
+  }
+
+  Widget _createNormalBanner() {
+    return FutureBuilder<List<BannerData>?>(
+      future: getShopBanners(request),
+      builder:
+          (BuildContext context, AsyncSnapshot<List<BannerData>?> snapshot) {
+            if (snapshot.hasData) {
+              return NormalBannerWidget(banners: snapshot.data);
+            } else {
+              return SizedBox();
+            }
+          },
     );
   }
 }
