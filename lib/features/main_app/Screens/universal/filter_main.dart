@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/core/core.dart';
 import 'package:flutter_mysale/core/helpers/style_helper.dart';
+import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/providers/filter_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:flutter_mysale/features/main_app/widgets/filter_bar.dart';
@@ -157,6 +159,9 @@ class _FilterMainState extends State<FilterMain> {
         trailing: Icon(Icons.chevron_right, color: "#CCA68B".toColor()),
         onTap: () {
           print(title);
+          if (title == 'Price') {
+            Nav.toNamed(context, App.filterprice);
+          }
         },
       ),
     );

@@ -30,6 +30,22 @@ class FilterProvider extends ChangeNotifier {
 
   //int productCount = 0;
   int productCount = 522;
+
+  String currency = '\$';
+  double minPrice = 0;
+  double maxPrice = 189;
+  double _currentMinPrice = 10;
+  double get currentMinPrice => _currentMinPrice;
+  double _currentMaxPrice = 179;
+  double get currentMaxPrice => _currentMaxPrice;
+  void setCurrentPriceRange({
+    required double currentMinPrice,
+    required double currentMaxPrice,
+  }) {
+    _currentMinPrice = currentMinPrice;
+    _currentMaxPrice = currentMaxPrice;
+    notifyListeners();
+  }
 }
 
 //TEMP MODEL
