@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class ImageGalleryWidget extends StatefulWidget {
-  final List<ImageGallery>? images;
+  final List<String>? images;
 
   const ImageGalleryWidget({super.key, this.images});
 
@@ -12,31 +12,13 @@ class ImageGalleryWidget extends StatefulWidget {
 
 class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
   // Default fallback data
-  final List<ImageGallery> images = [
-    ImageGallery(
-      imageUrl:
-          'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=1672&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    ),
-    ImageGallery(
-      imageUrl:
-          'https://plus.unsplash.com/premium_photo-1675186049222-0b5018db6ce9?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    ),
-    ImageGallery(
-      imageUrl:
-          'https://plus.unsplash.com/premium_photo-1728759436968-db4b52249ffa?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    ),
-    ImageGallery(
-      imageUrl:
-          'https://images.unsplash.com/photo-1516762689617-e1cffcef479d?q=80&w=1011&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    ),
-    ImageGallery(
-      imageUrl:
-          'https://plus.unsplash.com/premium_photo-1676225678979-80df276a983e?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    ),
-    ImageGallery(
-      imageUrl:
-          'https://images.unsplash.com/photo-1670014543406-a26719b352ca?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    ),
+  final List<String> images = [
+    'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=1672&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://plus.unsplash.com/premium_photo-1675186049222-0b5018db6ce9?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://plus.unsplash.com/premium_photo-1728759436968-db4b52249ffa?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://images.unsplash.com/photo-1516762689617-e1cffcef479d?q=80&w=1011&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://plus.unsplash.com/premium_photo-1676225678979-80df276a983e?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://images.unsplash.com/photo-1670014543406-a26719b352ca?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   ];
 
   final ItemScrollController itemScrollController = ItemScrollController();
@@ -47,11 +29,11 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
   @override
   void initState() {
     super.initState();
-    selectedImage = images.first.imageUrl;
+    selectedImage = images.first;
   }
 
   Widget imageListRowWithChevron() {
-    final List<ImageGallery> imagesList = widget.images ?? images;
+    final List<String> imagesList = widget.images ?? images;
 
     return Stack(
       alignment: AlignmentDirectional.center,
@@ -64,7 +46,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             itemScrollController: itemScrollController,
             shrinkWrap: true,
             itemBuilder: (BuildContext context, int index) {
-              return rowImage(imagesList[index].imageUrl, index);
+              return rowImage(imagesList[index], index);
             },
           ),
         ),
@@ -193,7 +175,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
     );
 
     setState(() {
-      selectedImage = images[selectedImageIndex].imageUrl;
+      selectedImage = images[selectedImageIndex];
       selectedImageIndex = selectedImageIndex;
     });
   }
@@ -210,14 +192,8 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
     );
 
     setState(() {
-      selectedImage = images[selectedImageIndex].imageUrl;
+      selectedImage = images[selectedImageIndex];
       selectedImageIndex = selectedImageIndex;
     });
   }
-}
-
-class ImageGallery {
-  final String imageUrl;
-
-  ImageGallery({required this.imageUrl});
 }
