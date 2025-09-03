@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
@@ -19,6 +18,8 @@ class LeaderboardBannerProvider extends ChangeNotifier {
 
   GetBannersResponse get leaderboardBanners => _leaderboardBanners!;
 
+  BannerModel? _leaderBannerModel;
+
   LeaderboardBannerProvider(String userAgent)
     : _http = AppHttp(
         baseUrl: dotenv.get("SETTINGS_ROOT"),
@@ -33,7 +34,7 @@ class LeaderboardBannerProvider extends ChangeNotifier {
     return LeaderboardBannerProvider(userAgent);
   }
 
-  void getleaderboardBanners(
+  Future<BannerModel?> getleaderboardBanners(
     String pageName,
     String frontEnd,
     String category,
@@ -59,6 +60,10 @@ class LeaderboardBannerProvider extends ChangeNotifier {
       );
       isLoading = true;
       notifyListeners();
+      _leaderboardBanners?.groups?.forEach((Group group) {
+        _leaderBannerModel = group.banners?[0];
+      });
+      return _leaderBannerModel;
     }
   }
 }

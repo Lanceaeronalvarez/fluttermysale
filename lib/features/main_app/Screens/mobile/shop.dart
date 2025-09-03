@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/features/main_app/widgets/leader_banner.dart';
 import 'package:flutter_mysale/features/main_app/widgets/normal_banner.dart';
+import 'package:flutter_mysale/features/main_app/widgets/sliding_banner.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../config/config.dart';
@@ -45,6 +47,7 @@ class _ShopState extends State<Shop> {
     dayAndNight = tm.isDarkMode;
     getSlidingBanners();
     getShopBanners(request);
+    getLeaderboardBanner("");
   }
 
   Future<List<BannerModel>?> getShopBanners(GetBannersRequest request) async {
@@ -54,11 +57,11 @@ class _ShopState extends State<Shop> {
     return bannersProvider.getShopBanners(request);
   }
 
-  Future<void> getSlidingBanners() async {
+  Future<List<BannerModel>?> getSlidingBanners() async {
     SlidingBannersProvider bannersProvider =
         await SlidingBannersProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
-    bannersProvider.getSlidingBanners();
+    return bannersProvider.getSlidingBanners();
   }
 
   Future<void> getSponsoredBanners(String categoryId) async {
@@ -68,11 +71,11 @@ class _ShopState extends State<Shop> {
     bannersProvider.getSponsoredBanners(categoryId);
   }
 
-  Future<void> getLeaderboardBanner(String categoryId) async {
+  Future<BannerModel?> getLeaderboardBanner(String categoryId) async {
     LeaderboardBannerProvider bannersProvider =
         await LeaderboardBannerProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
-    bannersProvider.getleaderboardBanners(
+    return bannersProvider.getleaderboardBanners(
       "ShopPage",
       "MobileBrowser",
       categoryId,
@@ -108,7 +111,13 @@ class _ShopState extends State<Shop> {
 
   Widget _shopScrollView() {
     return SingleChildScrollView(
-      child: Column(children: [_createNormalBanner()]),
+      child: Column(
+        children: [
+          _createLeaderBoardBanner(),
+          _createSlidingBanner(),
+          _createNormalBanner(),
+        ],
+      ),
     );
   }
 
@@ -123,6 +132,33 @@ class _ShopState extends State<Shop> {
               return SizedBox();
             }
           },
+    );
+  }
+
+  Widget _createSlidingBanner() {
+    return FutureBuilder<List<BannerModel>?>(
+      future: getSlidingBanners(),
+      builder:
+          (BuildContext context, AsyncSnapshot<List<BannerModel>?> snapshot) {
+            if (snapshot.hasData) {
+              return SlidingBannerWidget(banners: snapshot.data);
+            } else {
+              return SizedBox();
+            }
+          },
+    );
+  }
+
+  Widget _createLeaderBoardBanner() {
+    return FutureBuilder<BannerModel?>(
+      future: getLeaderboardBanner(""),
+      builder: (BuildContext context, AsyncSnapshot<BannerModel?> snapshot) {
+        if (snapshot.hasData) {
+          return LeaderBannerWidget(banner: snapshot.data);
+        } else {
+          return SizedBox();
+        }
+      },
     );
   }
 }

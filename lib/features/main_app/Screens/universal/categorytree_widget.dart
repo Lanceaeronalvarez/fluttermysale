@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/architect.dart';
+import 'package:flutter_mysale/core/helpers/style_helper.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/models/main/categorynode_model.dart';
 import 'package:flutter_mysale/features/main_app/providers/categorytree_provider.dart';
@@ -136,17 +137,19 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
     required List<CategoryNodeModel> categories,
     required CategoryNodeModel? parentCategory,
   }) {
-    return Column(
-      children: [
-        if (parentCategory != null)
-          _createParentButton(parentCategory: parentCategory),
-        Expanded(
-          child: _createCategoryListView(
-            provider: provider,
-            categories: categories,
+    return SafeArea(
+      child: Column(
+        children: [
+          if (parentCategory != null)
+            _createParentButton(parentCategory: parentCategory),
+          Expanded(
+            child: _createCategoryListView(
+              provider: provider,
+              categories: categories,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -157,22 +160,7 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
         onPressed: () {
           _navigateToSales(parentCategory);
         },
-        style:
-            ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF54ECFF), // bright cyan
-              foregroundColor: Colors.black, // text/icon color
-              elevation: 2,
-              shadowColor: Colors.black54,
-              minimumSize: const Size.fromHeight(
-                48,
-              ), // full width, fixed height
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ).copyWith(
-              // remove tap ripple/overlay
-              overlayColor: MaterialStateProperty.all(Colors.transparent),
-            ),
+        style: appElevatedButtonStyle,
         child: Text(
           'Show All ${parentCategory.name}',
           style: const TextStyle(
