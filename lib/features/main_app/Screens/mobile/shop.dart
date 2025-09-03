@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/features/main_app/widgets/size_selection.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../config/config.dart';
@@ -91,6 +92,8 @@ class _ShopState extends State<Shop> {
   }
 
   Widget _shopScrollView() {
-    return SingleChildScrollView(child: Column(children: []));
+    return SingleChildScrollView(
+      child: Column(children: [SizeSelectionWidget()]),
+    );
   }
 }

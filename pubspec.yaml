@@ -23,6 +23,7 @@ dependencies:
   scrollable_positioned_list: ^0.3.8
   flutter_color: "2.1.0"
   another_xlider: "3.0.2"
+  flutter_tags_x: ^1.1.0
 
 dev_dependencies:
   flutter_test:
