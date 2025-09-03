@@ -41,7 +41,7 @@ class _ShopState extends State<Shop> {
     bannersProvider.getShopBanners(request);
   }
 
-  Future<List<BannerData>?> getSlidingBanners() async {
+  Future<List<BannerModel>?> getSlidingBanners() async {
     SlidingBannersProvider bannersProvider =
         await SlidingBannersProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
@@ -100,10 +100,10 @@ class _ShopState extends State<Shop> {
   }
 
   Widget _createLeaderBoardBanner() {
-    return FutureBuilder<List<BannerData>?>(
+    return FutureBuilder<List<BannerModel>?>(
       future: getSlidingBanners(),
       builder:
-          (BuildContext context, AsyncSnapshot<List<BannerData>?> snapshot) {
+          (BuildContext context, AsyncSnapshot<List<BannerModel>?> snapshot) {
             if (snapshot.hasData) {
               return SlidingBannerWidget(banners: snapshot.data);
             } else {

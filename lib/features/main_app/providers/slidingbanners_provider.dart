@@ -18,7 +18,7 @@ class SlidingBannersProvider extends ChangeNotifier {
 
   GetBannersResponse get slidingBanners => _slidingBanners!;
 
-  List<BannerData> _slidingBannersData = [];
+  List<BannerModel> _slidingBannersData = [];
 
   SlidingBannersProvider(String userAgent)
     : _http = AppHttp(
@@ -34,7 +34,7 @@ class SlidingBannersProvider extends ChangeNotifier {
     return SlidingBannersProvider(userAgent);
   }
 
-  Future<List<BannerData>?> getSlidingBanners() async {
+  Future<List<BannerModel>?> getSlidingBanners() async {
     if (isLoading == true) {
       isLoading = false;
     }
@@ -61,7 +61,7 @@ class SlidingBannersProvider extends ChangeNotifier {
       notifyListeners();
 
       _slidingBanners?.groups?.forEach((Group group) {
-        _slidingBannersData.addAll(group.banners as Iterable<BannerData>);
+        _slidingBannersData.addAll(group.banners as Iterable<BannerModel>);
       });
 
       return _slidingBannersData;

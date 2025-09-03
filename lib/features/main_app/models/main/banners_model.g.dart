@@ -20,7 +20,7 @@ Group _$GroupFromJson(Map<String, dynamic> json) => Group()
   ..title = json['title'] as String? ?? ''
   ..isClickable = json['isClickable'] as bool? ?? false
   ..banners = (json['banners'] as List<dynamic>?)
-      ?.map((e) => BannerData.fromJson(e as Map<String, dynamic>))
+      ?.map((e) => BannerModel.fromJson(e as Map<String, dynamic>))
       .toList();
 
 Map<String, dynamic> _$GroupToJson(Group instance) => <String, dynamic>{
@@ -30,7 +30,7 @@ Map<String, dynamic> _$GroupToJson(Group instance) => <String, dynamic>{
   'banners': instance.banners,
 };
 
-BannerData _$BannerFromJson(Map<String, dynamic> json) => BannerData()
+BannerModel _$BannerFromJson(Map<String, dynamic> json) => BannerModel()
   ..id = json['id'] as String?
   ..accountId = json['accountId'] as String?
   ..isAvailable = json['isAvailable'] as bool?
@@ -58,7 +58,7 @@ BannerData _$BannerFromJson(Map<String, dynamic> json) => BannerData()
       ? null
       : LinkOptions.fromJson(json['linkOptions'] as Map<String, dynamic>);
 
-Map<String, dynamic> _$BannerToJson(BannerData instance) => <String, dynamic>{
+Map<String, dynamic> _$BannerToJson(BannerModel instance) => <String, dynamic>{
   'id': instance.id,
   'accountId': instance.accountId,
   'isAvailable': instance.isAvailable,

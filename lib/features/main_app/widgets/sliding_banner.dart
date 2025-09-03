@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart';
 
 class SlidingBannerWidget extends StatefulWidget {
-  final List<BannerData>? banners;
+  final List<BannerModel>? banners;
 
   const SlidingBannerWidget({super.key, this.banners});
 
@@ -42,7 +42,7 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
     }
   }
 
-  Widget slidingBanner(BannerData banner) {
+  Widget slidingBanner(BannerModel banner) {
     return SizedBox(
       child: GestureDetector(
         onTap: () {
@@ -53,7 +53,7 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
     );
   }
 
-  Widget slidingBannerView(BannerData banner) {
+  Widget slidingBannerView(BannerModel banner) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
@@ -65,7 +65,7 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
     );
   }
 
-  Widget slidingBannerImage(BannerData banner) {
+  Widget slidingBannerImage(BannerModel banner) {
     return SizedBox(
       child: Image.network(
         appendBannerSizeUrl(banner.image),
@@ -76,7 +76,7 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
     );
   }
 
-  Widget slidingBannerDescription(BannerData banner) {
+  Widget slidingBannerDescription(BannerModel banner) {
     return Text(
       banner.description ?? "",
       textAlign: TextAlign.center,
@@ -88,7 +88,7 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
     );
   }
 
-  Widget slidingBannerIndicator(List<BannerData> banners) {
+  Widget slidingBannerIndicator(List<BannerModel> banners) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(banners.length, (index) {
@@ -113,7 +113,7 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
     );
   }
 
-  Widget carouselBuilder(List<BannerData> banners) {
+  Widget carouselBuilder(List<BannerModel> banners) {
     return CarouselSlider.builder(
       itemCount: banners.length,
       options: CarouselOptions(
