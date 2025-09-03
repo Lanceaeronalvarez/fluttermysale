@@ -26,7 +26,7 @@ class Shop extends StatefulWidget {
 class _ShopState extends State<Shop> {
   bool dayAndNight = false;
 
-  List<Banner> _normalBannersData = [];
+  String _logoImagePath = "assets/images/logo.png";
 
   GetBannersRequest request = GetBannersRequest(
     null,
@@ -39,7 +39,6 @@ class _ShopState extends State<Shop> {
     true,
     null,
   );
-  List<Banner> _slidingBannersData = [];
 
   @override
   void initState() {
@@ -102,8 +101,25 @@ class _ShopState extends State<Shop> {
     var tm = context.read<ThemeProvider>();
     return Scaffold(
       appBar: AppBar(
-        title: Text("Desktop: ${widget.title!}"),
         actions: actionsMenu(context),
+        backgroundColor: Colors.white,
+        leadingWidth: 56,
+        centerTitle: true,
+        toolbarHeight: 56,
+        leading: _catergoryScreen(),
+        scrolledUnderElevation: 0, // stop darkening appbar on scroll
+        surfaceTintColor: Colors.transparent, // disable Material 3 tint overlay
+        iconTheme: const IconThemeData(color: Colors.black),
+        elevation: 0, // no shadow
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(0.75),
+          child: Divider(
+            height: 0.75,
+            thickness: 0.75,
+            color: Color(0xFFCCA68B),
+          ),
+        ),
+        title: SizedBox(height: 32, child: _createAppbarLogo()),
       ),
       body: _shopScrollView(),
       bottomNavigationBar: BottomBar(),
@@ -160,6 +176,28 @@ class _ShopState extends State<Shop> {
           return SizedBox();
         }
       },
+    );
+  }
+
+  Widget _createAppbarLogo() {
+    return FittedBox(
+      fit: BoxFit.contain,
+      child: GestureDetector(
+        onTap: () {},
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 28),
+          child: Image.asset(_logoImagePath),
+        ),
+      ),
+    );
+  }
+
+  Widget _catergoryScreen() {
+    return GestureDetector(
+      onTap: () {
+        Nav.to(context, '/categorytree');
+      },
+      child: Icon(Icons.list),
     );
   }
 }
