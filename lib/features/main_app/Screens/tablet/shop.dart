@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/features/main_app/widgets/leader_banner.dart';
+import 'package:flutter_mysale/features/main_app/widgets/normal_banner.dart';
 import 'package:flutter_mysale/features/main_app/widgets/sliding_banner.dart';
 import 'package:provider/provider.dart';
 
@@ -25,20 +26,35 @@ class Shop extends StatefulWidget {
 class _ShopState extends State<Shop> {
   bool dayAndNight = false;
 
+  List<Banner> _normalBannersData = [];
+
+  GetBannersRequest request = GetBannersRequest(
+    null,
+    null,
+    "50",
+    null,
+    null,
+    null,
+    true,
+    true,
+    null,
+  );
+
   @override
   void initState() {
     super.initState();
     var tm = context.read<ThemeProvider>();
     dayAndNight = tm.isDarkMode;
+    getShopBanners(request);
     getSlidingBanners();
     getLeaderboardBanner("");
   }
 
-  Future<void> getShopBanners(GetBannersRequest request) async {
+  Future<List<BannerModel>?> getShopBanners(GetBannersRequest request) async {
     ShopBannersProvider bannersProvider =
         await ShopBannersProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
-    bannersProvider.getShopBanners(request);
+    return bannersProvider.getShopBanners(request);
   }
 
   Future<List<BannerModel>?> getSlidingBanners() async {
@@ -96,8 +112,26 @@ class _ShopState extends State<Shop> {
   Widget _shopScrollView() {
     return SingleChildScrollView(
       child: Column(
-        children: [_createLeaderBoardBanner(), _createSlidingBanner()],
+        children: [
+          _createLeaderBoardBanner(),
+          _createSlidingBanner(),
+          _createNormalBanner(),
+        ],
       ),
+    );
+  }
+
+  Widget _createNormalBanner() {
+    return FutureBuilder<List<BannerModel>?>(
+      future: getShopBanners(request),
+      builder:
+          (BuildContext context, AsyncSnapshot<List<BannerModel>?> snapshot) {
+            if (snapshot.hasData) {
+              return NormalBannerWidget(banners: snapshot.data);
+            } else {
+              return SizedBox();
+            }
+          },
     );
   }
 
