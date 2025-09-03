@@ -18,7 +18,7 @@ class LeaderboardBannerProvider extends ChangeNotifier {
 
   GetBannersResponse get leaderboardBanners => _leaderboardBanners!;
 
-  BannerData? _leaderBannerData;
+  BannerModel? _leaderBannerModel;
 
   LeaderboardBannerProvider(String userAgent)
     : _http = AppHttp(
@@ -34,7 +34,7 @@ class LeaderboardBannerProvider extends ChangeNotifier {
     return LeaderboardBannerProvider(userAgent);
   }
 
-  Future<BannerData?> getleaderboardBanners(
+  Future<BannerModel?> getleaderboardBanners(
     String pageName,
     String frontEnd,
     String category,
@@ -61,9 +61,9 @@ class LeaderboardBannerProvider extends ChangeNotifier {
       isLoading = true;
       notifyListeners();
       _leaderboardBanners?.groups?.forEach((Group group) {
-        _leaderBannerData = group.banners?[0];
+        _leaderBannerModel = group.banners?[0];
       });
-      return _leaderBannerData;
+      return _leaderBannerModel;
     }
   }
 }

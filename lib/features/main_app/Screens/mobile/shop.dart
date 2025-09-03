@@ -54,7 +54,7 @@ class _ShopState extends State<Shop> {
     bannersProvider.getSponsoredBanners(categoryId);
   }
 
-  Future<BannerData?> getLeaderboardBanner(String categoryId) async {
+  Future<BannerModel?> getLeaderboardBanner(String categoryId) async {
     LeaderboardBannerProvider bannersProvider =
         await LeaderboardBannerProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
@@ -99,9 +99,9 @@ class _ShopState extends State<Shop> {
   }
 
   Widget _createLeaderBoardBanner() {
-    return FutureBuilder<BannerData?>(
+    return FutureBuilder<BannerModel?>(
       future: getLeaderboardBanner(""),
-      builder: (BuildContext context, AsyncSnapshot<BannerData?> snapshot) {
+      builder: (BuildContext context, AsyncSnapshot<BannerModel?> snapshot) {
         if (snapshot.hasData) {
           return LeaderBannerWidget(banner: snapshot.data);
         } else {
