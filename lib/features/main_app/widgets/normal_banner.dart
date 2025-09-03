@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart';
 
 class NormalBannerWidget extends StatefulWidget {
-  final List<BannerData>? banners;
+  final List<BannerModel>? banners;
 
   const NormalBannerWidget({super.key, required this.banners});
 
@@ -43,7 +43,7 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
     }
   }
 
-  Widget normalBannerGestureDetector(BannerData banner) {
+  Widget normalBannerGestureDetector(BannerModel banner) {
     return GestureDetector(
       onTap: () {
         //TODO
@@ -56,25 +56,25 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
     );
   }
 
-  Widget normalBanner(BannerData banner) {
+  Widget normalBanner(BannerModel banner) {
     return SizedBox(child: normalBannerGestureDetector(banner));
   }
 
-  Widget normalBannerView(BannerData banner) {
+  Widget normalBannerView(BannerModel banner) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [normalBannerImage(banner), normalBannerDescription(banner)],
     );
   }
 
-  Widget normalBannerImage(BannerData banner) {
+  Widget normalBannerImage(BannerModel banner) {
     return Image.network(
       appendBannerSizeUrl(banner.image),
       fit: BoxFit.contain,
     );
   }
 
-  Widget normalBannerDescription(BannerData banner) {
+  Widget normalBannerDescription(BannerModel banner) {
     return Column(
       children: [
         Container(

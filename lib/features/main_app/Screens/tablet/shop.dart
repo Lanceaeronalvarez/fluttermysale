@@ -46,7 +46,7 @@ class _ShopState extends State<Shop> {
     getShopBanners(request);
   }
 
-  Future<List<BannerData>?> getShopBanners(GetBannersRequest request) async {
+  Future<List<BannerModel>?> getShopBanners(GetBannersRequest request) async {
     ShopBannersProvider bannersProvider =
         await ShopBannersProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
@@ -112,10 +112,10 @@ class _ShopState extends State<Shop> {
   }
 
   Widget _createNormalBanner() {
-    return FutureBuilder<List<BannerData>?>(
+    return FutureBuilder<List<BannerModel>?>(
       future: getShopBanners(request),
       builder:
-          (BuildContext context, AsyncSnapshot<List<BannerData>?> snapshot) {
+          (BuildContext context, AsyncSnapshot<List<BannerModel>?> snapshot) {
             if (snapshot.hasData) {
               return NormalBannerWidget(banners: snapshot.data);
             } else {
