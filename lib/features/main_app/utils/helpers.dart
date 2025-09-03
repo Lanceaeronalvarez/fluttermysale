@@ -20,7 +20,7 @@ enum AppPlatform {
 
 extension HexColorParsing on String {
   Color? toColor() {
-    if (this == null || this!.isEmpty) return null;
+    if (isEmpty) return null;
     try {
       return HexColor(this);
     } catch (_) {

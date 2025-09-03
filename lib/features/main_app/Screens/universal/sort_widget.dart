@@ -75,15 +75,17 @@ class _SortWidgetState extends State<SortWidget> {
   }
 
   Widget _createBody(FilterProvider provider) {
-    return ListView.separated(
-      itemCount: provider.sorts.length,
-      itemBuilder: (context, index) {
-        final title = provider.sorts[index];
-        return _createListTile(provider, title);
-      },
-      separatorBuilder: (context, index) {
-        return _createDivider();
-      },
+    return SafeArea(
+      child: ListView.separated(
+        itemCount: provider.sorts.length,
+        itemBuilder: (context, index) {
+          final title = provider.sorts[index];
+          return _createListTile(provider, title);
+        },
+        separatorBuilder: (context, index) {
+          return _createDivider();
+        },
+      ),
     );
   }
 

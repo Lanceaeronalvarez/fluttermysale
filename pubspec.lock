@@ -17,6 +17,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.7.1"
+  another_xlider:
+    dependency: "direct main"
+    description:
+      name: another_xlider
+      sha256: "203ad857d28eddedac3ece5829962c8bae3122a2e7e1f530edc51ead5e496458"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.2"
   args:
     dependency: transitive
     description:
@@ -632,6 +640,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.0"
+  scrollable_positioned_list:
+    dependency: "direct main"
+    description:
+      name: scrollable_positioned_list
+      sha256: "1b54d5f1329a1e263269abc9e2543d90806131aa14fe7c6062a8054d57249287"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.8"
   shared_preferences:
     dependency: "direct main"
     description:
