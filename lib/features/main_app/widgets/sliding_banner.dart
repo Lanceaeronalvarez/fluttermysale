@@ -1,61 +1,74 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart';
 
 class SlidingBannerWidget extends StatefulWidget {
-  final List<SlidingBanners>? brands;
+  final List<BannerModel>? banners;
 
-  const SlidingBannerWidget({super.key, this.brands});
+  const SlidingBannerWidget({super.key, this.banners});
 
   @override
   State<SlidingBannerWidget> createState() => _SlidingBannerWidgetState();
 }
 
 class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
-  // Default fallback data
-  final List<SlidingBanners> defaultBrands = [
-    SlidingBanners(
-      imageUrl:
-          'https://images.unsplash.com/photo-1586882829491-b81178aa622e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2850&q=80',
-      description: 'HUGE SAVINGS on Footwear',
-    ),
-    SlidingBanners(
-      imageUrl:
-          'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2xvdGhlc3xlbnwwfHwwfHx8MA%3D%3D',
-      description: "HUGE SAVINGS on Women's Apparel",
-    ),
-  ];
-
   int _currentIndex = 0;
 
-  Widget slidingBanner(SlidingBanners brand) {
+  String appendBannerSizeUrl(String? url) {
+    // will move to utils
+    int width = 475;
+    int height = 325;
+    int resolutionOverride = 800;
+
+    if (url != null) {
+      String removedExtension = url.substring(0, url.lastIndexOf("."));
+      String extension = "";
+
+      int i = url.lastIndexOf('.');
+      if (i > 0) {
+        extension = url.substring(i + 1);
+      }
+
+      url = "${removedExtension}_${width}x${height}.${extension}";
+
+      if (url.contains("?")) {
+        url = "$url&width=$resolutionOverride";
+      } else {
+        url = "$url?width=$resolutionOverride";
+      }
+      return url;
+    } else {
+      return "";
+    }
+  }
+
+  Widget slidingBanner(BannerModel banner) {
     return SizedBox(
       child: GestureDetector(
         onTap: () {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Sliding banner was clicked')));
+          //TODO: on tap logic
         },
-        child: slidingBannerView(brand),
+        child: slidingBannerView(banner),
       ),
     );
   }
 
-  Widget slidingBannerView(SlidingBanners brand) {
+  Widget slidingBannerView(BannerModel banner) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        slidingBannerImage(brand),
+        slidingBannerImage(banner),
         const SizedBox(height: 16),
-        slidingBannerDescription(brand),
+        slidingBannerDescription(banner),
       ],
     );
   }
 
-  Widget slidingBannerImage(SlidingBanners brand) {
+  Widget slidingBannerImage(BannerModel banner) {
     return SizedBox(
       child: Image.network(
-        brand.imageUrl,
+        appendBannerSizeUrl(banner.image),
         fit: BoxFit.cover,
         width: MediaQuery.sizeOf(context).width,
         height: 250,
@@ -63,9 +76,9 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
     );
   }
 
-  Widget slidingBannerDescription(SlidingBanners brand) {
+  Widget slidingBannerDescription(BannerModel banner) {
     return Text(
-      brand.description,
+      banner.description ?? "",
       textAlign: TextAlign.center,
       style: const TextStyle(
         fontSize: 16,
@@ -75,10 +88,10 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
     );
   }
 
-  Widget slidingBannerIndicator(List<SlidingBanners> brands) {
+  Widget slidingBannerIndicator(List<BannerModel> banners) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(brands.length, (index) {
+      children: List.generate(banners.length, (index) {
         return Container(
           child: _currentIndex == index
               ? Container(
@@ -100,9 +113,9 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
     );
   }
 
-  Widget carouselBuilder(List<SlidingBanners> brands) {
+  Widget carouselBuilder(List<BannerModel> banners) {
     return CarouselSlider.builder(
-      itemCount: brands.length,
+      itemCount: banners.length,
       options: CarouselOptions(
         aspectRatio: 1.4,
         enlargeCenterPage: false,
@@ -115,33 +128,26 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
         },
       ),
       itemBuilder: (context, index, realIdx) {
-        return slidingBanner(brands[index]);
+        return slidingBanner(banners[index]);
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final brands = widget.brands ?? defaultBrands;
+    final banners = widget.banners ?? [];
 
     return Container(
-      decoration: BoxDecoration(color: Colors.white),
+      decoration: const BoxDecoration(color: Colors.white),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          carouselBuilder(brands),
-          slidingBannerIndicator(brands),
+          carouselBuilder(banners),
+          slidingBannerIndicator(banners),
           const SizedBox(height: 8),
         ],
       ),
     );
   }
-}
-
-class SlidingBanners {
-  final String imageUrl;
-  final String description;
-
-  SlidingBanners({required this.imageUrl, required this.description});
 }

@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
@@ -19,6 +18,8 @@ class SlidingBannersProvider extends ChangeNotifier {
 
   GetBannersResponse get slidingBanners => _slidingBanners!;
 
+  List<BannerModel> _slidingBannersData = [];
+
   SlidingBannersProvider(String userAgent)
     : _http = AppHttp(
         baseUrl: dotenv.get("SETTINGS_ROOT"),
@@ -33,7 +34,7 @@ class SlidingBannersProvider extends ChangeNotifier {
     return SlidingBannersProvider(userAgent);
   }
 
-  void getSlidingBanners() async {
+  Future<List<BannerModel>?> getSlidingBanners() async {
     if (isLoading == true) {
       isLoading = false;
     }
@@ -58,6 +59,12 @@ class SlidingBannersProvider extends ChangeNotifier {
       _slidingBanners = GetBannersResponse.fromJson(jsonDecode(res.toString()));
       isLoading = true;
       notifyListeners();
+
+      _slidingBanners?.groups?.forEach((Group group) {
+        _slidingBannersData.addAll(group.banners as Iterable<BannerModel>);
+      });
+
+      return _slidingBannersData;
     }
   }
 }
