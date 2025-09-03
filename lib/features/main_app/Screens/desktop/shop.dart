@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/features/main_app/widgets/leader_banner.dart';
 import 'package:flutter_mysale/features/main_app/widgets/sliding_banner.dart';
 import 'package:provider/provider.dart';
 
@@ -32,6 +33,7 @@ class _ShopState extends State<Shop> {
     var tm = context.read<ThemeProvider>();
     dayAndNight = tm.isDarkMode;
     getSlidingBanners();
+    getLeaderboardBanner("");
   }
 
   Future<void> getShopBanners(GetBannersRequest request) async {
@@ -55,13 +57,13 @@ class _ShopState extends State<Shop> {
     bannersProvider.getSponsoredBanners(categoryId);
   }
 
-  Future<void> getLeaderboardBanner(String categoryId) async {
+  Future<BannerModel?> getLeaderboardBanner(String categoryId) async {
     LeaderboardBannerProvider bannersProvider =
         await LeaderboardBannerProvider.withUserAgent(context);
     ChangeNotifierProvider(create: (context) => bannersProvider);
-    bannersProvider.getleaderboardBanners(
+    return bannersProvider.getleaderboardBanners(
       "ShopPage",
-      "DesktopBrowser",
+      "MobileBrowser",
       categoryId,
     );
   }
@@ -95,11 +97,13 @@ class _ShopState extends State<Shop> {
 
   Widget _shopScrollView() {
     return SingleChildScrollView(
-      child: Column(children: [_createLeaderBoardBanner()]),
+      child: Column(
+        children: [_createLeaderBoardBanner(), _createSlidingBanner()],
+      ),
     );
   }
 
-  Widget _createLeaderBoardBanner() {
+  Widget _createSlidingBanner() {
     return FutureBuilder<List<BannerModel>?>(
       future: getSlidingBanners(),
       builder:
@@ -110,6 +114,19 @@ class _ShopState extends State<Shop> {
               return SizedBox();
             }
           },
+    );
+  }
+
+  Widget _createLeaderBoardBanner() {
+    return FutureBuilder<BannerModel?>(
+      future: getLeaderboardBanner(""),
+      builder: (BuildContext context, AsyncSnapshot<BannerModel?> snapshot) {
+        if (snapshot.hasData) {
+          return LeaderBannerWidget(banner: snapshot.data);
+        } else {
+          return SizedBox();
+        }
+      },
     );
   }
 }
