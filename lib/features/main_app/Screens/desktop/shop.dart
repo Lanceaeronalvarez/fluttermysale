@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/widgets/leader_banner.dart';
 import 'package:flutter_mysale/features/main_app/widgets/normal_banner.dart';
 import 'package:flutter_mysale/features/main_app/widgets/sliding_banner.dart';
@@ -195,7 +196,7 @@ class _ShopState extends State<Shop> {
   Widget _catergoryScreen() {
     return GestureDetector(
       onTap: () {
-        Nav.to(context, '/categorytree');
+        Nav.to(context, App.categoryTree);
       },
       child: Icon(Icons.list),
     );
