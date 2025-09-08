@@ -160,7 +160,9 @@ class _FilterMainState extends State<FilterMain> {
         trailing: Icon(Icons.chevron_right, color: "#CCA68B".toColor()),
         onTap: () {
           print(title);
-          if (title == 'Brand') {
+          if (title == 'Category') {
+            Nav.toNamed(context, App.filtercategory);
+          } else if (title == 'Brand') {
             Nav.toNamed(
               context,
               App.filterselect,
