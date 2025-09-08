@@ -6,7 +6,9 @@ import 'package:provider/provider.dart';
 
 import '../../../../config/config.dart';
 import '../../../../core/core.dart';
+import '../../app.dart';
 import '../../models/main/banners_model.dart';
+import '../../models/main/facetfilter_model.dart';
 import '../../providers/bestsellers_provider.dart';
 import '../../providers/leaderboardbanner_provider.dart';
 import '../../providers/shopbanners_provider.dart';
@@ -102,7 +104,22 @@ class _ShopState extends State<Shop> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Mobile: ${widget.title!}"),
-        actions: actionsMenu(context),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Nav.to(
+                context,
+                App.productList,
+                arguments: (
+                  categoryKeys: <String>[],
+                  facetFilters: FacetFilterModel(),
+                  sort: "",
+                ),
+              );
+            },
+            icon: const Icon(Icons.search),
+          ),
+        ],
       ),
       body: _shopScrollView(),
       bottomNavigationBar: BottomBar(),

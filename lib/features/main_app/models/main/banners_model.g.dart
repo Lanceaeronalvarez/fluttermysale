@@ -30,7 +30,7 @@ Map<String, dynamic> _$GroupToJson(Group instance) => <String, dynamic>{
   'banners': instance.banners,
 };
 
-BannerModel _$BannerFromJson(Map<String, dynamic> json) => BannerModel()
+BannerModel _$BannerModelFromJson(Map<String, dynamic> json) => BannerModel()
   ..id = json['id'] as String?
   ..accountId = json['accountId'] as String?
   ..isAvailable = json['isAvailable'] as bool?
@@ -58,28 +58,29 @@ BannerModel _$BannerFromJson(Map<String, dynamic> json) => BannerModel()
       ? null
       : LinkOptions.fromJson(json['linkOptions'] as Map<String, dynamic>);
 
-Map<String, dynamic> _$BannerToJson(BannerModel instance) => <String, dynamic>{
-  'id': instance.id,
-  'accountId': instance.accountId,
-  'isAvailable': instance.isAvailable,
-  'bannerText': instance.bannerText,
-  'description': instance.description,
-  'startDate': instance.startDate,
-  'endDate': instance.endDate,
-  'destinationId': instance.destinationId,
-  'image': instance.image,
-  'hasImage': instance.hasImage,
-  'attributes': instance.attributes,
-  'categories': instance.categories,
-  'bannerType': instance.bannerType,
-  'percentOff': instance.percentOff,
-  'isFreeDelivery': instance.isFreeDelivery,
-  'percentOffText': instance.percentOffText,
-  'link': instance.link,
-  'deliveryThreshold': instance.deliveryThreshold,
-  'deliveryType': instance.deliveryType,
-  'linkOptions': instance.linkOptions,
-};
+Map<String, dynamic> _$BannerModelToJson(BannerModel instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'accountId': instance.accountId,
+      'isAvailable': instance.isAvailable,
+      'bannerText': instance.bannerText,
+      'description': instance.description,
+      'startDate': instance.startDate,
+      'endDate': instance.endDate,
+      'destinationId': instance.destinationId,
+      'image': instance.image,
+      'hasImage': instance.hasImage,
+      'attributes': instance.attributes,
+      'categories': instance.categories,
+      'bannerType': instance.bannerType,
+      'percentOff': instance.percentOff,
+      'isFreeDelivery': instance.isFreeDelivery,
+      'percentOffText': instance.percentOffText,
+      'link': instance.link,
+      'deliveryThreshold': instance.deliveryThreshold,
+      'deliveryType': instance.deliveryType,
+      'linkOptions': instance.linkOptions,
+    };
 
 Attributes _$AttributesFromJson(Map<String, dynamic> json) =>
     Attributes()..saleExternalId = json['saleExternalId'] as String?;
