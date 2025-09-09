@@ -10,38 +10,26 @@ import '../../../config/api_endpoints.dart';
 import '../../../config/app_http.dart';
 
 class LeaderboardBannerProvider extends ChangeNotifier {
-  final AppHttp _http;
+  BuildContext context;
+  late UserAgentHelper _userAgentHelper;
+  AppHttp? _http;
 
-  GetBannersResponse? _leaderboardBanners;
+  BannerModel? _leaderboardBanner;
 
   bool isLoading = false;
 
-  GetBannersResponse get leaderboardBanners => _leaderboardBanners!;
+  BannerModel? get leaderboardBanner => _leaderboardBanner;
 
-  BannerModel? _leaderBannerModel;
-
-  LeaderboardBannerProvider(String userAgent)
-    : _http = AppHttp(
-        baseUrl: dotenv.get("SETTINGS_ROOT"),
-        headers: {'User-Agent': userAgent},
-      );
-
-  static Future<LeaderboardBannerProvider> withUserAgent(
-    BuildContext context,
-  ) async {
-    UserAgentHelper userAgentHelper = UserAgentHelper(context);
-    String userAgent = await userAgentHelper.userAgent;
-    return LeaderboardBannerProvider(userAgent);
+  LeaderboardBannerProvider({required this.context}) {
+    _userAgentHelper = UserAgentHelper(context);
   }
 
-  Future<BannerModel?> getleaderboardBanners(
+  void getleaderboardBanners(
     String pageName,
     String frontEnd,
     String category,
   ) async {
-    if (isLoading == true) {
-      isLoading = false;
-    }
+    isLoading = true;
 
     Map<String, dynamic> request = {
       "pageName": pageName,
@@ -53,17 +41,22 @@ class LeaderboardBannerProvider extends ChangeNotifier {
 
     request.removeWhere((k, v) => (v == null));
 
-    Response res = await _http.get(ApiEndpoint.getSales2(), params: request);
+    final userAgent = await _userAgentHelper.userAgent;
+    _http ??= AppHttp(
+      baseUrl: dotenv.get("SETTINGS_ROOT"),
+      headers: {'User-Agent': userAgent},
+    );
+
+    Response res = await _http!.get(ApiEndpoint.getSales2(), params: request);
     if (res.statusCode == 200 && res.statusCode != 429) {
-      _leaderboardBanners = GetBannersResponse.fromJson(
+      GetBannersResponse response = GetBannersResponse.fromJson(
         jsonDecode(res.toString()),
       );
-      isLoading = true;
-      notifyListeners();
-      _leaderboardBanners?.groups?.forEach((Group group) {
-        _leaderBannerModel = group.banners?[0];
+      response?.groups?.forEach((Group group) {
+        _leaderboardBanner = group.banners?[0];
       });
-      return _leaderBannerModel;
+      isLoading = false;
+      notifyListeners();
     }
   }
 }

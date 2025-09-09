@@ -28,6 +28,7 @@ class Shop extends StatefulWidget {
 class _ShopState extends State<Shop> {
   bool dayAndNight = false;
 
+  List<BannerModel> _normalBanners = [];
   String _logoImagePath = "assets/images/logo.png";
 
   GetBannersRequest request = GetBannersRequest(
@@ -52,50 +53,48 @@ class _ShopState extends State<Shop> {
     getLeaderboardBanner("");
   }
 
-  Future<List<BannerModel>?> getShopBanners(GetBannersRequest request) async {
-    ShopBannersProvider bannersProvider =
-        await ShopBannersProvider.withUserAgent(context);
-    ChangeNotifierProvider(create: (context) => bannersProvider);
-    return bannersProvider.getShopBanners(request);
-  }
-
-  Future<List<BannerModel>?> getSlidingBanners() async {
-    SlidingBannersProvider bannersProvider =
-        await SlidingBannersProvider.withUserAgent(context);
-    ChangeNotifierProvider(create: (context) => bannersProvider);
-    return bannersProvider.getSlidingBanners();
-  }
-
-  Future<void> getSponsoredBanners(String categoryId) async {
-    SponsoredBannersProvider bannersProvider =
-        await SponsoredBannersProvider.withUserAgent(context);
-    ChangeNotifierProvider(create: (context) => bannersProvider);
-    bannersProvider.getSponsoredBanners(categoryId);
-  }
-
-  Future<BannerModel?> getLeaderboardBanner(String categoryId) async {
-    LeaderboardBannerProvider bannersProvider =
-        await LeaderboardBannerProvider.withUserAgent(context);
-    ChangeNotifierProvider(create: (context) => bannersProvider);
-    return bannersProvider.getleaderboardBanners(
-      "ShopPage",
-      "MobileBrowser",
-      categoryId,
+  void getShopBanners(GetBannersRequest request) {
+    final ShopBannersProvider provider = Provider.of<ShopBannersProvider>(
+      context,
+      listen: false,
     );
+    provider.getShopBanners(request);
   }
 
-  Future<void> getTrendingBrands(String categoryId) async {
-    TrendingBrandsProvider bannersProvider =
-        await TrendingBrandsProvider.withUserAgent(context);
-    ChangeNotifierProvider(create: (context) => bannersProvider);
-    bannersProvider.getTrendingBrands(categoryId);
+  void getSlidingBanners() {
+    final SlidingBannersProvider provider = Provider.of<SlidingBannersProvider>(
+      context,
+      listen: false,
+    );
+    provider.getSlidingBanners();
   }
 
-  Future<void> getBestSellers(String category) async {
-    BestSellersProvider bestSellersProvider =
-        await BestSellersProvider.withUserAgent(context);
-    ChangeNotifierProvider(create: (context) => bestSellersProvider);
-    bestSellersProvider.getBestSellers(category);
+  void getSponsoredBanners(String categoryId) {
+    final SponsoredBannersProvider provider =
+        Provider.of<SponsoredBannersProvider>(context, listen: false);
+    provider.getSponsoredBanners(categoryId);
+  }
+
+  void getLeaderboardBanner(String categoryId) {
+    final LeaderboardBannerProvider provider =
+        Provider.of<LeaderboardBannerProvider>(context, listen: false);
+    provider.getleaderboardBanners("ShopPage", "DesktopBrowser", categoryId);
+  }
+
+  void getTrendingBrands(String categoryId) {
+    final TrendingBrandsProvider provider = Provider.of<TrendingBrandsProvider>(
+      context,
+      listen: false,
+    );
+    provider.getTrendingBrands(categoryId);
+  }
+
+  void getBestSellers(String category) {
+    final BestSellersProvider provider = Provider.of<BestSellersProvider>(
+      context,
+      listen: false,
+    );
+    provider.getBestSellers(category);
   }
 
   @override
@@ -156,41 +155,43 @@ class _ShopState extends State<Shop> {
   }
 
   Widget _createNormalBanner() {
-    return FutureBuilder<List<BannerModel>?>(
-      future: getShopBanners(request),
-      builder:
-          (BuildContext context, AsyncSnapshot<List<BannerModel>?> snapshot) {
-            if (snapshot.hasData) {
-              return NormalBannerWidget(banners: snapshot.data);
-            } else {
-              return SizedBox();
+    return Consumer<ShopBannersProvider>(
+      builder: (_, provider, __) {
+        if (provider.shopBanners == null) {
+          return SizedBox();
+        } else {
+          provider.shopBanners?.groups?.forEach((Group it) {
+            if (it.type == "main") {
+              _normalBanners.addAll(
+                it.banners as Iterable<BannerModel>,
+              ); //TODO: paging
             }
-          },
+          });
+          return NormalBannerWidget(banners: _normalBanners);
+        }
+      },
     );
   }
 
   Widget _createSlidingBanner() {
-    return FutureBuilder<List<BannerModel>?>(
-      future: getSlidingBanners(),
-      builder:
-          (BuildContext context, AsyncSnapshot<List<BannerModel>?> snapshot) {
-            if (snapshot.hasData) {
-              return SlidingBannerWidget(banners: snapshot.data);
-            } else {
-              return SizedBox();
-            }
-          },
+    return Consumer<SlidingBannersProvider>(
+      builder: (_, provider, __) {
+        if (provider.slidingBanners == null) {
+          return SizedBox();
+        } else {
+          return SlidingBannerWidget(banners: provider.slidingBanners);
+        }
+      },
     );
   }
 
   Widget _createLeaderBoardBanner() {
-    return FutureBuilder<BannerModel?>(
-      future: getLeaderboardBanner(""),
-      builder: (BuildContext context, AsyncSnapshot<BannerModel?> snapshot) {
-        if (snapshot.hasData) {
-          return LeaderBannerWidget(banner: snapshot.data);
-        } else {
+    return Consumer<LeaderboardBannerProvider>(
+      builder: (_, provider, __) {
+        if (provider.leaderboardBanner == null) {
           return SizedBox();
+        } else {
+          return LeaderBannerWidget(banner: provider.leaderboardBanner);
         }
       },
     );
