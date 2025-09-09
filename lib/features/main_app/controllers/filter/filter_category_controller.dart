@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/core/core.dart';
 
-import '../../Screens/universal/filter_category_widget.dart' as universal;
+import '../../Screens/universal/filter_category.dart' as universal;
 
 class FilterCategoryController extends StatelessController {
   const FilterCategoryController({Key? key}) : super(key: key);
@@ -10,7 +10,7 @@ class FilterCategoryController extends StatelessController {
   Display view(BuildContext context) {
     return Display(
       title: "Filter Category",
-      mobile: universal.FilterCategoryWidget(),
+      mobile: universal.FilterCategory(),
     );
   }
 }

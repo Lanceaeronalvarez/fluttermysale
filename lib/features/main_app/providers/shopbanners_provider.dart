@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
@@ -19,6 +18,8 @@ class ShopBannersProvider extends ChangeNotifier {
 
   GetBannersResponse get shopBanners => _shopBanners!;
 
+  List<BannerModel> normalBannersData = [];
+
   ShopBannersProvider(String userAgent)
     : _http = AppHttp(
         baseUrl: dotenv.get("SETTINGS_ROOT"),
@@ -31,7 +32,7 @@ class ShopBannersProvider extends ChangeNotifier {
     return ShopBannersProvider(userAgent);
   }
 
-  void getShopBanners(GetBannersRequest request) async {
+  Future<List<BannerModel>?> getShopBanners(GetBannersRequest request) async {
     if (isLoading == true) {
       isLoading = false;
     }
@@ -44,6 +45,14 @@ class ShopBannersProvider extends ChangeNotifier {
       _shopBanners = GetBannersResponse.fromJson(jsonDecode(res.toString()));
       isLoading = true;
       notifyListeners();
+
+      _shopBanners?.groups?.forEach((Group it) {
+        if (it.type == "main") {
+          normalBannersData.addAll(it.banners as Iterable<BannerModel>);
+        }
+      });
+
+      return normalBannersData;
     }
   }
 }

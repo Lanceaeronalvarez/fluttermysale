@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/core/classes/route_manager.dart';
 import 'package:flutter_mysale/core/core.dart';
 import 'package:flutter_mysale/core/helpers/style_helper.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
@@ -159,7 +160,21 @@ class _FilterMainState extends State<FilterMain> {
         trailing: Icon(Icons.chevron_right, color: "#CCA68B".toColor()),
         onTap: () {
           print(title);
-          if (title == 'Price') {
+          if (title == 'Category') {
+            Nav.toNamed(context, App.filtercategory);
+          } else if (title == 'Brand') {
+            Nav.toNamed(
+              context,
+              App.filterselect,
+              arguments: (title: 'Brand', showSearch: false, showSort: true),
+            );
+          } else if (title == 'Size') {
+            Nav.toNamed(
+              context,
+              App.filterselect,
+              arguments: (title: 'Size', showSearch: true, showSort: false),
+            );
+          } else if (title == 'Price') {
             Nav.toNamed(context, App.filterprice);
           }
         },
