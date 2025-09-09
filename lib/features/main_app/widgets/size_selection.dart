@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tags_x/flutter_tags_x.dart';
 
-class SizeSelectionWidget extends StatefulWidget {
-  final List<String>? sizes;
-
-  const SizeSelectionWidget({super.key, this.sizes});
-
-  @override
-  State<SizeSelectionWidget> createState() => _SizeSelectionWidgetState();
+abstract class SizeItem {
+  String getTitle();
 }
 
-class _SizeSelectionWidgetState extends State<SizeSelectionWidget> {
-  Color beige = const Color.fromARGB(255, 214, 176, 118);
+class SizeSelectionWidget<T extends SizeItem> extends StatelessWidget {
+  final List<T> sizesList;
+  final void Function(T, int)? onTap;
+
+  const SizeSelectionWidget({super.key, required this.sizesList, this.onTap});
+
+  final Color beige = const Color.fromARGB(255, 214, 176, 118);
 
   @override
   Widget build(BuildContext context) {
@@ -74,20 +74,17 @@ class _SizeSelectionWidgetState extends State<SizeSelectionWidget> {
   }
 
   Widget _createSizeSelectionTags() {
-    final sizes =
-        widget.sizes ?? ["X-Small", "Small", "Medium", "Large", "X-Large"];
-
     return Tags(
-      itemCount: sizes.length, // required
+      itemCount: sizesList.length, // required
       itemBuilder: (int index) {
-        final item = sizes[index];
+        final item = sizesList[index];
 
         return ItemTags(
           // Each ItemTags must contain a Key. Keys allow Flutter to
           // uniquely identify widgets.
           key: Key(index.toString()),
           index: index, // required
-          title: item,
+          title: item.getTitle(),
           textStyle: TextStyle(fontSize: 14),
           icon: null,
           color: Colors.white,
@@ -98,8 +95,8 @@ class _SizeSelectionWidgetState extends State<SizeSelectionWidget> {
           border: BoxBorder.all(width: 1, color: beige),
           singleItem: true,
           padding: EdgeInsets.all(10),
-          onPressed: (item) {
-            print(item);
+          onPressed: (tag) {
+            onTap?.call(item, index);
           },
         );
       },
