@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/core/classes/route_manager.dart';
+import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class ImageGalleryWidget extends StatefulWidget {
@@ -141,11 +143,16 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
     return Positioned(
       bottom: 0,
       right: 0,
-      child: Container(
-        color: Colors.white,
-        height: 60,
-        width: 60,
-        child: const Icon(Icons.zoom_in, size: 50),
+      child: GestureDetector(
+        onTap: () {
+          Nav.toNamed(context, App.imagegalleryzoom, arguments: selectedImage);
+        },
+        child: Container(
+          color: Colors.white,
+          height: 60,
+          width: 60,
+          child: const Icon(Icons.zoom_in, size: 50),
+        ),
       ),
     );
   }
