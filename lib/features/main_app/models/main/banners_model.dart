@@ -96,9 +96,9 @@ class BannerModel {
   BannerModel();
 
   factory BannerModel.fromJson(Map<String, dynamic> json) =>
-      _$BannerFromJson(json);
+      _$BannerModelFromJson(json);
 
-  Map<String, dynamic> toJson() => _$BannerToJson(this);
+  Map<String, dynamic> toJson() => _$BannerModelToJson(this);
 }
 
 @JsonSerializable()

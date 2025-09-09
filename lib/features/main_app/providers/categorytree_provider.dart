@@ -21,7 +21,8 @@ class CategoryTreeProvider extends ChangeNotifier {
     _userAgentHelper = UserAgentHelper(context);
   }
 
-  void getCategoryTree({bool forceApiCall = false}) async {
+  // TODO: JCA completion is just for testing filters, should be removed eventually
+  void getCategoryTree({bool forceApiCall = false, void Function(List<CategoryNodeModel>)? completion = null}) async {
     if (isLoading) return;
     if (categories.isNotEmpty && !forceApiCall) return;
 
@@ -54,6 +55,7 @@ class CategoryTreeProvider extends ChangeNotifier {
       error = e.toString();
     } finally {
       isLoading = false;
+      completion?.call(categories);
       notifyListeners(); //notify observers that the request is completed
     }
   }
