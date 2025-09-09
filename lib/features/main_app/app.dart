@@ -25,9 +25,6 @@ class App extends RouteManager {
 
   App() {
     addRoute(App.home, (context) => const ShopController());
-    addRoute(App.about, (context) => const AboutController());
-    addRoute(App.contact, (context) => const ContactController());
-    addRoute(App.news, (context) => const NewsController());
     addRoute(App.productList, (context) => const ProductListController());
     addRoute(App.getappsettings, (context) => const GetAppSettingsController());
     addRoute(App.categoryTree, (context) => const CategoryTreeController());
