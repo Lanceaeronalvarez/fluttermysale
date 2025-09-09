@@ -1,201 +1,119 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart';
+
+import '../../../core/classes/route_manager.dart';
+import '../app.dart';
+import '../models/main/facetfilter_model.dart';
 
 class NormalBannerWidget extends StatefulWidget {
-  final List<NormalBanner>? brands;
+  final List<BannerModel>? banners;
 
-  const NormalBannerWidget({super.key, this.brands});
+  const NormalBannerWidget({super.key, required this.banners});
 
   @override
   State<NormalBannerWidget> createState() => _NormalBannerWidgetState();
 }
 
 class _NormalBannerWidgetState extends State<NormalBannerWidget> {
-  // Default fallback data
-  final List<NormalBanner> defaultBrands = [
-    NormalBanner(
-      imageUrl:
-          'https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
-      priceDrop: "PRICE DROP 20%",
-      freeShipping: true,
-    ),
-    NormalBanner(
-      imageUrl:
-          'https://images.unsplash.com/photo-1586882829491-b81178aa622e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2850&q=80',
-      description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
-      priceDrop: "PRICE DROP 10%",
-      freeShipping: false,
-    ),
-    NormalBanner(
-      imageUrl:
-          'https://plus.unsplash.com/premium_photo-1728759436968-db4b52249ffa?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
-      priceDrop: "",
-      freeShipping: true,
-    ),
-    NormalBanner(
-      imageUrl:
-          'https://plus.unsplash.com/premium_photo-1676225678979-80df276a983e?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
-      priceDrop: "",
-      freeShipping: false,
-    ),
-    NormalBanner(
-      imageUrl:
-          'https://images.unsplash.com/photo-1670014543406-a26719b352ca?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
-      priceDrop: "PRICE DROP 10%",
-      freeShipping: false,
-    ),
-    NormalBanner(
-      imageUrl:
-          'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
-      priceDrop: "PRICE DROP 20%",
-      freeShipping: true,
-    ),
-    NormalBanner(
-      imageUrl:
-          'https://plus.unsplash.com/premium_photo-1675183689638-a68fe7048da9?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      description: "TIMELESS STYLES AT IRRESITIBLE PRICES",
-      priceDrop: "",
-      freeShipping: false,
-    ),
-  ];
-
-  Widget priceDropWidget(NormalBanner banner) {
-    return banner.priceDrop != ""
-        ? Container(
-            padding: EdgeInsets.all(10),
-            margin: EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              color: Colors.orange,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.white, width: 2),
-            ),
-            child: Text(
-              banner.priceDrop,
-              style: const TextStyle(color: Colors.white),
-            ),
-          )
-        : const SizedBox();
+  @override
+  void initState() {
+    super.initState();
   }
 
-  Widget freeShippingWidget(NormalBanner banner) {
-    return banner.freeShipping
-        ? Container(
-            padding: EdgeInsets.all(10),
-            margin: EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              color: Colors.blue,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.white, width: 2),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.fire_truck, color: Colors.white),
-                SizedBox(width: 2),
-                Text("Free Shipping", style: TextStyle(color: Colors.white)),
-              ],
-            ),
-          )
-        : const SizedBox();
+  String appendBannerSizeUrl(String? url) {
+    int width = 475;
+    int height = 325;
+
+    if (url != null) {
+      String removedExtension = url.substring(0, url.lastIndexOf("."));
+      String extension = "";
+
+      int i = url.lastIndexOf('.');
+      if (i > 0) {
+        extension = url.substring(i + 1);
+      }
+
+      url = "${removedExtension}_${width}x${height}.${extension}";
+
+      if (url.contains("?")) {
+        url = "${url}&width=800";
+      } else {
+        url = "$url?width=800";
+      }
+      print("bannerrul $url");
+      return url;
+    } else {
+      return "";
+    }
   }
 
-  Widget normalBanner(NormalBanner banner) {
-    return SizedBox(child: normalBanner(banner));
-  }
-
-  Widget normalBannerGestureDetector(NormalBanner banner) {
+  Widget normalBannerGestureDetector(BannerModel banner) {
     return GestureDetector(
       onTap: () {
-        ScaffoldMessenger.of(
+        Nav.toNamed(
           context,
-        ).showSnackBar(SnackBar(content: Text('Normal banner was clicked')));
+          App.productList,
+          arguments: (
+            categoryKeys: <String>[],
+            facetFilters: FacetFilterModel(saleId: [banner.destinationId!]),
+            sort: "",
+          ),
+        );
       },
-      child: normalBannerView(banner),
+      child: Container(
+        color: Colors.white,
+        width: MediaQuery.of(context).size.width,
+        child: normalBannerView(banner),
+      ),
     );
   }
 
-  Widget normalBannerView(NormalBanner banner) {
+  Widget normalBanner(BannerModel banner) {
+    return SizedBox(child: normalBannerGestureDetector(banner));
+  }
+
+  Widget normalBannerView(BannerModel banner) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Stack(
-          alignment: AlignmentDirectional.topCenter,
-          children: [
-            normalBannerImage(banner),
-            normalBannerPriceDropAndFreeAShippingView(banner),
-          ],
-        ),
-        normalBannerDescription(banner),
-      ],
+      children: [normalBannerImage(banner), normalBannerDescription(banner)],
     );
   }
 
-  Widget normalBannerImage(NormalBanner banner) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 20),
-      child: Image.network(
-        banner.imageUrl,
-        fit: BoxFit.cover,
-        width: MediaQuery.sizeOf(context).width,
-        height: 250,
-      ),
+  Widget normalBannerImage(BannerModel banner) {
+    return Image.network(
+      appendBannerSizeUrl(banner.image),
+      fit: BoxFit.contain,
     );
   }
 
-  Widget normalBannerPriceDropAndFreeAShippingView(NormalBanner banner) {
-    return Positioned(
-      bottom: 0,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [priceDropWidget(banner), freeShippingWidget(banner)],
-      ),
-    );
-  }
-
-  Widget normalBannerDescription(NormalBanner banner) {
+  Widget normalBannerDescription(BannerModel banner) {
     return Column(
       children: [
-        const SizedBox(height: 8),
-        Text(
-          banner.description,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black54,
+        Container(
+          padding: const EdgeInsets.all(20),
+          child: Text(
+            banner.description ?? "",
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black54,
+            ),
           ),
         ),
-        const SizedBox(height: 16),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final banner = widget.brands ?? defaultBrands;
+    final banners = widget.banners ?? [];
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(banner.length, (index) {
-        return normalBanner(banner[index]);
+      children: List.generate(banners.length, (index) {
+        return normalBanner(banners[index]);
       }),
     );
   }
-}
-
-class NormalBanner {
-  final String imageUrl;
-  final String description;
-  final String priceDrop;
-  final bool freeShipping;
-
-  NormalBanner({
-    required this.imageUrl,
-    required this.description,
-    required this.priceDrop,
-    required this.freeShipping,
-  });
 }

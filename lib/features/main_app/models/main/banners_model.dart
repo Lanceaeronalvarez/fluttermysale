@@ -61,7 +61,7 @@ class Group {
   String? title;
   @JsonKey(defaultValue: false)
   bool? isClickable;
-  List<Banner>? banners;
+  List<BannerModel>? banners;
 
   Group();
 
@@ -71,7 +71,7 @@ class Group {
 }
 
 @JsonSerializable()
-class Banner {
+class BannerModel {
   String? id;
   String? accountId;
   bool? isAvailable;
@@ -93,11 +93,12 @@ class Banner {
   String? deliveryType;
   LinkOptions? linkOptions;
 
-  Banner();
+  BannerModel();
 
-  factory Banner.fromJson(Map<String, dynamic> json) => _$BannerFromJson(json);
+  factory BannerModel.fromJson(Map<String, dynamic> json) =>
+      _$BannerModelFromJson(json);
 
-  Map<String, dynamic> toJson() => _$BannerToJson(this);
+  Map<String, dynamic> toJson() => _$BannerModelToJson(this);
 }
 
 @JsonSerializable()
