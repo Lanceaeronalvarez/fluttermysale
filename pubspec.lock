@@ -560,6 +560,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.0"
+  paged_grid_view:
+    dependency: "direct main"
+    description:
+      name: paged_grid_view
+      sha256: "86372278877d211b32bdaa0580e15609af9141e4cc95d65fcd5bc1aa2ecfb42a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.4"
   path:
     dependency: transitive
     description:
