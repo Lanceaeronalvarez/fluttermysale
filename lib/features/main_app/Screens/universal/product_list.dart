@@ -2,10 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/core/widgets/product_card.dart';
+import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/models/main/facetfilter_model.dart';
 import 'package:flutter_mysale/features/main_app/models/main/productitem_model.dart';
 import 'package:flutter_mysale/features/main_app/models/main/productlist_model.dart';
 import 'package:flutter_mysale/features/main_app/providers/productlist_provider.dart';
+import 'package:flutter_mysale/features/main_app/providers/productsort_provider.dart';
 import 'package:paged_grid_view/paged_grid_view.dart';
 import 'package:provider/provider.dart';
 
@@ -75,9 +77,26 @@ class _ProductListState extends State<ProductList> {
       appBar: AppBar(
         title: searchBar(provider),
         leading: const Center(child: Icon(Icons.search)),
+        actions: [_createTempSortButton()],
       ),
       body: Center(child: Column(children: [productsDisplay()])),
       bottomNavigationBar: BottomBar(),
+    );
+  }
+
+  //Temp Only, delete if not needed anymore
+  Widget _createTempSortButton() {
+    return TextButton(
+      onPressed: () {
+        ProductSortProvider p = context.read<ProductSortProvider>();
+        Nav.toNamed(
+          context,
+          App.productSort,
+          arguments: (productSortProvider: p),
+        );
+      },
+      child: Text('Sort'),
+      style: TextButton.styleFrom(foregroundColor: Colors.black),
     );
   }
 

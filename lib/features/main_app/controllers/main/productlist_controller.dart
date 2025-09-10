@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/features/main_app/Screens/universal/product_list.dart';
+import 'package:flutter_mysale/features/main_app/providers/productsort_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/core.dart';
@@ -15,8 +16,15 @@ class ProductListController extends StatelessController {
   Display view(BuildContext context) {
     return Display(
       title: 'Product List',
-      mobile: ChangeNotifierProvider(
-        create: (context) => ProductListProvider(context: context),
+      mobile: MultiProvider(
+        providers: [
+          ChangeNotifierProvider<ProductListProvider>(
+            create: (context) => ProductListProvider(context: context),
+          ),
+          ChangeNotifierProvider<ProductSortProvider>(
+            create: (context) => ProductSortProvider(),
+          ),
+        ],
         child: ProductList(),
       ),
     );

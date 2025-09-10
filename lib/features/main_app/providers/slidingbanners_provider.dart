@@ -10,34 +10,22 @@ import '../../../config/api_endpoints.dart';
 import '../../../config/app_http.dart';
 
 class SlidingBannersProvider extends ChangeNotifier {
-  final AppHttp _http;
+  BuildContext context;
+  late UserAgentHelper _userAgentHelper;
+  AppHttp? _http;
 
-  GetBannersResponse? _slidingBanners;
+  List<BannerModel>? _slidingBanners;
 
   bool isLoading = false;
 
-  GetBannersResponse get slidingBanners => _slidingBanners!;
+  List<BannerModel>? get slidingBanners => _slidingBanners;
 
-  List<BannerModel> _slidingBannersData = [];
-
-  SlidingBannersProvider(String userAgent)
-    : _http = AppHttp(
-        baseUrl: dotenv.get("SETTINGS_ROOT"),
-        headers: {'User-Agent': userAgent},
-      );
-
-  static Future<SlidingBannersProvider> withUserAgent(
-    BuildContext context,
-  ) async {
-    UserAgentHelper userAgentHelper = UserAgentHelper(context);
-    String userAgent = await userAgentHelper.userAgent;
-    return SlidingBannersProvider(userAgent);
+  SlidingBannersProvider({required this.context}) {
+    _userAgentHelper = UserAgentHelper(context);
   }
 
-  Future<List<BannerModel>?> getSlidingBanners() async {
-    if (isLoading == true) {
-      isLoading = false;
-    }
+  void getSlidingBanners() async {
+    isLoading = true;
 
     GetBannersRequest request = GetBannersRequest(
       null,
@@ -51,20 +39,24 @@ class SlidingBannersProvider extends ChangeNotifier {
       null,
     );
 
-    Response res = await _http.get(
+    final userAgent = await _userAgentHelper.userAgent;
+    _http ??= AppHttp(
+      baseUrl: dotenv.get("SETTINGS_ROOT"),
+      headers: {'User-Agent': userAgent},
+    );
+
+    Response res = await _http!.get(
       ApiEndpoint.getSales(),
       params: request.toMap(),
     );
     if (res.statusCode == 200 && res.statusCode != 429) {
-      _slidingBanners = GetBannersResponse.fromJson(jsonDecode(res.toString()));
-      isLoading = true;
-      notifyListeners();
-
-      _slidingBanners?.groups?.forEach((Group group) {
-        _slidingBannersData.addAll(group.banners as Iterable<BannerModel>);
+      GetBannersResponse response = GetBannersResponse.fromJson(jsonDecode(res.toString()));
+      _slidingBanners = [];
+      response.groups?.forEach((Group group) {
+        _slidingBanners?.addAll(group.banners as Iterable<BannerModel>);
       });
-
-      return _slidingBannersData;
+      isLoading = false;
+      notifyListeners();
     }
   }
 }

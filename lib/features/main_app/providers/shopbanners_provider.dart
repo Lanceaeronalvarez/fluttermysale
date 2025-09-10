@@ -10,49 +10,37 @@ import '../../../config/api_endpoints.dart';
 import '../../../config/app_http.dart';
 
 class ShopBannersProvider extends ChangeNotifier {
-  final AppHttp _http;
+  BuildContext context;
+  late UserAgentHelper _userAgentHelper;
+  AppHttp? _http;
 
   GetBannersResponse? _shopBanners;
 
   bool isLoading = false;
 
-  GetBannersResponse get shopBanners => _shopBanners!;
+  GetBannersResponse? get shopBanners => _shopBanners;
 
-  List<BannerModel> normalBannersData = [];
-
-  ShopBannersProvider(String userAgent)
-    : _http = AppHttp(
-        baseUrl: dotenv.get("SETTINGS_ROOT"),
-        headers: {'User-Agent': userAgent},
-      );
-
-  static Future<ShopBannersProvider> withUserAgent(BuildContext context) async {
-    UserAgentHelper userAgentHelper = UserAgentHelper(context);
-    String userAgent = await userAgentHelper.userAgent;
-    return ShopBannersProvider(userAgent);
+  ShopBannersProvider({required this.context}) {
+    _userAgentHelper = UserAgentHelper(context);
   }
 
-  Future<List<BannerModel>?> getShopBanners(GetBannersRequest request) async {
-    if (isLoading == true) {
-      isLoading = false;
-    }
+  void getShopBanners(GetBannersRequest request) async {
+    isLoading = true;
 
-    Response res = await _http.get(
+    final userAgent = await _userAgentHelper.userAgent;
+    _http ??= AppHttp(
+      baseUrl: dotenv.get("SETTINGS_ROOT"),
+      headers: {'User-Agent': userAgent},
+    );
+
+    Response res = await _http!.get(
       ApiEndpoint.getSales(),
       params: request.toMap(),
     );
     if (res.statusCode == 200 && res.statusCode != 429) {
       _shopBanners = GetBannersResponse.fromJson(jsonDecode(res.toString()));
-      isLoading = true;
+      isLoading = false;
       notifyListeners();
-
-      _shopBanners?.groups?.forEach((Group it) {
-        if (it.type == "main") {
-          normalBannersData.addAll(it.banners as Iterable<BannerModel>);
-        }
-      });
-
-      return normalBannersData;
     }
   }
 }

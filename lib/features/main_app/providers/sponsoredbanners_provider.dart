@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
@@ -11,32 +10,22 @@ import '../../../config/api_endpoints.dart';
 import '../../../config/app_http.dart';
 
 class SponsoredBannersProvider extends ChangeNotifier {
-  final AppHttp _http;
+  BuildContext context;
+  late UserAgentHelper _userAgentHelper;
+  AppHttp? _http;
 
   GetBannersResponse? _sponsoredBanners;
 
   bool isLoading = false;
 
-  GetBannersResponse get sponsoredBanners => _sponsoredBanners!;
+  GetBannersResponse? get sponsoredBanners => _sponsoredBanners;
 
-  SponsoredBannersProvider(String userAgent)
-    : _http = AppHttp(
-        baseUrl: dotenv.get("SETTINGS_ROOT"),
-        headers: {'User-Agent': userAgent},
-      );
-
-  static Future<SponsoredBannersProvider> withUserAgent(
-    BuildContext context,
-  ) async {
-    UserAgentHelper userAgentHelper = UserAgentHelper(context);
-    String userAgent = await userAgentHelper.userAgent;
-    return SponsoredBannersProvider(userAgent);
+  SponsoredBannersProvider({required this.context}) {
+    _userAgentHelper = UserAgentHelper(context);
   }
 
   void getSponsoredBanners(String categoryId) async {
-    if (isLoading == true) {
-      isLoading = false;
-    }
+    isLoading = true;
 
     GetBannersRequest request = GetBannersRequest(
       null,
@@ -50,7 +39,13 @@ class SponsoredBannersProvider extends ChangeNotifier {
       null,
     );
 
-    Response res = await _http.get(
+    final userAgent = await _userAgentHelper.userAgent;
+    _http ??= AppHttp(
+      baseUrl: dotenv.get("SETTINGS_ROOT"),
+      headers: {'User-Agent': userAgent},
+    );
+
+    Response res = await _http!.get(
       ApiEndpoint.getSales(),
       params: request.toMap(),
     );
@@ -58,7 +53,7 @@ class SponsoredBannersProvider extends ChangeNotifier {
       _sponsoredBanners = GetBannersResponse.fromJson(
         jsonDecode(res.toString()),
       );
-      isLoading = true;
+      isLoading = false;
       notifyListeners();
     }
   }
