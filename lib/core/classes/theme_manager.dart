@@ -14,7 +14,7 @@ class AppTheme {
     light = light ??
         ThemeData(
           brightness: Brightness.light,
-          primarySwatch: AppColors.teal,
+          primarySwatch: AppColors.white,
           scaffoldBackgroundColor: const Color.fromARGB(255, 222, 255, 252),
           appBarTheme: const AppBarTheme(
             titleTextStyle: TextStyle(
@@ -22,11 +22,11 @@ class AppTheme {
               fontSize: 20,
               fontWeight: FontWeight.w500,
             ),
-            backgroundColor: AppColors.teal,
-            iconTheme: IconThemeData(color: Colors.white),
+            backgroundColor: AppColors.white,
+            iconTheme: IconThemeData(color: Colors.black),
           ),
           navigationBarTheme: const NavigationBarThemeData(
-            backgroundColor: AppColors.teal,
+            backgroundColor: AppColors.white,
           ),
           popupMenuTheme: const PopupMenuThemeData(
             color: Color.fromARGB(255, 11, 238, 250),
@@ -38,12 +38,12 @@ class AppTheme {
             elevation: 10,
           ),
           bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-            backgroundColor: AppColors.teal,
-            selectedItemColor: Colors.white,
+            backgroundColor: AppColors.white,
+            selectedItemColor: Colors.black,
             elevation: 10,
             showSelectedLabels: true,
           ),
-          useMaterial3: true, bottomAppBarTheme: const BottomAppBarTheme(color: Colors.white),
+          useMaterial3: true, bottomAppBarTheme: const BottomAppBarTheme(color: Colors.white).data,
         );
 
     dark = dark ??
@@ -56,7 +56,7 @@ class AppTheme {
           ),
           bottomNavigationBarTheme: const BottomNavigationBarThemeData(
             backgroundColor: AppColors.space,
-            selectedItemColor: AppColors.teal,
+            selectedItemColor: AppColors.white,
             elevation: 10,
             showSelectedLabels: true,
           ),

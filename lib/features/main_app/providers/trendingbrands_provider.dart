@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
@@ -11,7 +10,9 @@ import '../../../config/api_endpoints.dart';
 import '../../../config/app_http.dart';
 
 class TrendingBrandsProvider extends ChangeNotifier {
-  final AppHttp _http;
+  BuildContext context;
+  late UserAgentHelper _userAgentHelper;
+  AppHttp? _http;
 
   GetBannersResponse? _trendingBrands;
 
@@ -19,23 +20,12 @@ class TrendingBrandsProvider extends ChangeNotifier {
 
   GetBannersResponse get trendingBrands => _trendingBrands!;
 
-  TrendingBrandsProvider(String userAgent)
-    : _http = AppHttp(
-        baseUrl: dotenv.get("SETTINGS_ROOT"),
-        headers: {'User-Agent': userAgent},
-      );
-
-  static Future<TrendingBrandsProvider> withUserAgent(
-      BuildContext context) async {
-    UserAgentHelper userAgentHelper = UserAgentHelper(context);
-    String userAgent = await userAgentHelper.userAgent;
-    return TrendingBrandsProvider(userAgent);
+  TrendingBrandsProvider({required this.context}) {
+    _userAgentHelper = UserAgentHelper(context);
   }
 
   void getTrendingBrands(String categoryId) async {
-    if (isLoading == true) {
-      isLoading = false;
-    }
+    isLoading = true;
 
     GetBannersRequest request = GetBannersRequest(
       null,
@@ -49,13 +39,19 @@ class TrendingBrandsProvider extends ChangeNotifier {
       "7,8,9",
     );
 
-    Response res = await _http.get(
+    final userAgent = await _userAgentHelper.userAgent;
+    _http ??= AppHttp(
+      baseUrl: dotenv.get("SETTINGS_ROOT"),
+      headers: {'User-Agent': userAgent},
+    );
+
+    Response res = await _http!.get(
       ApiEndpoint.getSales2(),
       params: request.toMap(),
     );
     if (res.statusCode == 200 && res.statusCode != 429) {
       _trendingBrands = GetBannersResponse.fromJson(jsonDecode(res.toString()));
-      isLoading = true;
+      isLoading = false;
       notifyListeners();
     }
   }

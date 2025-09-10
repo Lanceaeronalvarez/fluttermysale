@@ -16,11 +16,11 @@ class BottomBar extends StatelessWidget {
     buttonDatas = buttonDatas ??
         [
           ButtonData(icon: Icons.home, label: 'Shop', link: '/'),
-          ButtonData(icon: Icons.people, label: 'Brands', link: '/about'),
+          ButtonData(icon: Icons.people, label: 'Brands', link: '/'),
           ButtonData(
-              icon: Icons.shopping_cart, label: 'Checkout', link: '/contact'),
-          ButtonData(icon: Icons.heart_broken_rounded, label: 'Wishlist', link: '/news'),
-          ButtonData(icon: Icons.account_circle, label: 'Account', link: '/feature'),
+              icon: Icons.shopping_cart, label: 'Checkout', link: '/'),
+          ButtonData(icon: Icons.heart_broken_rounded, label: 'Wishlist', link: '/'),
+          ButtonData(icon: Icons.account_circle, label: 'Account', link: '/'),
         ];
   }
 
