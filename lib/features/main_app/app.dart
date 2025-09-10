@@ -19,7 +19,7 @@ class App extends RouteManager {
   static const String filtermain = '${App.name}/filtermain';
   static const String filterprice = '${App.name}/filterprice';
   static const String filterselect = '${App.name}/filterselect';
-  static const String sort = '${App.name}/sort';
+  static const String productSort = '${App.name}/sort';
   static const String imagegallery = '${App.name}/imagegallery';
   static const String imagegalleryzoom = '${App.name}/imagegalleryzoom';
 
@@ -32,7 +32,7 @@ class App extends RouteManager {
     addRoute(App.filtermain, (context) => const FilterMainController());
     addRoute(App.filterprice, (context) => const FilterPriceController());
     addRoute(App.filterselect, (context) => const FilterSelectController());
-    addRoute(App.sort, (context) => const SortController());
+    addRoute(App.productSort, (context) => const ProductSortController());
     addRoute(App.imagegallery, (context) => const ImageGalleryWidget());
     addRoute(App.imagegalleryzoom, (context) => const ImageGalleryZoomWidget());
   }

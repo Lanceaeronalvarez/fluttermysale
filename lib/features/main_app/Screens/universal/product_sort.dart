@@ -1,27 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mysale/features/main_app/providers/filter_provider.dart';
+import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
+import 'package:flutter_mysale/features/main_app/models/main/productsort_model.dart';
+import 'package:flutter_mysale/features/main_app/providers/productsort_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:provider/provider.dart';
 
-class SortWidget extends StatefulWidget {
+class ProductSort extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    return _SortWidgetState();
+    return _ProductSortState();
   }
 }
 
-class _SortWidgetState extends State<SortWidget> {
-  bool argsRetrieved = false;
-
+class _ProductSortState extends State<ProductSort> {
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
 
-    if (!argsRetrieved) {
-      argsRetrieved = true;
-      //TODO: JCA get sort data from passed arguments or if no args, fetch in api
-      //final sort = ModalRoute.of(context)?.settings.arguments as List<String>?;
-    }
+    Future.microtask(() {
+      UserAgentHelper userAgentHelper = UserAgentHelper(context);
+      context.read<ProductSortProvider>().fetchSortItems(userAgentHelper);
+    });
   }
 
   @override
@@ -66,20 +65,20 @@ class _SortWidgetState extends State<SortWidget> {
     );
   }
 
-  Consumer<FilterProvider> _consumer(BuildContext context) {
-    return Consumer<FilterProvider>(
+  Consumer<ProductSortProvider> _consumer(BuildContext context) {
+    return Consumer<ProductSortProvider>(
       builder: (context, provider, child) {
         return _createBody(provider);
       },
     );
   }
 
-  Widget _createBody(FilterProvider provider) {
+  Widget _createBody(ProductSortProvider provider) {
     return SafeArea(
       child: ListView.separated(
-        itemCount: provider.sorts.length,
+        itemCount: provider.sortItems.length,
         itemBuilder: (context, index) {
-          final title = provider.sorts[index];
+          final title = provider.sortItems[index];
           return _createListTile(provider, title);
         },
         separatorBuilder: (context, index) {
@@ -89,9 +88,15 @@ class _SortWidgetState extends State<SortWidget> {
     );
   }
 
-  Widget _createListTile(FilterProvider provider, String title) {
+  Widget _createListTile(
+    ProductSortProvider provider,
+    ProductSortModel sortItem,
+  ) {
+    String selectedKey = provider.selectedSortItem?.key ?? '';
+    String key = sortItem.key ?? '';
     bool isSelected =
-        title.toLowerCase == (provider.selectedSort?.toLowerCase ?? '');
+        selectedKey.isNotEmpty && key.isNotEmpty && selectedKey == key;
+
     return Theme(
       data: Theme.of(context).copyWith(
         splashColor: Colors.transparent,
@@ -100,11 +105,10 @@ class _SortWidgetState extends State<SortWidget> {
       ),
       child: ListTile(
         leading: null,
-        title: Text(title),
+        title: Text((sortItem.title ?? '').toTitleCase()),
         trailing: isSelected ? const Icon(Icons.check) : null,
         onTap: () {
-          print(title);
-          provider.setSelectedSort(title);
+          provider.setSelectedSortItem(sortItem);
         },
       ),
     );

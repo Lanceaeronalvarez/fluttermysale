@@ -28,3 +28,13 @@ extension HexColorParsing on String {
     }
   }
 }
+
+extension StringCasing on String {
+  String toTitleCase() {
+    if (trim().isEmpty) return this;
+    return toLowerCase()
+        .split(RegExp(r'\s+'))
+        .map((w) => w.isEmpty ? w : w[0].toUpperCase() + w.substring(1))
+        .join(' ');
+  }
+}
