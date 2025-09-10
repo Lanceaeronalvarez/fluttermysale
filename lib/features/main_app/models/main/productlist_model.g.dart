@@ -24,6 +24,11 @@ ProductListResponse _$ProductListResponseFromJson(Map<String, dynamic> json) =>
           ?.map((e) => ProductItem.fromJson(e as Map<String, dynamic>))
           .toList(),
       (json['total'] as num?)?.toInt(),
+      (json['facets'] as List<dynamic>?)
+          ?.map(
+            (e) => ProductListFacetModel.fromJson(e as Map<String, dynamic>),
+          )
+          .toList(),
     );
 
 Map<String, dynamic> _$ProductListResponseToJson(
@@ -39,4 +44,5 @@ Map<String, dynamic> _$ProductListResponseToJson(
   'query': instance.query,
   'recommendedProducts': instance.recommendedProducts,
   'total': instance.total,
+  'facets': instance.facets,
 };

@@ -2,6 +2,7 @@ import 'dart:core';
 
 import 'package:flutter_mysale/features/main_app/models/main/categorynode_model.dart';
 import 'package:flutter_mysale/features/main_app/models/main/productitem_model.dart';
+import 'package:flutter_mysale/features/main_app/models/main/productlistfacet_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'productlist_model.g.dart';
@@ -50,7 +51,7 @@ class ProductListResponse {
   List<ProductItem>? recommendedProducts;
   int? total;
 
-  //List<Facet>? facets; TODO
+  List<ProductListFacetModel>? facets;
 
   ProductListResponse(
     this.categories,
@@ -63,6 +64,7 @@ class ProductListResponse {
     this.query,
     this.recommendedProducts,
     this.total,
+    this.facets,
   );
 
   factory ProductListResponse.fromJson(Map<String, dynamic> json) =>
