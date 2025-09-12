@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/core/classes/route_manager.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart';
+import 'package:flutter_mysale/features/main_app/models/main/facetfilter_model.dart';
 
 class ShippingAndDeliveryWidget extends StatefulWidget {
   final BannerModel? banner;
@@ -66,7 +68,15 @@ class _ShippingAndDeliveryWidgetState extends State<ShippingAndDeliveryWidget> {
               ),
             ),
             onTap: () {
-              //on tap logic
+              Nav.to(
+                context,
+                App.productList,
+                arguments: (
+                  categoryKeys: <String>[],
+                  facetFilters: FacetFilterModel(),
+                  sort: "",
+                ),
+              );
             },
           ),
         ],
