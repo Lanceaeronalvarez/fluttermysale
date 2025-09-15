@@ -22,6 +22,8 @@ class App extends RouteManager {
   static const String productSort = '${App.name}/sort';
   static const String imagegallery = '${App.name}/imagegallery';
   static const String imagegalleryzoom = '${App.name}/imagegalleryzoom';
+  static const String cart = '${App.name}/cart)';
+  static const String cartModal = '${App.name}/cart/modal';//not added on routes, navigation handled in MaterialApp onGenerateRoute since this have a custom transition
 
   App() {
     addRoute(App.home, (context) => const ShopController());
@@ -35,5 +37,6 @@ class App extends RouteManager {
     addRoute(App.productSort, (context) => const ProductSortController());
     addRoute(App.imagegallery, (context) => const ImageGalleryWidget());
     addRoute(App.imagegalleryzoom, (context) => const ImageGalleryZoomWidget());
+    addRoute(App.cart, (context) => const CheckoutCartController());
   }
 }

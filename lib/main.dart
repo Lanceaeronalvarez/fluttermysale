@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_mysale/features/main_app/Screens/universal/checkoutcart.dart';
+import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:provider/provider.dart';
 
 import 'config/config.dart';
@@ -9,10 +11,7 @@ void main() async {
   Provider.debugCheckInvalidValueType = null;
 
   await dotenv.load(fileName: ".env");
-  runApp(MultiProvider(
-    providers: appProviders,
-    child: const MysaleApp(),
-  ));
+  runApp(MultiProvider(providers: appProviders, child: const MysaleApp()));
 }
 
 class MysaleApp extends StatelessWidget {
@@ -32,6 +31,15 @@ class MysaleApp extends StatelessWidget {
       themeMode: tm.themeMode,
       initialRoute: '/',
       routes: Routes().routes,
+      onGenerateRoute: (settings) {
+        if (settings.name == App.cartModal) {
+          //final a = settings.arguments as CartArgs;
+          return CheckoutCart(
+            mode: CheckoutCartMode.addToCart,
+          ).asSideMenuRoute();
+        }
+        return null;
+      },
     );
   }
 }

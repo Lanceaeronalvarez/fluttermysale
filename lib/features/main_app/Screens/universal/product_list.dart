@@ -244,6 +244,7 @@ class _ProductListState extends State<ProductList>
           App.productSort,
           arguments: (productSortProvider: p),
         );
+        //Nav.toNamed(context, App.cartModal);
       },
       child: Text('Sort'),
       style: TextButton.styleFrom(foregroundColor: Colors.black),
