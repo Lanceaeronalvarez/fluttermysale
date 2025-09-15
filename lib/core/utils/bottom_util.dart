@@ -10,6 +10,6 @@ BottomNavigationBarItem bottomNavigationBarItem({
   return BottomNavigationBarItem(
     icon: icon,
     label: label,
-    backgroundColor: backgroundColor ?? AppColors.teal,
+    backgroundColor: backgroundColor ?? AppColors.white,
   );
 }

@@ -107,10 +107,13 @@ class _ShopState extends State<Shop> {
         centerTitle: true,
         toolbarHeight: 56,
         leading: _catergoryScreen(),
-        scrolledUnderElevation: 0, // stop darkening appbar on scroll
-        surfaceTintColor: Colors.transparent, // disable Material 3 tint overlay
+        scrolledUnderElevation: 0,
+        // stop darkening appbar on scroll
+        surfaceTintColor: Colors.transparent,
+        // disable Material 3 tint overlay
         iconTheme: const IconThemeData(color: Colors.black),
-        elevation: 0, // no shadow
+        elevation: 0,
+        // no shadow
         bottom: const PreferredSize(
           preferredSize: Size.fromHeight(0.75),
           child: Divider(
@@ -127,8 +130,9 @@ class _ShopState extends State<Shop> {
                 context,
                 App.productList,
                 arguments: (
+                  saleId: "",
                   categoryKeys: <String>[],
-                  facetFilters: FacetFilterModel(),
+                  facetFilters: <FacetFilterModel>[],
                   sort: "",
                 ),
               );

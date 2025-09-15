@@ -54,8 +54,9 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
           context,
           App.productList,
           arguments: (
+            saleId: banner.destinationId,
             categoryKeys: <String>[],
-            facetFilters: FacetFilterModel(saleId: [banner.destinationId!]),
+            facetFilters: <FacetFilterModel>[],
             sort: "",
           ),
         );

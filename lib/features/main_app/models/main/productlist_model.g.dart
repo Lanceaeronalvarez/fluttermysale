@@ -26,7 +26,7 @@ ProductListResponse _$ProductListResponseFromJson(Map<String, dynamic> json) =>
       (json['total'] as num?)?.toInt(),
       (json['facets'] as List<dynamic>?)
           ?.map(
-            (e) => ProductListFacetModel.fromJson(e as Map<String, dynamic>),
+            (e) => FacetFilterModel.fromJson(e as Map<String, dynamic>),
           )
           .toList(),
     );

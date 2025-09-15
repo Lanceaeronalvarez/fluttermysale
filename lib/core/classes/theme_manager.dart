@@ -15,7 +15,7 @@ class AppTheme {
         ThemeData(
           brightness: Brightness.light,
           primarySwatch: AppColors.white,
-          scaffoldBackgroundColor: const Color.fromARGB(255, 222, 255, 252),
+          scaffoldBackgroundColor: const Color.fromARGB(255, 255, 255, 255),
           appBarTheme: const AppBarTheme(
             titleTextStyle: TextStyle(
               color: Colors.white,
@@ -29,12 +29,12 @@ class AppTheme {
             backgroundColor: AppColors.white,
           ),
           popupMenuTheme: const PopupMenuThemeData(
-            color: Color.fromARGB(255, 11, 238, 250),
+            color: Color.fromARGB(255, 255, 255, 255),
             elevation: 15,
             enableFeedback: true,
           ),
           drawerTheme: const DrawerThemeData(
-            backgroundColor: Color.fromARGB(255, 213, 247, 249),
+            backgroundColor: Color.fromARGB(255, 255, 255, 255),
             elevation: 10,
           ),
           bottomNavigationBarTheme: const BottomNavigationBarThemeData(

@@ -2,7 +2,7 @@ import 'dart:core';
 
 import 'package:flutter_mysale/features/main_app/models/main/categorynode_model.dart';
 import 'package:flutter_mysale/features/main_app/models/main/productitem_model.dart';
-import 'package:flutter_mysale/features/main_app/models/main/productlistfacet_model.dart';
+import 'package:flutter_mysale/features/main_app/models/main/facetfilter_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'productlist_model.g.dart';
@@ -51,7 +51,7 @@ class ProductListResponse {
   List<ProductItem>? recommendedProducts;
   int? total;
 
-  List<ProductListFacetModel>? facets;
+  List<FacetFilterModel>? facets;
 
   ProductListResponse(
     this.categories,

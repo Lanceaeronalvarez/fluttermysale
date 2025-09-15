@@ -6,43 +6,23 @@ part of 'facetfilter_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-FacetFilterModel _$FacetFilterModelFromJson(
+FacetFilterModel _$ProductListFacetModelFromJson(
   Map<String, dynamic> json,
 ) => FacetFilterModel(
-  saleId: (json['saleId'] as List<dynamic>?)?.map((e) => e as String).toList(),
-  promoSaleId: (json['promoSaleId'] as List<dynamic>?)
-      ?.map((e) => e as String)
-      .toList(),
-  brands: (json['skus.brandName'] as List<dynamic>?)
-      ?.map((e) => e as String)
-      .toList(),
-  colors: (json['color'] as List<dynamic>?)?.map((e) => e as String).toList(),
-  sizes: (json['skus.attributes.size'] as List<dynamic>?)
-      ?.map((e) => e as String)
-      .toList(),
-  price: (json['skus.attributesForFaceting.aud'] as List<dynamic>?)
-      ?.map((e) => e as String)
-      .toList(),
-  delivery: (json['delivery'] as List<dynamic>?)
-      ?.map((e) => e as String)
-      .toList(),
-  newArrivals: (json['newArrivals'] as List<dynamic>?)
-      ?.map((e) => e as String)
-      .toList(),
-  storeId: (json['storeId'] as List<dynamic>?)
-      ?.map((e) => e as String)
+  json['name'] as String?,
+  (json['values'] as List<dynamic>?)
+      ?.map((e) => FacetFilterValueModel.fromJson(e as Map<String, dynamic>))
       .toList(),
 );
 
-Map<String, dynamic> _$FacetFilterModelToJson(FacetFilterModel instance) =>
-    <String, dynamic>{
-      'saleId': ?instance.saleId,
-      'promoSaleId': ?instance.promoSaleId,
-      'skus.brandName': ?instance.brands,
-      'color': ?instance.colors,
-      'skus.attributes.size': ?instance.sizes,
-      'skus.attributesForFaceting.aud': ?instance.price,
-      'delivery': ?instance.delivery,
-      'newArrivals': ?instance.newArrivals,
-      'storeId': ?instance.storeId,
-    };
+Map<String, dynamic> _$ProductListFacetModelToJson(
+  FacetFilterModel instance,
+) => <String, dynamic>{'name': instance.name, 'values': instance.values};
+
+FacetFilterValueModel _$ValueFromJson(Map<String, dynamic> json) =>
+    FacetFilterValueModel(json['value'] as String?, (json['count'] as num?)?.toInt());
+
+Map<String, dynamic> _$ValueToJson(FacetFilterValueModel instance) => <String, dynamic>{
+  'value': instance.value,
+  'count': instance.count,
+};

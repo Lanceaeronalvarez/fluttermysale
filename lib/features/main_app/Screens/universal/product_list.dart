@@ -8,6 +8,7 @@ import 'package:flutter_mysale/features/main_app/models/main/productitem_model.d
 import 'package:flutter_mysale/features/main_app/models/main/productlist_model.dart';
 import 'package:flutter_mysale/features/main_app/providers/productlist_provider.dart';
 import 'package:flutter_mysale/features/main_app/providers/productsort_provider.dart';
+import 'package:flutter_mysale/features/main_app/widgets/filter_bar.dart';
 import 'package:paged_grid_view/paged_grid_view.dart';
 import 'package:provider/provider.dart';
 
@@ -15,10 +16,76 @@ import '../../../../config/config.dart';
 import '../../../../core/core.dart';
 
 typedef ProductListArguments = ({
+  String saleId,
   List<String> categoryKeys,
-  FacetFilterModel facetFilters,
+  List<FacetFilterModel> facetFilters,
   String sort,
 });
+
+class _CategoryFilterItem extends FilterItem {
+  final String _categoryKey;
+  late String _title;
+
+  _CategoryFilterItem(this._categoryKey) {
+    _title = _categoryKey.split(">>>").last;
+  }
+
+  @override
+  String getTitle() {
+    return _title;
+  }
+
+  static List<_CategoryFilterItem> fromCategoryKeys(List<String> categoryKeys) {
+    List<_CategoryFilterItem> items = [];
+
+    categoryKeys.forEach((String s) {
+      items.add(_CategoryFilterItem(s));
+    });
+
+    return items;
+  }
+}
+
+class _FilterItem extends FilterItem {
+  late String _title;
+  final String _facetFilterName;
+  final FacetFilterValueModel _value;
+
+  _FilterItem(this._facetFilterName, this._value) {
+    _title = _value.value!; //TODO: readable title?
+  }
+
+  @override
+  String getTitle() {
+    return _title;
+  }
+
+  static List<_FilterItem> fromFacetFilters(
+    List<FacetFilterModel> facetFilters,
+  ) {
+    List<_FilterItem> items = [];
+
+    facetFilters.forEach((FacetFilterModel ff) {
+      ff.values?.forEach((FacetFilterValueModel value) {
+        items.add(_FilterItem(ff.name!, value));
+      });
+    });
+    return items;
+  }
+}
+
+class _SortMode extends FilterItem {
+  late String _title;
+
+  _SortMode(String sortMode) {
+    _title = "Sort by " + sortMode; //TODO: readable title?
+  }
+
+  @override
+  String getTitle() {
+    return _title;
+  }
+}
 
 class ProductList extends StatefulWidget {
   final String? title;
@@ -29,15 +96,29 @@ class ProductList extends StatefulWidget {
   State<ProductList> createState() => _ProductListState();
 }
 
-class _ProductListState extends State<ProductList> {
+class _ProductListState extends State<ProductList>
+    with TickerProviderStateMixin {
+  String _logoImagePath = "assets/images/logo.png";
+
   ProductListArguments args = (
+    saleId: "",
     categoryKeys: <String>[],
-    facetFilters: FacetFilterModel(),
+    facetFilters: <FacetFilterModel>[],
     sort: "",
   );
 
   final TextEditingController _controller = TextEditingController(text: '');
   bool dayAndNight = false;
+
+  bool _showSearch = true;
+
+  double _scrollPosition = 0.0;
+  double _scrollSpeed = 0.0;
+
+  AnimationController? _searchAndFilterAnimationController;
+  AnimationController? _searchBoxAnimationController;
+  Animation<double>? _searchAndFilterTween;
+  Animation<double>? _searchBoxTween;
 
   List<ProductItem> _products = [];
   int _page = 0;
@@ -53,8 +134,8 @@ class _ProductListState extends State<ProductList> {
       _controller.text,
       _page.toString(),
       _pageSize.toString(),
-      args.categoryKeys.toString(),
-      jsonEncode(args.facetFilters.toJson()),
+      jsonEncode(args.categoryKeys),
+      jsonEncode(_facetFiltersToRequestArgs()),
       args.sort,
     );
     provider.getProductList(request);
@@ -65,6 +146,33 @@ class _ProductListState extends State<ProductList> {
     super.initState();
     var tm = context.read<ThemeProvider>();
     dayAndNight = tm.isDarkMode;
+    _searchAndFilterAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _searchAndFilterTween = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _searchAndFilterAnimationController!,
+        curve: Curves.linear,
+      ),
+    );
+    _searchBoxAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+    );
+    _searchBoxTween = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _searchBoxAnimationController!,
+        curve: Curves.linear,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _searchAndFilterAnimationController?.dispose();
+    _searchBoxAnimationController?.dispose();
   }
 
   @override
@@ -75,11 +183,53 @@ class _ProductListState extends State<ProductList> {
     getProductList(provider);
     return Scaffold(
       appBar: AppBar(
-        title: searchBar(provider),
-        leading: const Center(child: Icon(Icons.search)),
-        actions: [_createTempSortButton()],
+        backgroundColor: Colors.white,
+        leadingWidth: 56,
+        centerTitle: true,
+        toolbarHeight: 56,
+        leading: _backButton(),
+        scrolledUnderElevation: 0,
+        // stop darkening appbar on scroll
+        surfaceTintColor: Colors.transparent,
+        // disable Material 3 tint overlay
+        iconTheme: const IconThemeData(color: Colors.black),
+        elevation: 0,
+        // no shadow
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(0.75),
+          child: Divider(
+            height: 0.75,
+            thickness: 0.75,
+            color: Color(0xFFCCA68B),
+          ),
+        ),
+        title: SizedBox(height: 32, child: _createAppbarLogo()),
+        actions: [
+          IconButton(
+            onPressed: () {
+              _showSearch = !_showSearch;
+              if (_showSearch) {
+                _searchBoxAnimationController?.reverse();
+              } else {
+                _searchBoxAnimationController?.forward();
+              }
+            },
+            icon: const Icon(Icons.search),
+          ),
+        ],
       ),
-      body: Center(child: Column(children: [productsDisplay()])),
+      body: Center(
+        child: Column(
+          children: [
+            SizeTransition(
+              sizeFactor: _searchAndFilterTween!,
+              axis: Axis.vertical,
+              child: _searchAndFilterDisplay(provider),
+            ),
+            _productsDisplay(_scrollController()),
+          ],
+        ),
+      ),
       bottomNavigationBar: BottomBar(),
     );
   }
@@ -100,21 +250,79 @@ class _ProductListState extends State<ProductList> {
     );
   }
 
-  SizedBox searchBar(ProductListProvider provider) {
+  SizedBox _searchBar(ProductListProvider provider) {
     return SizedBox(
       width: double.infinity,
-      child: TextField(
-        decoration: const InputDecoration(hintText: 'Search'),
-        controller: _controller,
-        onChanged: (val) {
-          resetProductList();
-          getProductList(provider);
+      child: SizeTransition(
+        sizeFactor: _searchBoxTween!,
+        axis: Axis.vertical,
+        child: TextField(
+          decoration: const InputDecoration(
+            prefixIcon: Icon(Icons.search),
+            hintText: 'Search',
+          ),
+          controller: _controller,
+          onChanged: (val) {
+            resetProductList();
+            getProductList(provider);
+          },
+        ),
+      ),
+    );
+  }
+
+  Column _searchAndFilterDisplay(ProductListProvider provider) {
+    return Column(
+      children: [
+        _searchBar(provider),
+        _createTempSortButton(),
+        _filterBubblesDisplay(),
+      ],
+    );
+  }
+
+  Widget _filterBubblesDisplay() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Consumer<ProductListProvider>(
+        builder: (_, provider, __) {
+          return FilterBar<FilterItem>(
+            filters: _filterItemsFromArgs(),
+            onTap: (FilterItem item, int index) {
+              List<String> categoryKeys = [...args.categoryKeys];
+              List<FacetFilterModel> facetFilters = [...args.facetFilters];
+              String sort = args.sort;
+              if (item is _CategoryFilterItem) {
+                categoryKeys.remove(item._categoryKey);
+              } else if (item is _FilterItem) {
+                facetFilters
+                    .where((FacetFilterModel ff) {
+                      return item._facetFilterName == ff.name;
+                    })
+                    .first
+                    .values
+                    ?.removeWhere((FacetFilterValueModel value) {
+                      return item._value.value == value.value;
+                    });
+              } else if (item is _SortMode) {
+                sort = "";
+              }
+              args = (
+                saleId: args.saleId,
+                categoryKeys: categoryKeys,
+                facetFilters: facetFilters,
+                sort: sort,
+              );
+              resetProductList();
+              getProductList(provider);
+            },
+          );
         },
       ),
     );
   }
 
-  Expanded productsDisplay() {
+  Expanded _productsDisplay(ScrollController scrollController) {
     return Expanded(
       child: Consumer<ProductListProvider>(
         builder: (_, provider, __) {
@@ -127,11 +335,13 @@ class _ProductListState extends State<ProductList> {
             return PagedGridView.builder(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                mainAxisExtent: 353, //TODO: calculate
+                mainAxisExtent: 353, //TODO: calculate?
               ),
-              itemBuilder: (_, index) => productCard(_products[index]),
+              itemBuilder: (_, index) => _productCard(_products[index]),
               itemCount: _products.length,
               scrollDirection: Axis.vertical,
+              controller: scrollController,
+              physics: null,
               onPageChanged: (index) {
                 if (index > _page) {
                   _page++;
@@ -147,8 +357,78 @@ class _ProductListState extends State<ProductList> {
     );
   }
 
-  Widget productCard(ProductItem product) {
+  Widget _productCard(ProductItem product) {
     return ProductCard(product: product);
     // TODO: onTap
+  }
+
+  ScrollController _scrollController() {
+    ScrollController scrollController = ScrollController();
+    scrollController.addListener(() {
+      if (_scrollSpeed > 0) {
+        _searchAndFilterAnimationController?.forward();
+      } else if (_scrollSpeed < 0) {
+        _searchAndFilterAnimationController?.reverse();
+      }
+      _calculateScrollSpeed(scrollController);
+    });
+    return scrollController;
+  }
+
+  void _calculateScrollSpeed(ScrollController scrollController) {
+    double currentPosition = scrollController.position.pixels;
+    _scrollSpeed = currentPosition - _scrollPosition;
+    _scrollPosition = currentPosition;
+  }
+
+  Widget _createAppbarLogo() {
+    return FittedBox(
+      fit: BoxFit.contain,
+      child: GestureDetector(
+        onTap: () {},
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 28),
+          child: Image.asset(_logoImagePath),
+        ),
+      ),
+    );
+  }
+
+  Widget _backButton() {
+    return GestureDetector(
+      onTap: () {
+        Nav.close(context);
+      },
+      child: Icon(Icons.backspace),
+    );
+  }
+
+  List<FilterItem> _filterItemsFromArgs() {
+    List<FilterItem> items = [];
+    items.addAll(_CategoryFilterItem.fromCategoryKeys(args.categoryKeys));
+    items.addAll(_FilterItem.fromFacetFilters(args.facetFilters));
+    if (args.sort.isNotEmpty) {
+      items.add(_SortMode(args.sort));
+    }
+    return items;
+  }
+
+  Map<String, List<String>> _facetFiltersToRequestArgs() {
+    Map<String, List<String>> map = <String, List<String>>{};
+    args.facetFilters.forEach((FacetFilterModel ff) {
+      List<String> values = [];
+      ff.values?.forEach((FacetFilterValueModel value) {
+        values.add(value.value!);
+      });
+      if (ff.name != null && values.isNotEmpty) {
+        map[ff.name!] = values;
+      }
+    });
+
+    if (args.saleId.isNotEmpty) {
+      map["saleId"] = [args.saleId];
+    }
+
+    return map;
   }
 }
