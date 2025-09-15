@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class ProductDetailsPageReturnsWidget extends StatefulWidget {
-  const ProductDetailsPageReturnsWidget({super.key});
+  final void Function()? onTap;
+
+  const ProductDetailsPageReturnsWidget({super.key, this.onTap});
 
   @override
   State<ProductDetailsPageReturnsWidget> createState() =>
@@ -50,15 +52,11 @@ class _ProductDetailsPageReturnsWidgetState
               ),
             ),
             onTap: () {
-              onReturnPolicyTap();
+              widget.onTap?.call();
             },
           ),
         ],
       ),
     );
-  }
-
-  void onReturnPolicyTap() {
-    //navigate to return policy
   }
 }
