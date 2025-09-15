@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
-class PDPReturnsWidget extends StatefulWidget {
-  const PDPReturnsWidget({super.key});
+class ProductDetailsPageReturnsWidget extends StatefulWidget {
+  const ProductDetailsPageReturnsWidget({super.key});
 
   @override
-  State<PDPReturnsWidget> createState() => _PDPReturnsWidgetState();
+  State<ProductDetailsPageReturnsWidget> createState() =>
+      _ProductDetailsPageReturnsWidgetState();
 }
 
-class _PDPReturnsWidgetState extends State<PDPReturnsWidget> {
+class _ProductDetailsPageReturnsWidgetState
+    extends State<ProductDetailsPageReturnsWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -48,11 +50,15 @@ class _PDPReturnsWidgetState extends State<PDPReturnsWidget> {
               ),
             ),
             onTap: () {
-              //navigate to return policy
+              onReturnPolicyTap();
             },
           ),
         ],
       ),
     );
+  }
+
+  void onReturnPolicyTap() {
+    //navigate to return policy
   }
 }
