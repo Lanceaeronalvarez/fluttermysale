@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/core/classes/route_manager.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
-import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart';
 import 'package:flutter_mysale/features/main_app/models/main/facetfilter_model.dart';
 
 class ShippingAndDeliveryWidget extends StatefulWidget {
-  final BannerModel? banner;
+  final String appName;
+  final bool isFreeDelivery;
+  final double? price;
+  final void Function()? onTap;
 
-  const ShippingAndDeliveryWidget({super.key, this.banner});
+  const ShippingAndDeliveryWidget({
+    super.key,
+    required this.appName,
+    required this.isFreeDelivery,
+    this.price,
+    this.onTap,
+  });
 
   @override
   State<ShippingAndDeliveryWidget> createState() =>
@@ -16,13 +24,12 @@ class ShippingAndDeliveryWidget extends StatefulWidget {
 
 class _ShippingAndDeliveryWidgetState extends State<ShippingAndDeliveryWidget> {
   TextEditingController? postcodeTextField;
-  double price = 9.99;
-  String appName = "Ozsale";
+  double price = 9.99; // temp data
+  final String _imagePath = "assets/images/free_shipping.png";
+  final String _icShippingImagePath = "assets/images/ic_product_shipping.png";
 
   @override
   Widget build(BuildContext context) {
-    final banner = widget.banner;
-
     return Container(
       decoration: const BoxDecoration(color: Colors.white),
       child: Padding(
@@ -31,7 +38,9 @@ class _ShippingAndDeliveryWidgetState extends State<ShippingAndDeliveryWidget> {
           children: [
             _createTitle(),
             _createSoldby(),
-            _createShippingCalculator(),
+            widget.isFreeDelivery
+                ? _createFreeDelivery()
+                : _createShippingCalculator(),
             _createDispatch(),
           ],
         ),
@@ -40,11 +49,11 @@ class _ShippingAndDeliveryWidgetState extends State<ShippingAndDeliveryWidget> {
   }
 
   Widget _createTitle() {
-    return const Row(
+    return Row(
       children: [
-        Icon(Icons.fire_truck),
-        SizedBox(width: 5),
-        Text(
+        Image.asset(_icShippingImagePath, width: 25, height: 25),
+        const SizedBox(width: 5),
+        const Text(
           "Shipping",
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
@@ -60,7 +69,7 @@ class _ShippingAndDeliveryWidgetState extends State<ShippingAndDeliveryWidget> {
           const Text("Sold and delivered by "),
           GestureDetector(
             child: Text(
-              App.name == '' ? appName : App.name,
+              App.name == '' ? widget.appName : App.name,
               style: const TextStyle(
                 color: Colors.lightBlue,
                 decoration: TextDecoration.underline,
@@ -84,59 +93,63 @@ class _ShippingAndDeliveryWidgetState extends State<ShippingAndDeliveryWidget> {
     );
   }
 
+  Widget _createFreeDelivery() {
+    return Container(
+      alignment: Alignment.centerLeft,
+      child: Image.asset(_imagePath),
+    );
+  }
+
+  Widget _createShippingCalculatorButton() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: GestureDetector(
+        onTap: () {
+          widget.onTap?.call();
+        },
+        child: Container(
+          width: 80,
+          height: 57,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 56, 56, 56),
+            borderRadius: BorderRadius.circular(7),
+            border: Border.all(
+              color: const Color.fromARGB(255, 56, 56, 56),
+              width: 2,
+            ),
+          ),
+          child: const Text("OK", style: TextStyle(color: Colors.white)),
+        ),
+      ),
+    );
+  }
+
+  Widget _createShippingCalculatorTextField() {
+    return TextField(
+      controller: postcodeTextField,
+      keyboardType: TextInputType.number,
+      decoration: const InputDecoration(
+        border: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey),
+        ),
+      ),
+    );
+  }
+
   Widget _createShippingCalculator() {
     return Padding(
       padding: const EdgeInsetsGeometry.fromLTRB(0, 10, 0, 10),
       child: Row(
         children: [
-          Text("\$$price"),
+          Text("\$${widget.price ?? price}"),
           const SizedBox(width: 5),
-          Container(
-            width: MediaQuery.sizeOf(context).width / 1.8,
-            child: Stack(
-              alignment: Alignment.centerRight,
-              children: [
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {},
-                    child: Container(
-                      width: 80,
-                      height: 57,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 56, 56, 56),
-                        borderRadius: BorderRadius.circular(7),
-                        border: Border.all(
-                          color: const Color.fromARGB(255, 56, 56, 56),
-                          width: 2,
-                        ),
-                      ),
-                      child: const Text(
-                        "OK",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-                Container(
-                  margin: const EdgeInsets.only(right: 12),
-                  child: TextField(
-                    controller: postcodeTextField,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          SizedBox(
+            width: MediaQuery.sizeOf(context).width / 3,
+            child: _createShippingCalculatorTextField(),
           ),
+          _createShippingCalculatorButton(),
         ],
       ),
     );
