@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/core/widgets/product_card.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
+import 'package:flutter_mysale/features/main_app/controllers/controller.dart';
 import 'package:flutter_mysale/features/main_app/models/main/facetfilter_model.dart';
 import 'package:flutter_mysale/features/main_app/models/main/productitem_model.dart';
 import 'package:flutter_mysale/features/main_app/models/main/productlist_model.dart';
+import 'package:flutter_mysale/features/main_app/providers/filter_provider.dart';
 import 'package:flutter_mysale/features/main_app/providers/productlist_provider.dart';
 import 'package:flutter_mysale/features/main_app/providers/productsort_provider.dart';
 import 'package:flutter_mysale/features/main_app/widgets/filter_bar.dart';
@@ -100,13 +102,6 @@ class _ProductListState extends State<ProductList>
     with TickerProviderStateMixin {
   String _logoImagePath = "assets/images/logo.png";
 
-  ProductListArguments args = (
-    saleId: "",
-    categoryKeys: <String>[],
-    facetFilters: <FacetFilterModel>[],
-    sort: "",
-  );
-
   final TextEditingController _controller = TextEditingController(text: '');
   bool dayAndNight = false;
 
@@ -120,23 +115,14 @@ class _ProductListState extends State<ProductList>
   Animation<double>? _searchAndFilterTween;
   Animation<double>? _searchBoxTween;
 
-  List<ProductItem> _products = [];
-  int _page = 0;
-  final _pageSize = 10;
-
-  void resetProductList() {
-    _products = [];
-    _page = 0;
-  }
-
   void getProductList(ProductListProvider provider) {
     GetProductListRequest request = GetProductListRequest(
       _controller.text,
-      _page.toString(),
-      _pageSize.toString(),
-      jsonEncode(args.categoryKeys),
-      jsonEncode(_facetFiltersToRequestArgs()),
-      args.sort,
+      provider.page.toString(),
+      provider.pageSize.toString(),
+      jsonEncode(provider.categoryKeys),
+      jsonEncode(provider.facetFiltersToRequestArgs()),
+      provider.sort,
     );
     provider.getProductList(request);
   }
@@ -177,8 +163,6 @@ class _ProductListState extends State<ProductList>
 
   @override
   Widget build(BuildContext context) {
-    args = ModalRoute.of(context)!.settings.arguments as ProductListArguments;
-
     final provider = Provider.of<ProductListProvider>(context, listen: false);
     getProductList(provider);
     return Scaffold(
@@ -216,6 +200,7 @@ class _ProductListState extends State<ProductList>
             },
             icon: const Icon(Icons.search),
           ),
+          _createTempSortButton(),
         ],
       ),
       body: Center(
@@ -238,13 +223,32 @@ class _ProductListState extends State<ProductList>
   Widget _createTempSortButton() {
     return TextButton(
       onPressed: () {
-        ProductSortProvider p = context.read<ProductSortProvider>();
-        Nav.toNamed(
-          context,
-          App.productSort,
-          arguments: (productSortProvider: p),
-        );
+        //ProductSortProvider p = context.read<ProductSortProvider>();
+        //Nav.toNamed(
+        //  context,
+        //  App.productSort,
+        //  arguments: (productSortProvider: p),
+        //);
         //Nav.toNamed(context, App.cartModal);
+
+        ProductListProvider pl = context.read<ProductListProvider>();
+
+        FilterProvider fp = FilterProvider(
+          saleId: '',
+          searchQuery: '',
+          sort: context.read<ProductSortProvider>().selectedSortItem?.key,
+          productTotal: pl.productList.total ?? 0,
+          currency: '\$', // TODO JCA get currency symbol somewhere
+          maxPrice: pl.initialMaxPrice ?? 1000,
+          categories: [...pl.productList.categories ?? []],
+          facetFilters: [...pl.productList.facets ?? []],
+        );
+        ProductListProvider plp = context.read<ProductListProvider>();
+        FilterMainArguments args = FilterMainArguments(
+          filterProvider: fp,
+          productListProvider: plp,
+        );
+        Nav.toNamed(context, App.filtermain, arguments: args);
       },
       child: Text('Sort'),
       style: TextButton.styleFrom(foregroundColor: Colors.black),
@@ -264,7 +268,7 @@ class _ProductListState extends State<ProductList>
           ),
           controller: _controller,
           onChanged: (val) {
-            resetProductList();
+            provider.resetProductList();
             getProductList(provider);
           },
         ),
@@ -290,9 +294,9 @@ class _ProductListState extends State<ProductList>
           return FilterBar<FilterItem>(
             filters: _filterItemsFromArgs(),
             onTap: (FilterItem item, int index) {
-              List<String> categoryKeys = [...args.categoryKeys];
-              List<FacetFilterModel> facetFilters = [...args.facetFilters];
-              String sort = args.sort;
+              List<String> categoryKeys = [...provider.categoryKeys];
+              List<FacetFilterModel> facetFilters = [...provider.facetFilters];
+              String sort = provider.sort;
               if (item is _CategoryFilterItem) {
                 categoryKeys.remove(item._categoryKey);
               } else if (item is _FilterItem) {
@@ -308,13 +312,15 @@ class _ProductListState extends State<ProductList>
               } else if (item is _SortMode) {
                 sort = "";
               }
-              args = (
-                saleId: args.saleId,
-                categoryKeys: categoryKeys,
-                facetFilters: facetFilters,
-                sort: sort,
+
+              //should replicate this
+
+              provider.updateAppliedFilters(
+                aCategoryKeys: categoryKeys,
+                aFacetFilters: facetFilters,
+                aSort: sort,
               );
-              resetProductList();
+              provider.resetProductList();
               getProductList(provider);
             },
           );
@@ -330,22 +336,22 @@ class _ProductListState extends State<ProductList>
           if (provider.isLoading) {
             return const Center(child: Text('Loading....'));
           } else if (provider.productList.products != null) {
-            if (provider.productList.page == _page) {
-              _products.addAll(provider.productList.products!);
+            if (provider.productList.page == provider.page) {
+              provider.products.addAll(provider.productList.products!);
             }
             return PagedGridView.builder(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 mainAxisExtent: 353, //TODO: calculate?
               ),
-              itemBuilder: (_, index) => _productCard(_products[index]),
-              itemCount: _products.length,
+              itemBuilder: (_, index) => _productCard(provider.products[index]),
+              itemCount: provider.products.length,
               scrollDirection: Axis.vertical,
               controller: scrollController,
               physics: null,
               onPageChanged: (index) {
-                if (index > _page) {
-                  _page++;
+                if (index > provider.page) {
+                  provider.incrementPage();
                   getProductList(provider);
                 }
               },
@@ -405,31 +411,13 @@ class _ProductListState extends State<ProductList>
   }
 
   List<FilterItem> _filterItemsFromArgs() {
+    ProductListProvider pl = context.read<ProductListProvider>();
     List<FilterItem> items = [];
-    items.addAll(_CategoryFilterItem.fromCategoryKeys(args.categoryKeys));
-    items.addAll(_FilterItem.fromFacetFilters(args.facetFilters));
-    if (args.sort.isNotEmpty) {
-      items.add(_SortMode(args.sort));
+    items.addAll(_CategoryFilterItem.fromCategoryKeys(pl.categoryKeys));
+    items.addAll(_FilterItem.fromFacetFilters(pl.facetFilters));
+    if (pl.sort.isNotEmpty) {
+      items.add(_SortMode(pl.sort));
     }
     return items;
-  }
-
-  Map<String, List<String>> _facetFiltersToRequestArgs() {
-    Map<String, List<String>> map = <String, List<String>>{};
-    args.facetFilters.forEach((FacetFilterModel ff) {
-      List<String> values = [];
-      ff.values?.forEach((FacetFilterValueModel value) {
-        values.add(value.value!);
-      });
-      if (ff.name != null && values.isNotEmpty) {
-        map[ff.name!] = values;
-      }
-    });
-
-    if (args.saleId.isNotEmpty) {
-      map["saleId"] = [args.saleId];
-    }
-
-    return map;
   }
 }

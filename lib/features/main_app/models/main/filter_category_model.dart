@@ -11,16 +11,16 @@ class FilterCategoryModel {
   bool get isExpanded => _isExpanded;
   void toggleIsExpanded() {
     if (isExpanded) {
-      _childrenIsExpandedToggleOff();
+      childrenIsExpandedToggleOff();
     } else {
       _isExpanded = true;
     }
   }
 
-  void _childrenIsExpandedToggleOff() {
+  void childrenIsExpandedToggleOff() {
     _isExpanded = false;
     for (FilterCategoryModel fChild in filterChildren) {
-      fChild._childrenIsExpandedToggleOff();
+      fChild.childrenIsExpandedToggleOff();
     }
   }
 

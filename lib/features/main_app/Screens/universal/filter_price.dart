@@ -73,9 +73,17 @@ class _FilterPriceState extends State<FilterPrice> {
 
   Widget _createClearButton() {
     return TextButton(
-      onPressed: () {},
+      onPressed: () {
+        FilterProvider provider = context.read<FilterProvider>();
+        provider.clearAppliedFilter(FilterKey.price.key);
+        provider.getProductList(context);
+      },
       child: Text('Clear'),
-      style: TextButton.styleFrom(foregroundColor: 'CCA68B'.toColor()),
+      style: TextButton.styleFrom(
+        foregroundColor: 'CCA68B'.toColor(),
+        splashFactory: NoSplash.splashFactory,
+        overlayColor: Colors.transparent,
+      ),
     );
   }
 
@@ -113,17 +121,11 @@ class _FilterPriceState extends State<FilterPrice> {
           tooltipOffset: -4,
           mergeGap: 16,
           onDrag: (currentMinPrice, currentMaxPrice) {
-            provider.setCurrentPriceRange(
-              currentMinPrice: currentMinPrice,
-              currentMaxPrice: currentMaxPrice,
-            );
+            provider.updateAppliedFilterPrice(currentMinPrice, currentMaxPrice);
           },
           onDragEnd: (currentMinPrice, currentMaxPrice) {
-            provider.setCurrentPriceRange(
-              currentMinPrice: currentMinPrice,
-              currentMaxPrice: currentMaxPrice,
-            );
-            //TODO: JCA call api here
+            provider.updateAppliedFilterPrice(currentMinPrice, currentMaxPrice);
+            provider.getProductList(context);
           },
         ),
       ),
@@ -131,7 +133,7 @@ class _FilterPriceState extends State<FilterPrice> {
   }
 
   Widget _createFilterButtonSection(FilterProvider provider) {
-    int productCount = provider.productCount;
+    int productCount = provider.productTotal;
     String text = (productCount == 0)
         ? 'See all products'
         : 'See all $productCount products';

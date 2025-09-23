@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
+import 'package:flutter_mysale/features/main_app/controllers/main/productlist_controller.dart';
 import 'package:flutter_mysale/features/main_app/widgets/leader_banner.dart';
 import 'package:flutter_mysale/features/main_app/widgets/normal_banner.dart';
 import 'package:flutter_mysale/features/main_app/widgets/sliding_banner.dart';
@@ -126,15 +127,11 @@ class _ShopState extends State<Shop> {
         actions: [
           IconButton(
             onPressed: () {
+              ProductListArguments args = ProductListArguments(saleId: '', categoryKeys: [], appliedFilters: [], sort: '');
               Nav.to(
                 context,
                 App.productList,
-                arguments: (
-                  saleId: "",
-                  categoryKeys: <String>[],
-                  facetFilters: <FacetFilterModel>[],
-                  sort: "",
-                ),
+                arguments: args,
               );
             },
             icon: const Icon(Icons.search),

@@ -224,11 +224,10 @@ class CartProductRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Expanded horizontally is OK inside Row
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min, // shrink-wrap
+            mainAxisSize: MainAxisSize.min,
             children: [
               _createNameLabel(),
               if (hasVariant) _createVariantLabel(),
@@ -263,7 +262,6 @@ class CartProductRow extends StatelessWidget {
   Widget _bottomRow() {
     return Row(
       children: [
-        // Your existing QtyStepper (outer-border version); no code shown here
         QtyStepper(
           value: item.getSelectedQuantity(),
           onMinus: (_) {
