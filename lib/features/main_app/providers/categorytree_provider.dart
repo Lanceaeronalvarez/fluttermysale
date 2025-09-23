@@ -18,7 +18,7 @@ class CategoryTreeProvider extends ChangeNotifier {
   String? clearanceUrl = null;
 
   CategoryTreeProvider({required this.context}) {
-    _userAgentHelper = UserAgentHelper(context);
+    _userAgentHelper = UserAgentHelper.shared;
   }
 
   // TODO: JCA completion is just for testing filters, should be removed eventually

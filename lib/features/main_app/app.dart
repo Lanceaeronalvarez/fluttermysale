@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_mysale/features/main_app/controllers/main/productlist_controller.dart';
 import 'package:flutter_mysale/features/main_app/controllers/main/shop_controller.dart';
 import 'package:flutter_mysale/features/main_app/widgets/image_gallery.dart';
@@ -23,11 +24,16 @@ class App extends RouteManager {
   static const String imagegallery = '${App.name}/imagegallery';
   static const String imagegalleryzoom = '${App.name}/imagegalleryzoom';
   static const String cart = '${App.name}/cart)';
-  static const String cartModal = '${App.name}/cart/modal';//not added on routes, navigation handled in MaterialApp onGenerateRoute since this have a custom transition
+  static const String cartModal =
+      '${App.name}/cart/modal'; //not added on routes, navigation handled in MaterialApp onGenerateRoute since this have a custom transition
 
   App() {
     addRoute(App.home, (context) => const ShopController());
-    addRoute(App.productList, (context) => const ProductListController());
+    addRoute(App.productList, (context) {
+      ProductListArguments args =
+          (ModalRoute.of(context)?.settings.arguments as ProductListArguments);
+      return ProductListController(args: args);
+    });
     addRoute(App.getappsettings, (context) => const GetAppSettingsController());
     addRoute(App.categoryTree, (context) => const CategoryTreeController());
     addRoute(App.filtercategory, (context) => const FilterCategoryController());

@@ -21,7 +21,7 @@ class SlidingBannersProvider extends ChangeNotifier {
   List<BannerModel>? get slidingBanners => _slidingBanners;
 
   SlidingBannersProvider({required this.context}) {
-    _userAgentHelper = UserAgentHelper(context);
+    _userAgentHelper = UserAgentHelper.shared;
   }
 
   void getSlidingBanners() async {

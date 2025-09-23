@@ -21,7 +21,7 @@ class LeaderboardBannerProvider extends ChangeNotifier {
   BannerModel? get leaderboardBanner => _leaderboardBanner;
 
   LeaderboardBannerProvider({required this.context}) {
-    _userAgentHelper = UserAgentHelper(context);
+    _userAgentHelper = UserAgentHelper.shared;
   }
 
   void getleaderboardBanners(

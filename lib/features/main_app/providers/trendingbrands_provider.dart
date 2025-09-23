@@ -21,7 +21,7 @@ class TrendingBrandsProvider extends ChangeNotifier {
   GetBannersResponse get trendingBrands => _trendingBrands!;
 
   TrendingBrandsProvider({required this.context}) {
-    _userAgentHelper = UserAgentHelper(context);
+    _userAgentHelper = UserAgentHelper.shared;
   }
 
   void getTrendingBrands(String categoryId) async {

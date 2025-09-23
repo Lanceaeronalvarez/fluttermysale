@@ -33,7 +33,7 @@ class ProductListProvider extends ChangeNotifier {
   List<String> get categoryKeys => _categoryKeys;
   List<FacetFilterModel> get facetFilters => _facetFilters;
   String get sort => _sort;
-  ProductListResponse get productList => _productList!;
+  ProductListResponse? get productList => _productList;
   bool get isLoading => _isLoading;
   List<ProductItem> get products => _products;
   int get page => _page;
@@ -86,8 +86,6 @@ class ProductListProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
-
 
   void _setInitialMaxPrice() {
     FacetFilterModel? priceFilter = _productList?.facets?.firstWhereOrNull((e) {
@@ -101,13 +99,19 @@ class ProductListProvider extends ChangeNotifier {
   }
 
   void updateAppliedFilters({
-    required List<String> aCategoryKeys,
-    required List<FacetFilterModel> aFacetFilters,
-    required String aSort,
+    required List<String>? aCategoryKeys,
+    required List<FacetFilterModel>? aFacetFilters,
+    required String? aSort,
   }) {
-    _categoryKeys = aCategoryKeys;
-    _facetFilters = aFacetFilters;
-    _sort = aSort;
+    if (aCategoryKeys != null) {
+      _categoryKeys = aCategoryKeys;
+    }
+    if (aFacetFilters != null) {
+      _facetFilters = aFacetFilters;
+    }
+    if (aSort != null) {
+      _sort = aSort;
+    }
   }
 
   void incrementPage() {

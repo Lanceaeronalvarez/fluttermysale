@@ -9,7 +9,6 @@ import 'package:flutter_mysale/features/main_app/models/main/productitem_model.d
 import 'package:flutter_mysale/features/main_app/models/main/productlist_model.dart';
 import 'package:flutter_mysale/features/main_app/providers/filter_provider.dart';
 import 'package:flutter_mysale/features/main_app/providers/productlist_provider.dart';
-import 'package:flutter_mysale/features/main_app/providers/productsort_provider.dart';
 import 'package:flutter_mysale/features/main_app/widgets/filter_bar.dart';
 import 'package:paged_grid_view/paged_grid_view.dart';
 import 'package:provider/provider.dart';
@@ -152,6 +151,11 @@ class _ProductListState extends State<ProductList>
         curve: Curves.linear,
       ),
     );
+
+    Future.microtask(() {
+      final provider = Provider.of<ProductListProvider>(context, listen: false);
+      getProductList(provider);
+    });
   }
 
   @override
@@ -164,7 +168,6 @@ class _ProductListState extends State<ProductList>
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<ProductListProvider>(context, listen: false);
-    getProductList(provider);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -236,17 +239,16 @@ class _ProductListState extends State<ProductList>
         FilterProvider fp = FilterProvider(
           saleId: '',
           searchQuery: '',
-          sort: context.read<ProductSortProvider>().selectedSortItem?.key,
-          productTotal: pl.productList.total ?? 0,
+          productTotal: pl.productList?.total ?? 0,
           currency: '\$', // TODO JCA get currency symbol somewhere
           maxPrice: pl.initialMaxPrice ?? 1000,
-          categories: [...pl.productList.categories ?? []],
-          facetFilters: [...pl.productList.facets ?? []],
+          categories: [...pl.productList?.categories ?? []],
+          facetFilters: [...pl.productList?.facets ?? []],
         );
-        ProductListProvider plp = context.read<ProductListProvider>();
+        //ProductListProvider plp = context.read<ProductListProvider>();
         FilterMainArguments args = FilterMainArguments(
           filterProvider: fp,
-          productListProvider: plp,
+          productListProvider: pl,
         );
         Nav.toNamed(context, App.filtermain, arguments: args);
       },
@@ -335,9 +337,9 @@ class _ProductListState extends State<ProductList>
         builder: (_, provider, __) {
           if (provider.isLoading) {
             return const Center(child: Text('Loading....'));
-          } else if (provider.productList.products != null) {
-            if (provider.productList.page == provider.page) {
-              provider.products.addAll(provider.productList.products!);
+          } else if (provider.productList?.products != null) {
+            if (provider.productList?.page == provider.page) {
+              provider.products.addAll(provider.productList?.products ?? []);
             }
             return PagedGridView.builder(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

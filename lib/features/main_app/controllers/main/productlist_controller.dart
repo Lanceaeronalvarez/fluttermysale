@@ -36,36 +36,54 @@ class ProductListArguments {
   }
 }
 
-class ProductListController extends StatelessController {
-  const ProductListController({Key? key}) : super(key: key);
+class ProductListController extends StatefulController {
+  final ProductListArguments args;
+
+  ProductListController({required this.args});
 
   @override
-  bool get auth => true;
+  State<StatefulWidget> createState() {
+    return _ProductListState();
+  }
+}
+
+class _ProductListState extends ControllerState<ProductListController> {
+  late final ProductListProvider _productListProvider;
+  late final ProductSortProvider _productSortProvider;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _productListProvider = ProductListProvider(
+      userAgentHelper: UserAgentHelper.shared,
+      saleId: widget.args.saleId,
+      categoryKeys: widget.args.categoryKeys,
+      facetFilters: widget.args.appliedFilters,
+      sort: widget.args.sort,
+    );
+
+    _productSortProvider = ProductSortProvider();
+  }
+
+  @override
+  void dispose() {
+    _productListProvider.dispose();
+    _productSortProvider.dispose();
+    super.dispose();
+  }
 
   @override
   Display view(BuildContext context) {
-    ProductListArguments args =
-        (ModalRoute.of(context)?.settings.arguments as ProductListArguments);
-
     ProductList child = ProductList();
-
-    UserAgentHelper userAgentHelper = UserAgentHelper(context);
-    ProductListProvider productListProvider = ProductListProvider(
-      userAgentHelper: userAgentHelper,
-      saleId: args.saleId,
-      categoryKeys: args.categoryKeys,
-      facetFilters: args.appliedFilters,
-      sort: args.sort,
-    );
-    ProductSortProvider productSortProvider = ProductSortProvider();
 
     MultiProvider multiProvider = MultiProvider(
       providers: [
         ChangeNotifierProvider<ProductListProvider>.value(
-          value: productListProvider,
+          value: _productListProvider,
         ),
         ChangeNotifierProvider<ProductSortProvider>.value(
-          value: productSortProvider,
+          value: _productSortProvider,
         ),
       ],
       child: child,

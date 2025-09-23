@@ -18,7 +18,7 @@ class _ProductSortState extends State<ProductSort> {
     super.initState();
 
     Future.microtask(() {
-      UserAgentHelper userAgentHelper = UserAgentHelper(context);
+      UserAgentHelper userAgentHelper = UserAgentHelper.shared;
       context.read<ProductSortProvider>().fetchSortItems(userAgentHelper);
     });
   }

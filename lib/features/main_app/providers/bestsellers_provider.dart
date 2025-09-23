@@ -20,7 +20,7 @@ class BestSellersProvider extends ChangeNotifier {
   GetBestSellersResponse get getBannersResponse => _model!;
 
   BestSellersProvider({required this.context}) {
-    _userAgentHelper = UserAgentHelper(context);
+    _userAgentHelper = UserAgentHelper.shared;
   }
 
   void getBestSellers(String category) async {

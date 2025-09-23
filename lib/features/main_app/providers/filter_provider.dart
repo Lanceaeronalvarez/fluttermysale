@@ -50,7 +50,6 @@ class FilterKey {
 class FilterProvider extends ChangeNotifier {
   String _saleId = '';
   String _searchQuery = '';
-  String? _sort;
   int _productTotal = 0;
   double _minPrice; //min price of slider
   double _maxPrice; //max price of slider
@@ -80,7 +79,6 @@ class FilterProvider extends ChangeNotifier {
   FilterProvider._(
     this._saleId,
     this._searchQuery,
-    this._sort,
     this._productTotal,
     this._minPrice,
     this._maxPrice,
@@ -94,7 +92,6 @@ class FilterProvider extends ChangeNotifier {
   factory FilterProvider({
     required String saleId,
     required String searchQuery,
-    required String? sort,
     required int productTotal,
     required String currency,
     required double maxPrice,
@@ -125,7 +122,6 @@ class FilterProvider extends ChangeNotifier {
     FilterProvider provider = FilterProvider._(
       saleId,
       searchQuery,
-      sort,
       productTotal,
       defaultMinPrice, //min price
       maxPrice, //max price
@@ -553,7 +549,7 @@ class FilterProvider extends ChangeNotifier {
       '10',
       jsonEncode(categoryKeys),
       jsonEncode(filterMap),
-      _sort,
+      '',
     );
   }
 
@@ -569,7 +565,7 @@ class FilterProvider extends ChangeNotifier {
     //_cancelToken?.cancel('cancel current request, will have a new getProductList request');
     //_cancelToken = CancelToken();
 
-    _userAgentHelper ??= UserAgentHelper(context);
+    _userAgentHelper ??= UserAgentHelper.shared;
     final userAgent = await _userAgentHelper!.userAgent;
     _http ??= AppHttp(
       baseUrl: dotenv.get("SETTINGS_ROOT"),
@@ -598,12 +594,13 @@ class FilterProvider extends ChangeNotifier {
         .map<String?>((CategoryNodeModel e) => e.key)
         .nonNulls
         .toList();
-    
+
     productListProvider.updateAppliedFilters(
       aCategoryKeys: categoryKeys,
       aFacetFilters: _appliedFilters,
-      aSort: _sort ?? '',
+      aSort: null,
     );
+    productListProvider.resetProductList();
     productListProvider.getProductList(generateGetProductListRequest());
   }
 }
