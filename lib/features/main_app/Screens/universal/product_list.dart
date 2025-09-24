@@ -1,34 +1,28 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/core/widgets/product_card.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/controllers/controller.dart';
+import 'package:flutter_mysale/features/main_app/models/main/categorynode_model.dart';
 import 'package:flutter_mysale/features/main_app/models/main/facetfilter_model.dart';
 import 'package:flutter_mysale/features/main_app/models/main/productitem_model.dart';
-import 'package:flutter_mysale/features/main_app/models/main/productlist_model.dart';
+import 'package:flutter_mysale/features/main_app/models/main/productsort_model.dart';
 import 'package:flutter_mysale/features/main_app/providers/filter_provider.dart';
 import 'package:flutter_mysale/features/main_app/providers/productlist_provider.dart';
+import 'package:flutter_mysale/features/main_app/providers/productsort_provider.dart';
 import 'package:flutter_mysale/features/main_app/widgets/filter_bar.dart';
+import 'package:flutter_mysale/features/main_app/widgets/icon_text_badge_button.dart';
 import 'package:paged_grid_view/paged_grid_view.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../config/config.dart';
 import '../../../../core/core.dart';
 
-typedef ProductListArguments = ({
-  String saleId,
-  List<String> categoryKeys,
-  List<FacetFilterModel> facetFilters,
-  String sort,
-});
-
 class _CategoryFilterItem extends FilterItem {
-  final String _categoryKey;
+  final CategoryNodeModel _category;
   late String _title;
 
-  _CategoryFilterItem(this._categoryKey) {
-    _title = _categoryKey.split(">>>").last;
+  _CategoryFilterItem(this._category) {
+    _title = _category.name ?? '';
   }
 
   @override
@@ -36,11 +30,13 @@ class _CategoryFilterItem extends FilterItem {
     return _title;
   }
 
-  static List<_CategoryFilterItem> fromCategoryKeys(List<String> categoryKeys) {
+  static List<_CategoryFilterItem> fromAppliedCategories(
+    List<CategoryNodeModel> appliedCategories,
+  ) {
     List<_CategoryFilterItem> items = [];
 
-    categoryKeys.forEach((String s) {
-      items.add(_CategoryFilterItem(s));
+    appliedCategories.forEach((CategoryNodeModel category) {
+      items.add(_CategoryFilterItem(category));
     });
 
     return items;
@@ -76,15 +72,12 @@ class _FilterItem extends FilterItem {
 }
 
 class _SortMode extends FilterItem {
-  late String _title;
-
-  _SortMode(String sortMode) {
-    _title = "Sort by " + sortMode; //TODO: readable title?
-  }
+  ProductSortModel sort;
+  _SortMode({required this.sort});
 
   @override
   String getTitle() {
-    return _title;
+    return 'Sort by ${sort.title ?? ''}';
   }
 }
 
@@ -114,18 +107,6 @@ class _ProductListState extends State<ProductList>
   Animation<double>? _searchAndFilterTween;
   Animation<double>? _searchBoxTween;
 
-  void getProductList(ProductListProvider provider) {
-    GetProductListRequest request = GetProductListRequest(
-      _controller.text,
-      provider.page.toString(),
-      provider.pageSize.toString(),
-      jsonEncode(provider.categoryKeys),
-      jsonEncode(provider.facetFiltersToRequestArgs()),
-      provider.sort,
-    );
-    provider.getProductList(request);
-  }
-
   @override
   void initState() {
     super.initState();
@@ -154,7 +135,7 @@ class _ProductListState extends State<ProductList>
 
     Future.microtask(() {
       final provider = Provider.of<ProductListProvider>(context, listen: false);
-      getProductList(provider);
+      provider.getProductList();
     });
   }
 
@@ -163,6 +144,7 @@ class _ProductListState extends State<ProductList>
     super.dispose();
     _searchAndFilterAnimationController?.dispose();
     _searchBoxAnimationController?.dispose();
+    _controller.dispose();
   }
 
   @override
@@ -203,7 +185,6 @@ class _ProductListState extends State<ProductList>
             },
             icon: const Icon(Icons.search),
           ),
-          _createTempSortButton(),
         ],
       ),
       body: Center(
@@ -222,41 +203,6 @@ class _ProductListState extends State<ProductList>
     );
   }
 
-  //Temp Only, delete if not needed anymore
-  Widget _createTempSortButton() {
-    return TextButton(
-      onPressed: () {
-        //ProductSortProvider p = context.read<ProductSortProvider>();
-        //Nav.toNamed(
-        //  context,
-        //  App.productSort,
-        //  arguments: (productSortProvider: p),
-        //);
-        //Nav.toNamed(context, App.cartModal);
-
-        ProductListProvider pl = context.read<ProductListProvider>();
-
-        FilterProvider fp = FilterProvider(
-          saleId: '',
-          searchQuery: '',
-          productTotal: pl.productList?.total ?? 0,
-          currency: '\$', // TODO JCA get currency symbol somewhere
-          maxPrice: pl.initialMaxPrice ?? 1000,
-          categories: [...pl.productList?.categories ?? []],
-          facetFilters: [...pl.productList?.facets ?? []],
-        );
-        //ProductListProvider plp = context.read<ProductListProvider>();
-        FilterMainArguments args = FilterMainArguments(
-          filterProvider: fp,
-          productListProvider: pl,
-        );
-        Nav.toNamed(context, App.filtermain, arguments: args);
-      },
-      child: Text('Sort'),
-      style: TextButton.styleFrom(foregroundColor: Colors.black),
-    );
-  }
-
   SizedBox _searchBar(ProductListProvider provider) {
     return SizedBox(
       width: double.infinity,
@@ -271,20 +217,99 @@ class _ProductListState extends State<ProductList>
           controller: _controller,
           onChanged: (val) {
             provider.resetProductList();
-            getProductList(provider);
+            provider.updateSearchQuery(val);
+            provider.getProductList();
           },
         ),
       ),
     );
   }
 
-  Column _searchAndFilterDisplay(ProductListProvider provider) {
+  Widget _searchAndFilterDisplay(ProductListProvider provider) {
     return Column(
       children: [
         _searchBar(provider),
-        _createTempSortButton(),
+        _createFilterSection(),
         _filterBubblesDisplay(),
       ],
+    );
+  }
+
+  Widget _createFilterSection() {
+    return Consumer<ProductListProvider>(
+      builder: (BuildContext context, ProductListProvider p, Widget? child) {
+        int appliedCategoryCount = p.appliedCategories.length;
+        int appliedFilterCount = p.appliedFilters
+            .map<int?>((FacetFilterModel e) => e.values?.length)
+            .nonNulls
+            .fold(0, (a, b) => a + b);
+        int sortCount = p.sort != null ? 1 : 0;
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              _createFilterButton(appliedFilterCount + appliedCategoryCount),
+              const SizedBox(width: 8),
+              _createSortButton(sortCount),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _createFilterButton(int count) {
+    return Expanded(
+      child: IconTextBadgeButton(
+        height: 50,
+        icon: Icons.tune,
+        text: 'Filter',
+        count: count,
+        onTap: () {
+          ProductListProvider pl = context.read<ProductListProvider>();
+          FilterProvider fp = FilterProvider(
+            saleId: '',
+            searchQuery: '',
+            productTotal: pl.productList?.total ?? 0,
+            currency: '\$', // TODO JCA get currency symbol somewhere
+            maxPrice: pl.getInitialMaxPrice() ?? 1000,
+            categories: [...pl.initialProductListResponse?.categories ?? []],
+            selectedCategories: [...pl.appliedCategories],
+            facetFilters: [...pl.initialProductListResponse?.facets ?? []],
+            appliedFilters: [...pl.appliedFilters],
+          );
+          FilterMainArguments args = FilterMainArguments(
+            filterProvider: fp,
+            productListProvider: pl,
+          );
+
+          Nav.toNamed(context, App.filtermain, arguments: args);
+        },
+      ),
+    );
+  }
+
+  Widget _createSortButton(int count) {
+    return Expanded(
+      child: IconTextBadgeButton(
+        height: 50,
+        icon: Icons.swap_vert,
+        text: 'Sort',
+        count: count,
+        onTap: () {
+          ProductListProvider pl = context.read<ProductListProvider>();
+          ProductSortProvider ps = ProductSortProvider(
+            selectedSortItem: pl.sort,
+            sortItems: null,
+          );
+
+          ProductSortArguments args = ProductSortArguments(
+            productSortProvider: ps,
+            productListProvider: pl,
+          );
+          Nav.toNamed(context, App.productSort, arguments: args);
+        },
+      ),
     );
   }
 
@@ -296,11 +321,14 @@ class _ProductListState extends State<ProductList>
           return FilterBar<FilterItem>(
             filters: _filterItemsFromArgs(),
             onTap: (FilterItem item, int index) {
-              List<String> categoryKeys = [...provider.categoryKeys];
-              List<FacetFilterModel> facetFilters = [...provider.facetFilters];
-              String sort = provider.sort;
+              List<CategoryNodeModel> appliedCategories = [
+                ...provider.appliedCategories,
+              ];
+              List<FacetFilterModel> facetFilters = [
+                ...provider.appliedFilters,
+              ];
               if (item is _CategoryFilterItem) {
-                categoryKeys.remove(item._categoryKey);
+                appliedCategories.remove(item._category);
               } else if (item is _FilterItem) {
                 facetFilters
                     .where((FacetFilterModel ff) {
@@ -312,18 +340,15 @@ class _ProductListState extends State<ProductList>
                       return item._value.value == value.value;
                     });
               } else if (item is _SortMode) {
-                sort = "";
+                provider.updateSort(null);
               }
 
-              //should replicate this
-
               provider.updateAppliedFilters(
-                aCategoryKeys: categoryKeys,
-                aFacetFilters: facetFilters,
-                aSort: sort,
+                aAppliedCategories: appliedCategories,
+                aAppliedFilters: facetFilters,
               );
               provider.resetProductList();
-              getProductList(provider);
+              provider.getProductList();
             },
           );
         },
@@ -354,7 +379,7 @@ class _ProductListState extends State<ProductList>
               onPageChanged: (index) {
                 if (index > provider.page) {
                   provider.incrementPage();
-                  getProductList(provider);
+                  provider.getProductList();
                 }
               },
             );
@@ -415,10 +440,12 @@ class _ProductListState extends State<ProductList>
   List<FilterItem> _filterItemsFromArgs() {
     ProductListProvider pl = context.read<ProductListProvider>();
     List<FilterItem> items = [];
-    items.addAll(_CategoryFilterItem.fromCategoryKeys(pl.categoryKeys));
-    items.addAll(_FilterItem.fromFacetFilters(pl.facetFilters));
-    if (pl.sort.isNotEmpty) {
-      items.add(_SortMode(pl.sort));
+    items.addAll(
+      _CategoryFilterItem.fromAppliedCategories(pl.appliedCategories),
+    );
+    items.addAll(_FilterItem.fromFacetFilters(pl.appliedFilters));
+    if (pl.sort != null) {
+      items.add(_SortMode(sort: pl.sort!));
     }
     return items;
   }

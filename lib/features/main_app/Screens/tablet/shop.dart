@@ -127,12 +127,13 @@ class _ShopState extends State<Shop> {
         actions: [
           IconButton(
             onPressed: () {
-              ProductListArguments args = ProductListArguments(saleId: '', categoryKeys: [], appliedFilters: [], sort: '');
-              Nav.to(
-                context,
-                App.productList,
-                arguments: args,
+              ProductListArguments args = ProductListArguments(
+                saleId: '',
+                appliedCategories: [],
+                appliedFilters: [],
+                sort: null,
               );
+              Nav.to(context, App.productList, arguments: args);
             },
             icon: const Icon(Icons.search),
           ),

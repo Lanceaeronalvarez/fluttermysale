@@ -29,7 +29,7 @@ class _FilterCategoryItem extends FilterItem {
 
   @override
   String getTitle() {
-    return category.key?.split('>>>').last ?? '';
+    return category.name ?? '';
   }
 }
 
@@ -139,7 +139,7 @@ class _FilterMainState extends State<FilterMain> {
   Widget _createFilteredBySection(FilterProvider provider) {
     List<FilterItem> filterItems = [];
     filterItems.addAll(
-      provider.selectedCategories
+      provider.appliedCategories
           .map<_FilterCategoryItem>((e) => _FilterCategoryItem(category: e))
           .toList(),
     );
@@ -176,9 +176,10 @@ class _FilterMainState extends State<FilterMain> {
       padding: const EdgeInsets.all(16.0),
       child: ElevatedButton(
         onPressed: () {
-          ProductListProvider productListProvider = context.read<ProductListProvider>();
+          ProductListProvider productListProvider = context
+              .read<ProductListProvider>();
           provider.appyFilterToProductList(productListProvider);
-          Nav.close(context);        
+          Nav.close(context);
         },
         style: appElevatedButtonStyle,
         child: Text(text),

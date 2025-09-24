@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
 import 'package:flutter_mysale/features/main_app/models/main/productsort_model.dart';
+import 'package:flutter_mysale/features/main_app/providers/productlist_provider.dart';
 import 'package:flutter_mysale/features/main_app/providers/productsort_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:provider/provider.dart';
@@ -108,7 +109,7 @@ class _ProductSortState extends State<ProductSort> {
         title: Text((sortItem.title ?? '').toTitleCase()),
         trailing: isSelected ? const Icon(Icons.check) : null,
         onTap: () {
-          provider.setSelectedSortItem(sortItem);
+          provider.setSelectedSortItem(sortItem, context.read<ProductListProvider>());
         },
       ),
     );

@@ -56,10 +56,10 @@ class FilterProvider extends ChangeNotifier {
   double _currentMinPrice;
   double _currentMaxPrice;
   String _currency;
-  List<FilterCategoryModel> _filterCategories = [];
-  List<CategoryNodeModel> _selectedCategories = [];
-  List<FacetFilterModel> _facetFilters = [];
-  List<FacetFilterModel> _appliedFilters = [];
+  List<FilterCategoryModel> _filterCategories;
+  List<CategoryNodeModel> _appliedCategories;
+  List<FacetFilterModel> _facetFilters;
+  List<FacetFilterModel> _appliedFilters;
 
   int get productTotal => _productTotal;
   double get minPrice => _minPrice;
@@ -68,7 +68,7 @@ class FilterProvider extends ChangeNotifier {
   double get currentMaxPrice => _currentMaxPrice;
   String get currency => _currency;
   List<FilterCategoryModel> get filterCategories => _filterCategories;
-  List<CategoryNodeModel> get selectedCategories => _selectedCategories;
+  List<CategoryNodeModel> get appliedCategories => _appliedCategories;
   List<FacetFilterModel> get facetFilters => _facetFilters;
 
   //used in filter_select
@@ -86,7 +86,9 @@ class FilterProvider extends ChangeNotifier {
     this._currentMaxPrice,
     this._currency,
     this._filterCategories,
+    this._appliedCategories,
     this._facetFilters,
+    this._appliedFilters,
   );
 
   factory FilterProvider({
@@ -96,7 +98,9 @@ class FilterProvider extends ChangeNotifier {
     required String currency,
     required double maxPrice,
     required List<CategoryNodeModel> categories,
+    required List<CategoryNodeModel> selectedCategories,
     required List<FacetFilterModel> facetFilters,
+    required List<FacetFilterModel> appliedFilters,
   }) {
     List<FilterKey> includedFilters = [
       FilterKey.brandName,
@@ -128,20 +132,27 @@ class FilterProvider extends ChangeNotifier {
       defaultMinPrice, //current min price
       maxPrice, //current max price
       currency,
-      [],
-      arrangedFacetFilters,
+      [], //categories
+      selectedCategories, //applied categories
+      arrangedFacetFilters, //filters
+      appliedFilters, //applied filters
     );
 
     //TODO: JCA no preapplied filters yet
     //Important to be generated
     provider._appliedFilters = arrangedFacetFilters.map<FacetFilterModel>((ff) {
-      return FacetFilterModel(ff.name ?? '', []);
+      List<FacetFilterValueModel> values =
+          appliedFilters.firstWhereOrNull((FacetFilterModel element) {
+            return provider._facetFilterKeyMatched(element.name, ff.name);
+          })?.values ??
+          [];
+      return FacetFilterModel(ff.name ?? '', values);
     }).toList();
 
     provider._setCategories(categories);
 
     FacetFilterValueModel? facetFilterPrice = provider
-        ._getFacetFilter(FilterKey.price.key)
+        .getAppliedFilter(FilterKey.price.key)
         ?.values
         ?.firstOrNull;
     if (facetFilterPrice != null) {
@@ -167,7 +178,7 @@ class FilterProvider extends ChangeNotifier {
         _generateFilterCategoryModelFrom(
           category,
           rootDepth,
-          _selectedCategories,
+          _appliedCategories,
         ),
     ];
     if (callNotify) notifyListeners();
@@ -194,7 +205,7 @@ class FilterProvider extends ChangeNotifier {
     }
 
     final FilterCategoryStatus status = _generateInitialCategoryStatus(
-      category.id ?? '',
+      category.key ?? '',
       sCategories,
     );
 
@@ -208,12 +219,12 @@ class FilterProvider extends ChangeNotifier {
   }
 
   FilterCategoryStatus _generateInitialCategoryStatus(
-    String categoryId,
+    String categoryKey,
     List<CategoryNodeModel> sCategories,
   ) {
-    if (categoryId.isNotEmpty) {
+    if (categoryKey.isNotEmpty) {
       for (CategoryNodeModel sCategory in sCategories) {
-        if (sCategory.id != null && categoryId.startsWith(sCategory.id!)) {
+        if (sCategory.key != null && categoryKey.startsWith(sCategory.key!)) {
           return FilterCategoryStatus.checked;
         }
       }
@@ -226,7 +237,7 @@ class FilterProvider extends ChangeNotifier {
     for (FilterCategoryModel filterCategory in _filterCategories) {
       result.addAll(_collectSelectedCategories(filterCategory));
     }
-    _selectedCategories = result;
+    _appliedCategories = result;
 
     if (callNotify) notifyListeners();
   }
@@ -395,7 +406,7 @@ class FilterProvider extends ChangeNotifier {
   //used for removing applied filtercategory via filterbar
   void removeAppliedFilterCategory({required CategoryNodeModel category}) {
     CategoryNodeModel? targetCategory = null;
-    for (CategoryNodeModel sc in _selectedCategories) {
+    for (CategoryNodeModel sc in _appliedCategories) {
       if (_facetFilterKeyMatched(category.key, sc.key)) {
         targetCategory = sc;
         break;
@@ -532,7 +543,7 @@ class FilterProvider extends ChangeNotifier {
   }
 
   GetProductListRequest generateGetProductListRequest() {
-    List<String> categoryKeys = _selectedCategories
+    List<String> appliedCategories = _appliedCategories
         .map<String?>((CategoryNodeModel e) => e.key)
         .nonNulls
         .toList();
@@ -547,7 +558,7 @@ class FilterProvider extends ChangeNotifier {
       _searchQuery,
       '0',
       '10',
-      jsonEncode(categoryKeys),
+      jsonEncode(appliedCategories),
       jsonEncode(filterMap),
       '',
     );
@@ -590,17 +601,11 @@ class FilterProvider extends ChangeNotifier {
   }
 
   void appyFilterToProductList(ProductListProvider productListProvider) {
-    List<String> categoryKeys = _selectedCategories
-        .map<String?>((CategoryNodeModel e) => e.key)
-        .nonNulls
-        .toList();
-
     productListProvider.updateAppliedFilters(
-      aCategoryKeys: categoryKeys,
-      aFacetFilters: _appliedFilters,
-      aSort: null,
+      aAppliedCategories: _appliedCategories,
+      aAppliedFilters: _appliedFilters,
     );
     productListProvider.resetProductList();
-    productListProvider.getProductList(generateGetProductListRequest());
+    productListProvider.getProductList();
   }
 }

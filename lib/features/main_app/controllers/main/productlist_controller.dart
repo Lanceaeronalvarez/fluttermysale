@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
 import 'package:flutter_mysale/features/main_app/Screens/universal/product_list.dart';
+import 'package:flutter_mysale/features/main_app/models/main/categorynode_model.dart';
 import 'package:flutter_mysale/features/main_app/models/main/facetfilter_model.dart';
-import 'package:flutter_mysale/features/main_app/providers/productsort_provider.dart';
+import 'package:flutter_mysale/features/main_app/models/main/productsort_model.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/core.dart';
@@ -10,26 +11,26 @@ import '../../providers/productlist_provider.dart';
 
 class ProductListArguments {
   String saleId;
-  List<String> categoryKeys;
+  List<CategoryNodeModel> appliedCategories;
   List<FacetFilterModel> appliedFilters;
-  String sort;
+  ProductSortModel? sort;
 
   ProductListArguments._({
     required this.saleId,
-    required this.categoryKeys,
+    required this.appliedCategories,
     required this.appliedFilters,
     required this.sort,
   });
 
   factory ProductListArguments({
     required String saleId,
-    required List<String> categoryKeys,
+    required List<CategoryNodeModel> appliedCategories,
     required List<FacetFilterModel> appliedFilters,
-    required String sort,
+    required ProductSortModel? sort,
   }) {
     return ProductListArguments._(
       saleId: saleId,
-      categoryKeys: categoryKeys,
+      appliedCategories: appliedCategories,
       appliedFilters: appliedFilters,
       sort: sort,
     );
@@ -49,7 +50,6 @@ class ProductListController extends StatefulController {
 
 class _ProductListState extends ControllerState<ProductListController> {
   late final ProductListProvider _productListProvider;
-  late final ProductSortProvider _productSortProvider;
 
   @override
   void initState() {
@@ -58,18 +58,15 @@ class _ProductListState extends ControllerState<ProductListController> {
     _productListProvider = ProductListProvider(
       userAgentHelper: UserAgentHelper.shared,
       saleId: widget.args.saleId,
-      categoryKeys: widget.args.categoryKeys,
-      facetFilters: widget.args.appliedFilters,
+      appliedCategories: widget.args.appliedCategories,
+      appliedFilters: widget.args.appliedFilters,
       sort: widget.args.sort,
     );
-
-    _productSortProvider = ProductSortProvider();
   }
 
   @override
   void dispose() {
     _productListProvider.dispose();
-    _productSortProvider.dispose();
     super.dispose();
   }
 
@@ -81,9 +78,6 @@ class _ProductListState extends ControllerState<ProductListController> {
       providers: [
         ChangeNotifierProvider<ProductListProvider>.value(
           value: _productListProvider,
-        ),
-        ChangeNotifierProvider<ProductSortProvider>.value(
-          value: _productSortProvider,
         ),
       ],
       child: child,

@@ -44,4 +44,10 @@ class Nav {
   static void close(BuildContext context, [Object? result]) {
     Navigator.pop(context, result);
   }
+
+  static void closeUntil(BuildContext context, String path) {
+    Navigator.popUntil(context, (route) {
+      return ((route.settings.name ?? '') == path);
+    });
+  }
 }

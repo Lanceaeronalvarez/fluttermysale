@@ -52,9 +52,9 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
       onTap: () {
         ProductListArguments args = ProductListArguments(
           saleId: banner.destinationId ?? '',
-          categoryKeys: [],
+          appliedCategories: [],
           appliedFilters: [],
-          sort: '',
+          sort: null,
         );
         Nav.toNamed(context, App.productList, arguments: args);
       },

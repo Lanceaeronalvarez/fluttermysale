@@ -4,18 +4,34 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_mysale/config/config.dart';
 import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
 import 'package:flutter_mysale/features/main_app/models/main/productsort_model.dart';
+import 'package:flutter_mysale/features/main_app/providers/productlist_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 
 class ProductSortProvider extends ChangeNotifier {
   ProductSortModel? _selectedSortItem;
+  List<ProductSortModel>? _sortItems;
+
   ProductSortModel? get selectedSortItem => _selectedSortItem;
-  void setSelectedSortItem(ProductSortModel? selectedSortItem) {
-    _selectedSortItem = selectedSortItem;
-    notifyListeners();
+  List<ProductSortModel> get sortItems => _sortItems ?? [];
+
+  ProductSortProvider._(this._selectedSortItem, this._sortItems);
+
+  factory ProductSortProvider({required ProductSortModel? selectedSortItem, required List<ProductSortModel>? sortItems}) {
+    return ProductSortProvider._(selectedSortItem, sortItems);
   }
 
-  List<ProductSortModel>? _sortItems;
-  List<ProductSortModel> get sortItems => _sortItems ?? [];
+  void setSelectedSortItem(
+    ProductSortModel? selectedSortItem,
+    ProductListProvider productListProvider,
+  ) {
+    _selectedSortItem = selectedSortItem;
+    if (selectedSortItem != null) {
+      productListProvider.updateSort(selectedSortItem);
+      productListProvider.resetProductList();
+      productListProvider.getProductList();
+    }
+    notifyListeners();
+  }
 
   void setInitialSortInfo(
     ProductSortModel? selectedSortItem,

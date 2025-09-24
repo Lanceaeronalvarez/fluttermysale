@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/core/classes/route_manager.dart';
 import 'package:flutter_mysale/core/helpers/style_helper.dart';
+import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/providers/filter_provider.dart';
+import 'package:flutter_mysale/features/main_app/providers/productlist_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:flutter_mysale/features/main_app/widgets/price_range_slider.dart';
 import 'package:provider/provider.dart';
@@ -142,6 +145,10 @@ class _FilterPriceState extends State<FilterPrice> {
       child: ElevatedButton(
         onPressed: () {
           print('Filter Price');
+          ProductListProvider productListProvider = context
+              .read<ProductListProvider>();
+          provider.appyFilterToProductList(productListProvider);
+          Nav.closeUntil(context, App.productList);
         },
         style: appElevatedButtonStyle,
         child: Text(text),

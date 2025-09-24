@@ -42,7 +42,7 @@ extension StringCasing on String {
 extension RangeParsing on String {
   ({double min, double max})? parseRange({
     String currency = '\$',
-    String separator = '>>>',
+    String separator = 'to',
   }) {
     final parts = replaceAll(currency, '').split(separator);
     if (parts.length != 2) return null;

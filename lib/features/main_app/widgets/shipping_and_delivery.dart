@@ -80,9 +80,9 @@ class _ShippingAndDeliveryWidgetState extends State<ShippingAndDeliveryWidget> {
               //TODO fix arguments
               ProductListArguments args = ProductListArguments(
                 saleId: '',
-                categoryKeys: [],
+                appliedCategories: [],
                 appliedFilters: [],
-                sort: '',
+                sort: null,
               );
               Nav.to(context, App.productList, arguments: args);
             },
