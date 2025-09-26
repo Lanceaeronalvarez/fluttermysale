@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../screens/mobile/login_mobile_screen.dart';
+import 'package:flutter_mysale/features/main_app/Screens/universal/authentication.dart';
 
 class LoginController extends StatelessWidget {
   const LoginController({Key? key}) : super(key: key);
@@ -10,7 +9,7 @@ class LoginController extends StatelessWidget {
     return Title(
       title: 'Login Section',
       color: Colors.blue,
-      child: const LoginMobileScreen(),
+      child: const Authenthication(),
     );
   }
 }
