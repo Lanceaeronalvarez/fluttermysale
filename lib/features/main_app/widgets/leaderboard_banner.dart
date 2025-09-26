@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart';
 
-class LeaderBannerWidget extends StatefulWidget {
-  final BannerModel? banner;
+typedef LeaderboardBannerTappedCallback = void Function(BannerModel? banner);
 
-  const LeaderBannerWidget({super.key, this.banner});
+class LeaderboardBannerWidget extends StatefulWidget {
+  final BannerModel? banner;
+  final LeaderboardBannerTappedCallback? onTap;
+
+  const LeaderboardBannerWidget({super.key, this.banner, this.onTap});
 
   @override
-  State<LeaderBannerWidget> createState() => _LeaderBannerWidgetState();
+  State<LeaderboardBannerWidget> createState() => _LeaderboardBannerWidgetState();
 }
 
-class _LeaderBannerWidgetState extends State<LeaderBannerWidget> {
+class _LeaderboardBannerWidgetState extends State<LeaderboardBannerWidget> {
   // Default fallback data
 
   @override
@@ -22,7 +25,9 @@ class _LeaderBannerWidgetState extends State<LeaderBannerWidget> {
       child: SizedBox(
         child: GestureDetector(
           onTap: () {
-            //TODO: on tap loginc
+            if (widget.onTap != null) {
+              widget.onTap!(widget.banner);
+            }
           },
           child: SizedBox(
             child: banner?.image != null

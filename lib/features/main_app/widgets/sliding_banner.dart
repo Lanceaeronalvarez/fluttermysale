@@ -2,10 +2,13 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart';
 
+typedef SlidingBannerTappedCallback = void Function(BannerModel);
+
 class SlidingBannerWidget extends StatefulWidget {
   final List<BannerModel>? banners;
+  final SlidingBannerTappedCallback? onTap;
 
-  const SlidingBannerWidget({super.key, this.banners});
+  const SlidingBannerWidget({super.key, this.banners, this.onTap});
 
   @override
   State<SlidingBannerWidget> createState() => _SlidingBannerWidgetState();
@@ -46,7 +49,9 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
     return SizedBox(
       child: GestureDetector(
         onTap: () {
-          //TODO: on tap logic
+          if (widget.onTap != null) {
+            widget.onTap!(banner);
+          }
         },
         child: slidingBannerView(banner),
       ),

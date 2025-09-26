@@ -10,21 +10,26 @@ import '../../../../core/core.dart';
 import '../../providers/productlist_provider.dart';
 
 class ProductListArguments {
+  String? initialSearchQuery;
   String saleId;
   List<CategoryNodeModel> appliedCategories;
+  List<String>? appliedCategoryKeys;
   List<FacetFilterModel> appliedFilters;
   ProductSortModel? sort;
   CategoryNodeModel? originCategory;
 
   ProductListArguments._({
+    this.initialSearchQuery,
     required this.saleId,
     required this.appliedCategories,
+    this.appliedCategoryKeys,
     required this.appliedFilters,
     required this.sort,
     required this.originCategory,
   });
 
   factory ProductListArguments({
+    String? initialSearchQuery,
     required String saleId,
     required List<CategoryNodeModel> appliedCategories,
     required List<FacetFilterModel> appliedFilters,
@@ -32,11 +37,30 @@ class ProductListArguments {
     required CategoryNodeModel? originCategory,
   }) {
     return ProductListArguments._(
+      initialSearchQuery: initialSearchQuery,
       saleId: saleId,
       appliedCategories: appliedCategories,
       appliedFilters: appliedFilters,
       sort: sort,
       originCategory: originCategory,
+    );
+  }
+
+  factory ProductListArguments.withAppliedCategoryKeys({
+    String? initialSearchQuery,
+    required String saleId,
+    required List<String> appliedCategoryKeys,
+    required List<FacetFilterModel> appliedFilters,
+    required ProductSortModel? sort,
+  }) {
+    return ProductListArguments._(
+      initialSearchQuery: initialSearchQuery,
+      saleId: saleId,
+      appliedCategories: [],
+      appliedCategoryKeys: appliedCategoryKeys,
+      appliedFilters: appliedFilters,
+      sort: sort,
+      originCategory: null,
     );
   }
 }
@@ -61,8 +85,10 @@ class _ProductListState extends ControllerState<ProductListController> {
 
     _productListProvider = ProductListProvider(
       userAgentHelper: UserAgentHelper.shared,
+      searchQuery: widget.args.initialSearchQuery ?? "",
       saleId: widget.args.saleId,
       appliedCategories: widget.args.appliedCategories,
+      appliedCategoryKeys: widget.args.appliedCategoryKeys,
       appliedFilters: widget.args.appliedFilters,
       sort: widget.args.sort,
       originCategory: widget.args.originCategory,

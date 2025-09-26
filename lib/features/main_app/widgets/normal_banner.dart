@@ -5,10 +5,13 @@ import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart'
 import '../../../core/classes/route_manager.dart';
 import '../app.dart';
 
+typedef BannerTappedCallback = void Function(BannerModel);
+
 class NormalBannerWidget extends StatefulWidget {
   final List<BannerModel>? banners;
+  final BannerTappedCallback? onTap;
 
-  const NormalBannerWidget({super.key, required this.banners});
+  const NormalBannerWidget({super.key, required this.banners, this.onTap});
 
   @override
   State<NormalBannerWidget> createState() => _NormalBannerWidgetState();
@@ -50,14 +53,9 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
   Widget normalBannerGestureDetector(BannerModel banner) {
     return GestureDetector(
       onTap: () {
-        ProductListArguments args = ProductListArguments(
-          saleId: banner.destinationId ?? '',
-          appliedCategories: [],
-          appliedFilters: [],
-          sort: null,
-          originCategory: null
-        );
-        Nav.toNamed(context, App.productList, arguments: args);
+        if (widget.onTap != null) {
+          widget.onTap!(banner);
+        }
       },
       child: Container(
         color: Colors.white,

@@ -10,10 +10,26 @@ class FacetFilterModel {
 
   FacetFilterModel(this.name, this.values);
 
-  factory FacetFilterModel.fromJson(Map<String, dynamic> json) =>
-      _$ProductListFacetModelFromJson(json);
+  factory FacetFilterModel.createSupplierFromLocationFilterHash(
+    String locationFilterHash,
+  ) {
+    List<FacetFilterValueModel> values = <FacetFilterValueModel>[];
+    values.add(FacetFilterValueModel(locationFilterHash, null));
+    return FacetFilterModel("supplier", values);
+  }
 
-  Map<String, dynamic> toJson() => _$ProductListFacetModelToJson(this);
+  factory FacetFilterModel.createBrands(List<String> brands) {
+    List<FacetFilterValueModel> values = <FacetFilterValueModel>[];
+    brands.forEach((String s) {
+      values.add(FacetFilterValueModel(s, null));
+    });
+    return FacetFilterModel("skus.brandName", values);
+  }
+
+  factory FacetFilterModel.fromJson(Map<String, dynamic> json) =>
+      _$FacetFilterModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$FacetFilterModelToJson(this);
 
   static Map<String, List<String>> toMapStringValues(
     List<FacetFilterModel> facetFilters, {
@@ -53,7 +69,7 @@ class FacetFilterValueModel {
   FacetFilterValueModel(this.value, this.count);
 
   factory FacetFilterValueModel.fromJson(Map<String, dynamic> json) =>
-      _$ValueFromJson(json);
+      _$FacetFilterValueModelFromJson(json);
 
-  Map<String, dynamic> toJson() => _$ValueToJson(this);
+  Map<String, dynamic> toJson() => _$FacetFilterValueModelToJson(this);
 }

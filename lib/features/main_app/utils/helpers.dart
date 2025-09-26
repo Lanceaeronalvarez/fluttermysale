@@ -57,3 +57,44 @@ extension RangeParsing on String {
     return (min: min, max: max);
   }
 }
+
+extension StringServerApostropheS on String {
+  String fixServerApostropheS() {
+    bool foundWhiteSpace = false;
+    int whiteSpacePosition = -1;
+    bool foundS = false;
+    String output = this;
+    final int len = output.length;
+    for (int i = 0; i <= len; ++i) {
+      if (foundS) {
+        if (i >= len || output[i] == ' ') {
+          if (whiteSpacePosition >= 1 && i - whiteSpacePosition == 2) {
+            output.replaceRange(
+              whiteSpacePosition,
+              whiteSpacePosition + 1,
+              '\'',
+            );
+          }
+          foundS = false;
+        }
+      }
+      if (i >= len) {
+        break;
+      }
+      final String c = output[i];
+      if (c == ' ') {
+        foundWhiteSpace = true;
+        whiteSpacePosition = i;
+        foundS = false;
+      } else {
+        if (foundWhiteSpace) {
+          if (c == 's' || c == 'S') {
+            foundS = true;
+          }
+        }
+        foundWhiteSpace = false;
+      }
+    }
+    return output;
+  }
+}

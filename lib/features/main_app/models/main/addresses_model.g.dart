@@ -31,7 +31,7 @@ AddressItem _$AddressItemFromJson(Map<String, dynamic> json) => AddressItem(
   surname: json['surname'] as String?,
   addressLines: json['address_lines'] as String?,
   suburb: json['suburb'] as String?,
-  city: json['state'] as String?,
+  city: json['city'] as String?,
   postcode: json['postcode'] as String?,
   phone: json['phone'] as String?,
 );
@@ -44,7 +44,7 @@ Map<String, dynamic> _$AddressItemToJson(AddressItem instance) =>
       'surname': instance.surname,
       'address_lines': instance.addressLines,
       'suburb': instance.suburb,
-      'state': instance.city,
+      'city': instance.city,
       'postcode': instance.postcode,
       'phone': instance.phone,
     };

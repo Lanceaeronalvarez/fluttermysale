@@ -32,11 +32,11 @@ class ShopController extends StatelessController {
       ),
       tabletLandscape: MultiProvider(
         providers: _providers(),
-        child: tablet.Shop(title: _title),
+        child: tablet.Shop(title: _title), //TODO
       ),
       desktop: MultiProvider(
         providers: _providers(),
-        child: desktop.Shop(title: _title),
+        child: desktop.Shop(title: _title), //TODO?
       ),
     );
   }

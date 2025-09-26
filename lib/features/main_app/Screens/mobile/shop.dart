@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/architect.dart';
+import 'package:flutter_mysale/core/helpers/deeplink_helper.dart';
+import 'package:flutter_mysale/core/helpers/shop_banners_ontap_helper.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/controllers/main/productlist_controller.dart';
-import 'package:flutter_mysale/features/main_app/widgets/leader_banner.dart';
+import 'package:flutter_mysale/features/main_app/widgets/leaderboard_banner.dart';
 import 'package:flutter_mysale/features/main_app/widgets/normal_banner.dart';
 import 'package:flutter_mysale/features/main_app/widgets/sliding_banner.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../config/config.dart';
-import '../../../../core/core.dart';
 import '../../models/main/banners_model.dart';
-import '../../models/main/facetfilter_model.dart';
 import '../../providers/bestsellers_provider.dart';
 import '../../providers/leaderboardbanner_provider.dart';
 import '../../providers/shopbanners_provider.dart';
 import '../../providers/slidingbanners_provider.dart';
 import '../../providers/sponsoredbanners_provider.dart';
 import '../../providers/trendingbrands_provider.dart';
+
+typedef ShopArguments = ({String? category});
 
 class Shop extends StatefulWidget {
   final String? title;
@@ -32,17 +34,21 @@ class _ShopState extends State<Shop> {
   List<BannerModel> _normalBanners = [];
   String _logoImagePath = "assets/images/logo.png";
 
-  GetBannersRequest request = GetBannersRequest(
-    null,
-    null,
-    "10",
-    null,
-    null,
-    null,
-    true,
-    true,
-    null,
-  );
+  ShopArguments args = (category: null);
+
+  GetBannersRequest _requestFromArgs() {
+    return GetBannersRequest(
+      null,
+      null,
+      "10",
+      args.category,
+      null,
+      null,
+      true,
+      true,
+      null,
+    );
+  }
 
   @override
   void initState() {
@@ -50,7 +56,7 @@ class _ShopState extends State<Shop> {
     var tm = context.read<ThemeProvider>();
     dayAndNight = tm.isDarkMode;
     getSlidingBanners();
-    getShopBanners(request);
+    getShopBanners(_requestFromArgs());
     getLeaderboardBanner("");
   }
 
@@ -170,7 +176,14 @@ class _ShopState extends State<Shop> {
               ); //TODO: paging
             }
           });
-          return NormalBannerWidget(banners: _normalBanners);
+          return NormalBannerWidget(
+            banners: _normalBanners,
+            onTap: (BannerModel? banner) {
+              if (banner != null) {
+                ShopBannersOnTapHelper.onBannerTapped(context, banner);
+              }
+            },
+          );
         }
       },
     );
@@ -182,7 +195,14 @@ class _ShopState extends State<Shop> {
         if (provider.slidingBanners == null) {
           return SizedBox();
         } else {
-          return SlidingBannerWidget(banners: provider.slidingBanners);
+          return SlidingBannerWidget(
+            banners: provider.slidingBanners,
+            onTap: (BannerModel? banner) {
+              if (banner != null) {
+                ShopBannersOnTapHelper.onBannerTapped(context, banner);
+              }
+            },
+          );
         }
       },
     );
@@ -194,7 +214,18 @@ class _ShopState extends State<Shop> {
         if (provider.leaderboardBanner == null) {
           return SizedBox();
         } else {
-          return LeaderBannerWidget(banner: provider.leaderboardBanner);
+          return LeaderboardBannerWidget(
+            banner: provider.leaderboardBanner,
+            onTap: (BannerModel? banner) {
+              if (banner?.link == null) {
+                return;
+              }
+              DeepLinkHelper.processDeeplinkUri(
+                context,
+                Uri.parse((banner!.link)!),
+              );
+            },
+          );
         }
       },
     );

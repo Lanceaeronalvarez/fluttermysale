@@ -13,6 +13,7 @@ import 'package:flutter_mysale/features/main_app/providers/filter_provider.dart'
 
 import '../../../config/api_endpoints.dart';
 import '../../../config/app_http.dart';
+import '../models/main/banners_linkoptions_model.dart';
 import '../models/main/productlist_model.dart';
 
 class ProductListProvider extends ChangeNotifier {
@@ -21,6 +22,7 @@ class ProductListProvider extends ChangeNotifier {
   UserAgentHelper _userAgentHelper;
   String _saleId;
   List<CategoryNodeModel> _appliedCategories;
+  List<String>? _appliedCategoryKeys;
   List<FacetFilterModel> _appliedFilters;
   ProductSortModel? _sort;
   ProductListResponse? _productList;
@@ -34,13 +36,23 @@ class ProductListProvider extends ChangeNotifier {
   _originCategory; // if plp came from categories/subcategories otherwise this should be null
 
   String get saleId => _saleId;
+
   List<CategoryNodeModel> get appliedCategories => _appliedCategories;
+
+  List<String>? get appliedCategoryKeys => _appliedCategoryKeys;
+
   List<FacetFilterModel> get appliedFilters => _appliedFilters;
+
   ProductSortModel? get sort => _sort;
+
   ProductListResponse? get productList => _productList;
+
   bool get isLoading => _isLoading;
+
   List<ProductItem> get products => _products;
+
   int get page => _page;
+
   int get pageSize => _pageSize;
   ProductListResponse? get initialProductListResponse =>
       _initialProductListResponse;
@@ -49,8 +61,10 @@ class ProductListProvider extends ChangeNotifier {
 
   ProductListProvider._(
     this._userAgentHelper,
+    this._searchQuery,
     this._saleId,
     this._appliedCategories,
+    this._appliedCategoryKeys,
     this._appliedFilters,
     this._sort,
     this._originCategory,
@@ -58,16 +72,20 @@ class ProductListProvider extends ChangeNotifier {
 
   factory ProductListProvider({
     required UserAgentHelper userAgentHelper,
+    required String searchQuery,
     required String saleId,
     required List<CategoryNodeModel> appliedCategories,
+    List<String>? appliedCategoryKeys,
     required List<FacetFilterModel> appliedFilters,
     required ProductSortModel? sort,
     required CategoryNodeModel? originCategory,
   }) {
     ProductListProvider p = ProductListProvider._(
       userAgentHelper,
+      searchQuery,
       saleId,
       appliedCategories,
+      appliedCategoryKeys,
       appliedFilters,
       sort,
       originCategory,
@@ -95,16 +113,23 @@ class ProductListProvider extends ChangeNotifier {
       headers: {'User-Agent': userAgent},
     );
 
-    GetProductListRequest request = GetProductListRequest(
-      _searchQuery,
-      _page.toString(),
-      pageSize.toString(),
-      jsonEncode(
+    String categoryKeys;
+    if (_appliedCategoryKeys == null || appliedCategories.isNotEmpty) {
+      categoryKeys = jsonEncode(
         appliedCategories
             .map<String?>((CategoryNodeModel e) => e.key)
             .nonNulls
             .toList(),
-      ),
+      );
+    } else {
+      categoryKeys = jsonEncode(_appliedCategoryKeys);
+    }
+
+    GetProductListRequest request = GetProductListRequest(
+      _searchQuery,
+      _page.toString(),
+      pageSize.toString(),
+      categoryKeys,
       jsonEncode(facetFiltersToRequestArgs()),
       sort?.key,
     );

@@ -94,11 +94,13 @@ class _ProductListState extends State<ProductList>
     with TickerProviderStateMixin {
   String _logoImagePath = "assets/images/logo.png";
 
-  final TextEditingController _controller = TextEditingController(text: '');
+  final TextEditingController _searchTextFieldController =
+      TextEditingController(text: '');
   bool dayAndNight = false;
 
   bool _showSearch = true;
 
+  late final ScrollController _scrollController;
   double _scrollPosition = 0.0;
   double _scrollSpeed = 0.0;
 
@@ -132,6 +134,15 @@ class _ProductListState extends State<ProductList>
         curve: Curves.linear,
       ),
     );
+    _scrollController = ScrollController();
+    _scrollController.addListener(() {
+      if (_scrollSpeed > 0) {
+        _searchAndFilterAnimationController?.forward();
+      } else if (_scrollSpeed < 0) {
+        _searchAndFilterAnimationController?.reverse();
+      }
+      _calculateScrollSpeed(_scrollController);
+    });
 
     Future.microtask(() {
       final provider = Provider.of<ProductListProvider>(context, listen: false);
@@ -142,9 +153,10 @@ class _ProductListState extends State<ProductList>
   @override
   void dispose() {
     super.dispose();
+    _scrollController.dispose();
+    _searchTextFieldController.dispose();
     _searchAndFilterAnimationController?.dispose();
     _searchBoxAnimationController?.dispose();
-    _controller.dispose();
   }
 
   @override
@@ -195,7 +207,7 @@ class _ProductListState extends State<ProductList>
               axis: Axis.vertical,
               child: _searchAndFilterDisplay(provider),
             ),
-            _productsDisplay(_scrollController()),
+            _productsDisplay(_scrollController),
           ],
         ),
       ),
@@ -214,7 +226,7 @@ class _ProductListState extends State<ProductList>
             prefixIcon: Icon(Icons.search),
             hintText: 'Search',
           ),
-          controller: _controller,
+          controller: _searchTextFieldController,
           onChanged: (val) {
             provider.resetProductList();
             provider.updateSearchQuery(val);
@@ -395,19 +407,6 @@ class _ProductListState extends State<ProductList>
   Widget _productCard(ProductItem product) {
     return ProductCard(product: product);
     // TODO: onTap
-  }
-
-  ScrollController _scrollController() {
-    ScrollController scrollController = ScrollController();
-    scrollController.addListener(() {
-      if (_scrollSpeed > 0) {
-        _searchAndFilterAnimationController?.forward();
-      } else if (_scrollSpeed < 0) {
-        _searchAndFilterAnimationController?.reverse();
-      }
-      _calculateScrollSpeed(scrollController);
-    });
-    return scrollController;
   }
 
   void _calculateScrollSpeed(ScrollController scrollController) {

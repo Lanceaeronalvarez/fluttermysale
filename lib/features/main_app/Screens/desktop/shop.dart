@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/controllers/main/productlist_controller.dart';
-import 'package:flutter_mysale/features/main_app/widgets/leader_banner.dart';
+import 'package:flutter_mysale/features/main_app/widgets/leaderboard_banner.dart';
 import 'package:flutter_mysale/features/main_app/widgets/normal_banner.dart';
 import 'package:flutter_mysale/features/main_app/widgets/sliding_banner.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +16,8 @@ import '../../providers/shopbanners_provider.dart';
 import '../../providers/slidingbanners_provider.dart';
 import '../../providers/sponsoredbanners_provider.dart';
 import '../../providers/trendingbrands_provider.dart';
+
+typedef ShopArguments = ({String? category});
 
 class Shop extends StatefulWidget {
   final String? title;
@@ -32,24 +34,28 @@ class _ShopState extends State<Shop> {
   List<BannerModel> _normalBanners = [];
   String _logoImagePath = "assets/images/logo.png";
 
-  GetBannersRequest request = GetBannersRequest(
-    null,
-    null,
-    "50",
-    null,
-    null,
-    null,
-    true,
-    true,
-    null,
-  );
+  ShopArguments args = (category: null);
+
+  GetBannersRequest _requestFromArgs() {
+    return GetBannersRequest(
+      null,
+      null,
+      "50",
+      args.category,
+      null,
+      null,
+      true,
+      true,
+      null,
+    );
+  }
 
   @override
   void initState() {
     super.initState();
     var tm = context.read<ThemeProvider>();
     dayAndNight = tm.isDarkMode;
-    getShopBanners(request);
+    getShopBanners(_requestFromArgs());
     getSlidingBanners();
     getLeaderboardBanner("");
   }
@@ -170,7 +176,21 @@ class _ShopState extends State<Shop> {
               ); //TODO: paging
             }
           });
-          return NormalBannerWidget(banners: _normalBanners);
+          return NormalBannerWidget(
+            banners: _normalBanners,
+            onTap: (BannerModel banner) {
+              Nav.toNamed(
+                context,
+                App.productList,
+                arguments: (
+                  saleId: banner.destinationId,
+                  categoryKeys: <String>[],
+                  facetFilters: <FacetFilterModel>[],
+                  sort: "",
+                ),
+              );
+            },
+          );
         }
       },
     );
@@ -194,7 +214,7 @@ class _ShopState extends State<Shop> {
         if (provider.leaderboardBanner == null) {
           return SizedBox();
         } else {
-          return LeaderBannerWidget(banner: provider.leaderboardBanner);
+          return LeaderboardBannerWidget(banner: provider.leaderboardBanner);
         }
       },
     );

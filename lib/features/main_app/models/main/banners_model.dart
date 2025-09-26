@@ -1,5 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
+import 'banners_linkoptions_model.dart';
+
 part 'banners_model.g.dart';
 
 class GetBannersRequest {
@@ -111,55 +113,4 @@ class Attributes {
       _$AttributesFromJson(json);
 
   Map<String, dynamic> toJson() => _$AttributesToJson(this);
-}
-
-@JsonSerializable()
-class LinkOptions {
-  Facets? facets;
-  String? sorting;
-  Map<String, String>? category;
-  String? searchQuery;
-
-  LinkOptions();
-
-  factory LinkOptions.fromJson(Map<String, dynamic> json) =>
-      _$LinkOptionsFromJson(json);
-
-  Map<String, dynamic> toJson() => _$LinkOptionsToJson(this);
-}
-
-@JsonSerializable()
-class Facets {
-  @JsonKey(name: "skus.brandName")
-  List<String>? brandName;
-  @JsonKey(name: "skus.attributes.size")
-  List<String>? sizes;
-  @JsonKey(name: "color")
-  List<String>? colors;
-  @JsonKey(name: "skus.attributesForFaceting.aud")
-  PriceLimit? priceLimit;
-  List<String>? newArrivals;
-  List<String>? delivery;
-  String? saleId;
-  String? promoSaleId;
-
-  Facets();
-
-  factory Facets.fromJson(Map<String, dynamic> json) => _$FacetsFromJson(json);
-
-  Map<String, dynamic> toJson() => _$FacetsToJson(this);
-}
-
-@JsonSerializable()
-class PriceLimit {
-  int? from;
-  int? to;
-  int? max;
-
-  PriceLimit();
-
-  factory PriceLimit.fromJson(Map<String, dynamic> json) =>
-      _$PriceLimitFromJson(json);
-
-  Map<String, dynamic> toJson() => _$PriceLimitToJson(this);
 }
