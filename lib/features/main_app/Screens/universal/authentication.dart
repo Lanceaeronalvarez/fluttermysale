@@ -62,7 +62,12 @@ class _AuthenthicationWidgetState extends State<AuthenthicationWidget> {
   }
 
   Future<String> loadHtmlAsset() async {
-    return await rootBundle.loadString('assets/recaptcha.html');
+    String captcha = await rootBundle.loadString('assets/recaptcha.html');
+    captcha = captcha.replaceAll(
+      "CAPTCHA_SITE_KEY",
+      "'${dotenv.get("FLAVOR_RECAPTCHA_SITE_KEY")}'",
+    );
+    return captcha;
   }
 
   Widget _createTitle() {
