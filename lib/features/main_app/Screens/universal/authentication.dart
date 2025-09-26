@@ -18,7 +18,6 @@ class Authenthication extends StatefulWidget {
 class _AuthenthicationState extends State<Authenthication> {
   ValueNotifier<bool> isSignUp = ValueNotifier<bool>(false);
   ValueNotifier<bool> isShowError = ValueNotifier<bool>(false);
-  ValueNotifier<bool> shouldDisableSignInButton = ValueNotifier<bool>(false);
 
   WebViewController controller = WebViewController();
 
@@ -44,7 +43,7 @@ class _AuthenthicationState extends State<Authenthication> {
           token,
         )
         .then((data) {
-          shouldDisableSignInButton.value = false;
+          provider.isLoading = false;
           doAuth(
             context,
             emailTextField.value.text,
@@ -53,7 +52,7 @@ class _AuthenthicationState extends State<Authenthication> {
           showMessage(context, 'Login Successful');
         })
         .catchError((error) {
-          shouldDisableSignInButton.value = false;
+          provider.isLoading = false;
           print("Error: $error");
         });
   }
@@ -179,34 +178,38 @@ class _AuthenthicationState extends State<Authenthication> {
   }
 
   Widget _createLogInButton(BuildContext context) {
-    String text = "Sign In";
-    // Provider.of<AuthenthicationProvider>(context, listen: false);
+    String signInText = "Sign In";
+    String signUpText = "Sign Up";
     return Consumer<AuthenthicationProvider>(
       builder: (_, provider, __) {
-        return ValueListenableBuilder(
-          valueListenable: shouldDisableSignInButton,
-          builder: (context, value, child) {
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ValueListenableBuilder(
+            valueListenable: isSignUp,
+            builder: (context, isSignUpValue, child) {
+              return ElevatedButton(
                 onPressed: () {
-                  if (!value) {
-                    if (emailTextField.text.isNotEmpty ||
-                        passwordTextField.text.isNotEmpty) {
-                      _createCaptcha(provider);
-                      shouldDisableSignInButton.value = true;
-                    } else {
-                      isShowError.value = true;
+                  if (isSignUpValue) {
+                    //TODO: Register
+                  } else {
+                    if (!provider.isLoading) {
+                      if (emailTextField.text.isNotEmpty ||
+                          passwordTextField.text.isNotEmpty) {
+                        _createCaptcha(provider);
+                        provider.isLoading = true;
+                      } else {
+                        isShowError.value = true;
+                      }
                     }
                   }
                 },
                 style: appElevatedButtonStyle,
-                child: value
+                child: provider.isLoading
                     ? const CircularProgressIndicator(color: Colors.black)
-                    : Text(text),
-              ),
-            );
-          },
+                    : Text(isSignUpValue ? signUpText : signInText),
+              );
+            },
+          ),
         );
       },
     );
@@ -304,7 +307,7 @@ class _AuthenthicationState extends State<Authenthication> {
                 child: IconButton(
                   icon: const Icon(Icons.close, weight: 20),
                   onPressed: () {
-                    shouldDisableSignInButton.value = false;
+                    provider.isLoading = false;
                     Navigator.pop(context);
                   },
                 ),

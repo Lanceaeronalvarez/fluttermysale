@@ -26,7 +26,7 @@ class AppCache {
 
   void doLogout() {
     Cache.deleteData('auth_data');
-    Cache.deleteData('login_ticket');
+    Cache.deleteData(_loginTicket);
   }
 
   Future<bool> isLogout() async {
