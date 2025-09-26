@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
 import 'package:flutter_mysale/features/main_app/Screens/universal/checkoutcart.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:provider/provider.dart';
@@ -39,6 +40,10 @@ class MysaleApp extends StatelessWidget {
           ).asSideMenuRoute();
         }
         return null;
+      },
+      builder: (BuildContext context, Widget? child) {
+        UserAgentHelper.shared.updateMediaQueryData(context);
+        return child!;
       },
     );
   }

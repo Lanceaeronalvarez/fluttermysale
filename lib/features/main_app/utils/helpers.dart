@@ -38,3 +38,22 @@ extension StringCasing on String {
         .join(' ');
   }
 }
+
+extension RangeParsing on String {
+  ({double min, double max})? parseRange({
+    String currency = '\$',
+    String separator = 'to',
+  }) {
+    final parts = replaceAll(currency, '').split(separator);
+    if (parts.length != 2) return null;
+
+    final cleanedMin = parts[0].trim();
+    final cleanedMax = parts[1].trim();
+
+    final min = double.tryParse(cleanedMin);
+    final max = double.tryParse(cleanedMax);
+    if (min == null || max == null) return null;
+
+    return (min: min, max: max);
+  }
+}

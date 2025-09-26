@@ -1,7 +1,6 @@
 import 'package:flutter_mysale/features/main_app/providers/authentication_provider.dart';
 import 'package:flutter_mysale/features/main_app/providers/categorytree_provider.dart';
 import 'package:flutter_mysale/features/main_app/providers/checkout_provider.dart';
-import 'package:flutter_mysale/features/main_app/providers/filter_provider.dart';
 import 'package:flutter_mysale/features/main_app/providers/getappsettings_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
@@ -26,7 +25,6 @@ List<SingleChildWidget> appProviders = [
   ChangeNotifierProvider<CategoryTreeProvider>(
     create: (context) => CategoryTreeProvider(context: context),
   ),
-  ChangeNotifierProvider<FilterProvider>(create: (context) => FilterProvider()),
   ChangeNotifierProvider<CheckoutProvider>(
     create: (context) => CheckoutProvider(),
   ),

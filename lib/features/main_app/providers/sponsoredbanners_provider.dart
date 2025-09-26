@@ -21,7 +21,7 @@ class SponsoredBannersProvider extends ChangeNotifier {
   GetBannersResponse? get sponsoredBanners => _sponsoredBanners;
 
   SponsoredBannersProvider({required this.context}) {
-    _userAgentHelper = UserAgentHelper(context);
+    _userAgentHelper = UserAgentHelper.shared;
   }
 
   void getSponsoredBanners(String categoryId) async {

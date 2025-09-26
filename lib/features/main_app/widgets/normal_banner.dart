@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/features/main_app/controllers/main/productlist_controller.dart';
 import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart';
 
 import '../../../core/classes/route_manager.dart';
 import '../app.dart';
-import '../models/main/facetfilter_model.dart';
 
 class NormalBannerWidget extends StatefulWidget {
   final List<BannerModel>? banners;
@@ -50,16 +50,14 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
   Widget normalBannerGestureDetector(BannerModel banner) {
     return GestureDetector(
       onTap: () {
-        Nav.toNamed(
-          context,
-          App.productList,
-          arguments: (
-            saleId: banner.destinationId,
-            categoryKeys: <String>[],
-            facetFilters: <FacetFilterModel>[],
-            sort: "",
-          ),
+        ProductListArguments args = ProductListArguments(
+          saleId: banner.destinationId ?? '',
+          appliedCategories: [],
+          appliedFilters: [],
+          sort: null,
+          originCategory: null
         );
+        Nav.toNamed(context, App.productList, arguments: args);
       },
       child: Container(
         color: Colors.white,

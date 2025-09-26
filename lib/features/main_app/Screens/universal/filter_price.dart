@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/core/classes/route_manager.dart';
 import 'package:flutter_mysale/core/helpers/style_helper.dart';
+import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/providers/filter_provider.dart';
+import 'package:flutter_mysale/features/main_app/providers/productlist_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:flutter_mysale/features/main_app/widgets/price_range_slider.dart';
 import 'package:provider/provider.dart';
@@ -73,9 +76,17 @@ class _FilterPriceState extends State<FilterPrice> {
 
   Widget _createClearButton() {
     return TextButton(
-      onPressed: () {},
+      onPressed: () {
+        FilterProvider provider = context.read<FilterProvider>();
+        provider.clearAppliedFilter(FilterKey.price.key);
+        provider.getProductList(context);
+      },
       child: Text('Clear'),
-      style: TextButton.styleFrom(foregroundColor: 'CCA68B'.toColor()),
+      style: TextButton.styleFrom(
+        foregroundColor: 'CCA68B'.toColor(),
+        splashFactory: NoSplash.splashFactory,
+        overlayColor: Colors.transparent,
+      ),
     );
   }
 
@@ -113,17 +124,11 @@ class _FilterPriceState extends State<FilterPrice> {
           tooltipOffset: -4,
           mergeGap: 16,
           onDrag: (currentMinPrice, currentMaxPrice) {
-            provider.setCurrentPriceRange(
-              currentMinPrice: currentMinPrice,
-              currentMaxPrice: currentMaxPrice,
-            );
+            provider.updateAppliedFilterPrice(currentMinPrice, currentMaxPrice);
           },
           onDragEnd: (currentMinPrice, currentMaxPrice) {
-            provider.setCurrentPriceRange(
-              currentMinPrice: currentMinPrice,
-              currentMaxPrice: currentMaxPrice,
-            );
-            //TODO: JCA call api here
+            provider.updateAppliedFilterPrice(currentMinPrice, currentMaxPrice);
+            provider.getProductList(context);
           },
         ),
       ),
@@ -131,7 +136,7 @@ class _FilterPriceState extends State<FilterPrice> {
   }
 
   Widget _createFilterButtonSection(FilterProvider provider) {
-    int productCount = provider.productCount;
+    int productCount = provider.productTotal;
     String text = (productCount == 0)
         ? 'See all products'
         : 'See all $productCount products';
@@ -140,6 +145,10 @@ class _FilterPriceState extends State<FilterPrice> {
       child: ElevatedButton(
         onPressed: () {
           print('Filter Price');
+          ProductListProvider productListProvider = context
+              .read<ProductListProvider>();
+          provider.appyFilterToProductList(productListProvider);
+          Nav.closeUntil(context, App.productList);
         },
         style: appElevatedButtonStyle,
         child: Text(text),

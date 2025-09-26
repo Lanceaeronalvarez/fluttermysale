@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/core/classes/route_manager.dart';
 import 'package:flutter_mysale/core/helpers/style_helper.dart';
+import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/models/main/filter_category_model.dart';
-import 'package:flutter_mysale/features/main_app/providers/categorytree_provider.dart';
 import 'package:flutter_mysale/features/main_app/providers/filter_provider.dart';
+import 'package:flutter_mysale/features/main_app/providers/productlist_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:provider/provider.dart';
 
@@ -17,11 +19,6 @@ class FilterCategory extends StatefulWidget {
 }
 
 class _FilterCategoryState extends State<FilterCategory> {
-  bool argsRetrieved = false;
-
-  //TEMP ONLY
-  late CategoryTreeProvider categoryTreeProvider;
-
   //TODO: JCA - move path somewhere (config maybe)
   String _pathCheckbox = 'assets/images/filterCheckbox.png';
   String _pathCheckboxChecked = 'assets/images/filterCheckboxChecked.png';
@@ -30,25 +27,7 @@ class _FilterCategoryState extends State<FilterCategory> {
   Duration animationDuration = const Duration(milliseconds: 200);
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    if (!argsRetrieved) {
-      argsRetrieved = true;
-      //TODO: get filters and currently applied filter
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    //TODO: JCA - temp only, should be removed
-    categoryTreeProvider = CategoryTreeProvider(context: context);
-    categoryTreeProvider.getCategoryTree(
-      completion: (categories) {
-        context.read<FilterProvider>().setCategories(categories);
-      },
-    );
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _createAppBar(),
@@ -88,6 +67,7 @@ class _FilterCategoryState extends State<FilterCategory> {
   Widget _createCloseButton() {
     return BackButton(
       onPressed: () {
+        context.read<FilterProvider>().toggleIsExpandedOffAllFilterCategories();
         Navigator.pop(context);
       },
     );
@@ -96,10 +76,16 @@ class _FilterCategoryState extends State<FilterCategory> {
   Widget _createClearButton() {
     return TextButton(
       onPressed: () {
-        context.read<FilterProvider>().clearAllSelecteCategories();
+        FilterProvider provider = context.read<FilterProvider>();
+        provider.clearAllSelecteCategories();
+        provider.getProductList(context);
       },
       child: Text('Clear'),
-      style: TextButton.styleFrom(foregroundColor: 'CCA68B'.toColor()),
+      style: TextButton.styleFrom(
+        foregroundColor: 'CCA68B'.toColor(),
+        splashFactory: NoSplash.splashFactory,
+        overlayColor: Colors.transparent,
+      ),
     );
   }
 
@@ -152,6 +138,7 @@ class _FilterCategoryState extends State<FilterCategory> {
     bool isSelected = status == FilterCategoryStatus.checked;
     provider.setStatusOfLeafCategories(filterCategory, !isSelected);
     provider.generateSelectedCategories();
+    provider.getProductList(context);
   }
 
   Widget _createCategoryTree(
@@ -191,7 +178,8 @@ class _FilterCategoryState extends State<FilterCategory> {
           child: (filterCategory.hasChild && filterCategory.isExpanded)
               ? Column(
                   children: [
-                    for (FilterCategoryModel filterChild in filterCategory.filterChildren)
+                    for (FilterCategoryModel filterChild
+                        in filterCategory.filterChildren)
                       _createCategoryNode(
                         filterChild,
                         onRowTap: onRowTap,
@@ -214,23 +202,33 @@ class _FilterCategoryState extends State<FilterCategory> {
   ) {
     double leftIndention = 16 * filterCategory.depth.toDouble();
 
-    return ListTile(
-      contentPadding: EdgeInsets.fromLTRB(leftIndention, 0, 0, 0),
-      leading: _createCheckbox(filterCategory, onCheckboxTap, provider),
-      title: Text(
-        filterCategory.category.name ?? '',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+    return Theme(
+      data: Theme.of(context).copyWith(
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        hoverColor: Colors.transparent,
       ),
-      trailing: _createChevron(filterCategory, animationDuration),
-      onTap: () {
-        onRowTap.call(filterCategory);
-      },
+      child: ListTile(
+        contentPadding: EdgeInsets.fromLTRB(leftIndention, 0, 0, 0),
+        leading: _createCheckbox(filterCategory, onCheckboxTap, provider),
+        title: Text(
+          filterCategory.category.name ?? '',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+        trailing: _createChevron(filterCategory, animationDuration),
+        onTap: () {
+          onRowTap.call(filterCategory);
+        },
+      ),
     );
   }
 
-  Widget _createChevron(FilterCategoryModel filterCategory, Duration animationDuration) {
+  Widget _createChevron(
+    FilterCategoryModel filterCategory,
+    Duration animationDuration,
+  ) {
     return filterCategory.hasChild
         ? AnimatedRotation(
             turns: filterCategory.isExpanded ? 0.5 : 0,
@@ -245,7 +243,6 @@ class _FilterCategoryState extends State<FilterCategory> {
     OnCategoryCheckboxTap onCheckboxTap,
     FilterProvider provider,
   ) {
-
     String checkboxPath = '';
     switch (filterCategory.status) {
       case FilterCategoryStatus.unchecked:
@@ -281,7 +278,7 @@ class _FilterCategoryState extends State<FilterCategory> {
   Widget _createFilterButtonSection() {
     return Consumer<FilterProvider>(
       builder: (BuildContext context, FilterProvider provider, Widget? child) {
-        int productCount = provider.productCount;
+        int productCount = provider.productTotal;
         String text = (productCount == 0)
             ? 'See all products'
             : 'See all $productCount products';
@@ -290,6 +287,10 @@ class _FilterCategoryState extends State<FilterCategory> {
           child: ElevatedButton(
             onPressed: () {
               print('Filter Price');
+              ProductListProvider productListProvider = context
+                  .read<ProductListProvider>();
+              provider.appyFilterToProductList(productListProvider);
+              Nav.closeUntil(context, App.productList);
             },
             style: appElevatedButtonStyle,
             child: Text(text),

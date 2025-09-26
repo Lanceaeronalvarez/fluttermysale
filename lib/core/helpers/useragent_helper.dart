@@ -6,19 +6,26 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class UserAgentHelper {
+
+  static final shared = UserAgentHelper._();
   static String? _userAgent;
-  final BuildContext _context;
+  MediaQueryData _mediaQueryData = MediaQueryData();
+
+  UserAgentHelper._();
+
+  void updateMediaQueryData(BuildContext context) {
+    _mediaQueryData = MediaQuery.of(context);
+  }
 
   Future<String> get userAgent async {
     if (_userAgent == null) {
-      await _prepare(_context);
+      await _prepare();
     }
     return _userAgent!;
   }
 
-  UserAgentHelper(BuildContext context) : _context = context;
 
-  Future<bool> _prepare(BuildContext context) async {
+  Future<bool> _prepare() async {
     final deviceNames = DeviceMarketingNames();
 
     String appName = dotenv.get("FLAVOR_APP_NAME");
@@ -35,7 +42,7 @@ class UserAgentHelper {
     }
     OSVersion = Platform.operatingSystemVersion;
     locale = Platform.localeName;
-    interfaceIdiom = await _getIsTablet(context) ? "07" : "06";
+    interfaceIdiom = await _getIsTablet() ? "07" : "06";
     countryId = dotenv.get("SETTINGS_COUNTRY_ID");
 
     _userAgent =
@@ -59,7 +66,7 @@ class UserAgentHelper {
     return true;
   }
 
-  Future<bool> _getIsTablet(BuildContext context) async {
+  Future<bool> _getIsTablet() async {
     bool isTab = false;
     if (Platform.isIOS) {
       DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
@@ -71,7 +78,7 @@ class UserAgentHelper {
       }
       return isTab;
     } else {
-      var shortestSide = MediaQuery.of(context).size.shortestSide;
+      var shortestSide = _mediaQueryData.size.shortestSide;
       if(shortestSide > 600) {
         isTab = true;
       } else {

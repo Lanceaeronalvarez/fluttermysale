@@ -31,8 +31,6 @@ class PriceRangeSlider extends StatefulWidget {
   final double thumbSize = 32;
   final double? tooltipOffset;
   final double? mergeGap;
-  final double minValueHideThreshold = 12;
-  final double maxValueHideThreshold = 20;
   final void Function(double currentMin, double currentMax)? onDrag;
   final void Function(double currentMin, double currentMax)? onDragEnd;
 
@@ -67,12 +65,9 @@ class _PriceRangeSliderState extends State<PriceRangeSlider> {
   }
 
   Widget _createMinMaxContainer() {
-    final hideMin =
-        (widget.currentMinValue - widget.minValue) <=
-        widget.minValueHideThreshold;
-    final hideMax =
-        (widget.maxValue - widget.currentMaxValue) <=
-        widget.maxValueHideThreshold;
+    double threshold = widget.maxValue * 0.12;
+    final hideMin = (widget.currentMinValue - widget.minValue) <= threshold;
+    final hideMax = (widget.maxValue - widget.currentMaxValue) <= threshold;
     return IgnorePointer(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: widget.thumbSize / 2),

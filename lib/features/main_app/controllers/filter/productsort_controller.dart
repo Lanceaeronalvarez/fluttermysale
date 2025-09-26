@@ -1,27 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/core/core.dart';
+import 'package:flutter_mysale/features/main_app/providers/productlist_provider.dart';
 import 'package:flutter_mysale/features/main_app/providers/productsort_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../Screens/universal/product_sort.dart' as universal;
+import '../../Screens/universal/product_sort.dart';
 
-typedef ProductSortArguments = ({ProductSortProvider productSortProvider});
+class ProductSortArguments {
+  ProductSortProvider productSortProvider;
+  ProductListProvider productListProvider;
+
+  ProductSortArguments._({
+    required this.productSortProvider,
+    required this.productListProvider,
+  });
+
+  factory ProductSortArguments({
+    required ProductSortProvider productSortProvider,
+    required ProductListProvider productListProvider,
+  }) {
+    return ProductSortArguments._(
+      productSortProvider: productSortProvider,
+      productListProvider: productListProvider,
+    );
+  }
+}
 
 class ProductSortController extends StatelessController {
   const ProductSortController({Key? key}) : super(key: key);
 
   @override
   Display view(BuildContext context) {
-    //This controller will use the productsortprovider in productlistcontroller
-    //it will be passed as an arguments since this controller have no direct access to the providers in productlistcontroller
-    ProductSortArguments? args =
-        ModalRoute.of(context)?.settings.arguments as ProductSortArguments?;
-    ProductSortProvider p = args?.productSortProvider ?? ProductSortProvider();
+    ProductSortArguments args =
+        ModalRoute.of(context)?.settings.arguments as ProductSortArguments;
+    ProductSortProvider productSortProvider = args.productSortProvider;
+    ProductListProvider productListProvider = args.productListProvider;
+
+    ProductSort child = ProductSort();
+
+    MultiProvider multiProvider = MultiProvider(
+      providers: [
+        ChangeNotifierProvider<ProductSortProvider>.value(
+          value: productSortProvider,
+        ),
+        ChangeNotifierProvider<ProductListProvider>.value(
+          value: productListProvider,
+        ),
+      ],
+      child: child,
+    );
+
     return Display(
       title: "Product Sort",
       mobile: ChangeNotifierProvider<ProductSortProvider>.value(
-        value: p,
-        child: universal.ProductSort(),
+        value: productSortProvider,
+        child: multiProvider,
       ),
     );
   }

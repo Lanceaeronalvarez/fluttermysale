@@ -1,7 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/core/classes/route_manager.dart';
 import 'package:flutter_mysale/core/helpers/style_helper.dart';
+import 'package:flutter_mysale/features/main_app/app.dart';
+import 'package:flutter_mysale/features/main_app/models/main/facetfilter_model.dart';
 import 'package:flutter_mysale/features/main_app/providers/filter_provider.dart';
+import 'package:flutter_mysale/features/main_app/providers/productlist_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:provider/provider.dart';
 
@@ -11,13 +15,17 @@ enum _SortDirection { asc, desc }
 
 typedef _SortState = ({_SortKey key, _SortDirection dir});
 
-typedef FilterSelectArguments = ({
-  String title,
-  bool showSearch,
-  bool showSort,
-});
-
 class FilterSelect extends StatefulWidget {
+  final bool showSearch;
+  final bool showSort;
+  final FilterKey filterKey;
+
+  FilterSelect({
+    required this.showSearch,
+    required this.showSort,
+    required this.filterKey,
+  });
+
   @override
   State<StatefulWidget> createState() {
     return _FilterSelectState();
@@ -25,9 +33,6 @@ class FilterSelect extends StatefulWidget {
 }
 
 class _FilterSelectState extends State<FilterSelect> {
-  FilterSelectArguments args = (title: '', showSearch: false, showSort: false);
-  bool argsRetrieved = false;
-
   final sortNotifier = ValueNotifier<_SortState>((
     key: _SortKey.name,
     dir: _SortDirection.desc,
@@ -39,32 +44,23 @@ class _FilterSelectState extends State<FilterSelect> {
   final String _pathCheckboxPartial = 'assets/images/filterCheckboxPartial.png';
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
 
-    if (!argsRetrieved) {
-      argsRetrieved = true;
-
-      FilterSelectArguments? a =
-          (ModalRoute.of(context)?.settings.arguments
-              as FilterSelectArguments?);
-      if (a != null) {
-        args = a;
-      }
-
-      //TODO: JCA get filters and currently applied filter
-      context.read<FilterProvider>().loadInitialSelectedSizes();
-
-      if (args.showSort) {
-        bool ascending = sortNotifier.value.dir == _SortDirection.asc;
-        bool byName = sortNotifier.value.key == _SortKey.name;
-        context.read<FilterProvider>().sort(
-          ascending: ascending,
-          byName: byName,
-          callNotify: false,
+    Future.microtask(() {
+      FilterProvider p = context.read<FilterProvider>();
+      String key = widget.filterKey.key;
+      if (widget.showSort) {
+        p.sortDisplayedFacetFilterValues(
+          filterKey: key,
+          ascending: false,
+          byName: true,
+          callNotify: true,
         );
+      } else {
+        p.resetDisplayedFacetFilterValues(filterKey: key, callNotify: true);
       }
-    }
+    });
   }
 
   @override
@@ -102,7 +98,10 @@ class _FilterSelectState extends State<FilterSelect> {
   }
 
   Widget _createTitleText() {
-    return Text(args.title, style: TextStyle(color: Colors.black));
+    return Text(
+      widget.filterKey.displayName,
+      style: const TextStyle(color: Colors.black),
+    );
   }
 
   Widget _createCloseButton() {
@@ -116,10 +115,16 @@ class _FilterSelectState extends State<FilterSelect> {
   Widget _createClearButton() {
     return TextButton(
       onPressed: () {
-        context.read<FilterProvider>().clearSelectedSizes();
+        FilterProvider provider = context.read<FilterProvider>();
+        provider.clearAppliedFilter(widget.filterKey.key);
+        provider.getProductList(context);
       },
-      child: Text('Clear'),
-      style: TextButton.styleFrom(foregroundColor: 'CCA68B'.toColor()),
+      style: TextButton.styleFrom(
+        foregroundColor: 'CCA68B'.toColor(),
+        splashFactory: NoSplash.splashFactory,
+        overlayColor: Colors.transparent,
+      ),
+      child: const Text('Clear'),
     );
   }
 
@@ -127,8 +132,8 @@ class _FilterSelectState extends State<FilterSelect> {
     return SafeArea(
       child: Column(
         children: [
-          if (args.showSearch) _createSearchBar(),
-          if (args.showSort) _createSortContainer(),
+          if (widget.showSearch) _createSearchBar(),
+          if (widget.showSort) _createSortContainer(),
           Expanded(child: _createFilterListView()),
           _createFilterButtonSection(),
         ],
@@ -140,7 +145,7 @@ class _FilterSelectState extends State<FilterSelect> {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: CupertinoSearchTextField(
-        placeholder: 'Search for a ${args.title}',
+        placeholder: 'Search for a ${widget.filterKey.displayName}',
         backgroundColor: CupertinoColors.systemGrey5,
         padding: const EdgeInsets.all(8),
         borderRadius: const BorderRadius.all(Radius.circular(4)),
@@ -148,11 +153,17 @@ class _FilterSelectState extends State<FilterSelect> {
         suffixIcon: const Icon(Icons.clear),
         onChanged: (text) {
           print('onChanged $text');
-          context.read<FilterProvider>().filter(searchTerm: text);
+          context.read<FilterProvider>().searchDisplayedFacetFilterValues(
+            filterKey: widget.filterKey.key,
+            searchTerm: text,
+          );
         },
         onSubmitted: (text) {
           print('onSubmitted $text');
-          context.read<FilterProvider>().filter(searchTerm: text);
+          context.read<FilterProvider>().searchDisplayedFacetFilterValues(
+            filterKey: widget.filterKey.key,
+            searchTerm: text,
+          );
         },
       ),
     );
@@ -172,7 +183,11 @@ class _FilterSelectState extends State<FilterSelect> {
         return Row(
           children: [
             Expanded(
-              child: _createSortButton(args.title, _SortKey.name, value),
+              child: _createSortButton(
+                widget.filterKey.displayName,
+                _SortKey.name,
+                value,
+              ),
             ),
             SizedBox(width: 8),
             Expanded(
@@ -212,7 +227,8 @@ class _FilterSelectState extends State<FilterSelect> {
         sortNotifier.value = (key: sortkey, dir: dir);
         bool ascending = dir == _SortDirection.asc;
         bool byName = sortkey == _SortKey.name;
-        context.read<FilterProvider>().sort(
+        context.read<FilterProvider>().sortDisplayedFacetFilterValues(
+          filterKey: widget.filterKey.key,
           ascending: ascending,
           byName: byName,
         );
@@ -226,6 +242,8 @@ class _FilterSelectState extends State<FilterSelect> {
         backgroundColor: isSelected ? Colors.pink.shade50 : Colors.transparent,
         foregroundColor: Colors.black,
         fixedSize: const Size.fromHeight(50),
+        splashFactory: NoSplash.splashFactory,
+        overlayColor: Colors.transparent,
       ),
     );
   }
@@ -233,7 +251,7 @@ class _FilterSelectState extends State<FilterSelect> {
   Widget _createFilterListView() {
     return Consumer<FilterProvider>(
       builder: (BuildContext ctx, FilterProvider provider, Widget? child) {
-        List<SizeFilterTemp> sizes = provider.displayedSizes;
+        List<FacetFilterValueModel> sizes = provider.displayedFacetFilterValues;
         return ListView.separated(
           itemBuilder: (context, index) {
             return _createListTile(provider, sizes[index]);
@@ -247,9 +265,15 @@ class _FilterSelectState extends State<FilterSelect> {
     );
   }
 
-  Widget _createListTile(FilterProvider provider, SizeFilterTemp size) {
-    bool showCount = size.count > 0;
-    bool isSelected = provider.selectedSizes.contains(size);
+  Widget _createListTile(
+    FilterProvider provider,
+    FacetFilterValueModel facetFilterValue,
+  ) {
+    bool showCount = (facetFilterValue.count ?? 0) > 0;
+    bool isSelected = provider.isFacetFilterValueSelected(
+      filterKey: widget.filterKey.key,
+      facetFilterValue: facetFilterValue,
+    );
     Image image = (isSelected)
         ? Image.asset(_pathCheckboxChecked)
         : Image.asset(_pathCheckbox);
@@ -262,12 +286,18 @@ class _FilterSelectState extends State<FilterSelect> {
       ),
       child: ListTile(
         leading: image,
-        title: Text(size.value, style: style),
-        trailing: (showCount) ? Text('(${size.count})', style: style) : null,
+        title: Text(facetFilterValue.value ?? '', style: style),
+        trailing: (showCount)
+            ? Text('(${facetFilterValue.count ?? 0})', style: style)
+            : null,
         onTap: () {
-          print(size.value);
-          print(size.count);
-          provider.addOrRemoveSelectedSize(size);
+          print(facetFilterValue.value);
+          print(facetFilterValue.count);
+          provider.addOrRemoveAppliedFilter(
+            widget.filterKey.key,
+            facetFilterValue,
+          );
+          provider.getProductList(context);
         },
       ),
     );
@@ -286,7 +316,7 @@ class _FilterSelectState extends State<FilterSelect> {
   Widget _createFilterButtonSection() {
     return Consumer<FilterProvider>(
       builder: (BuildContext ctx, FilterProvider provider, Widget? child) {
-        int productCount = provider.productCount;
+        int productCount = provider.productTotal;
         String text = (productCount == 0)
             ? 'See all products'
             : 'See all $productCount products';
@@ -295,6 +325,10 @@ class _FilterSelectState extends State<FilterSelect> {
           child: ElevatedButton(
             onPressed: () {
               print('Filter Price');
+              ProductListProvider productListProvider = context
+                  .read<ProductListProvider>();
+              provider.appyFilterToProductList(productListProvider);
+              Nav.closeUntil(context, App.productList);
             },
             style: appElevatedButtonStyle,
             child: Text(text),

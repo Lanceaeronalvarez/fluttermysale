@@ -1,140 +1,204 @@
+import 'dart:convert';
+
+import 'package:collection/collection.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_mysale/config/api_endpoints.dart';
+import 'package:flutter_mysale/config/app_http.dart';
+import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
 import 'package:flutter_mysale/features/main_app/models/main/categorynode_model.dart';
+import 'package:flutter_mysale/features/main_app/models/main/facetfilter_model.dart';
 import 'package:flutter_mysale/features/main_app/models/main/filter_category_model.dart';
-import 'package:flutter_mysale/features/main_app/widgets/filter_bar.dart';
+import 'package:flutter_mysale/features/main_app/models/main/productlist_model.dart';
+import 'package:flutter_mysale/features/main_app/providers/productlist_provider.dart';
+import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
+
+class FilterKey {
+  String key;
+  String displayName;
+
+  FilterKey._(this.key, this.displayName);
+
+  static final FilterKey brandName = FilterKey._('skus.brandName', 'Brand');
+  static final FilterKey size = FilterKey._('skus.attributes.size', 'Size');
+  static final FilterKey price = FilterKey._(
+    'skus.attributesForFaceting.aud',
+    'Price',
+  );
+  static final FilterKey sort = FilterKey._('sort', 'Sort');
+  static final FilterKey color = FilterKey._('color', 'Color');
+  static final FilterKey categories = FilterKey._('categories', 'Category');
+
+  static final List<FilterKey> _all = [
+    brandName,
+    size,
+    price,
+    sort,
+    color,
+    categories,
+  ];
+
+  static String getDisplayNameWithKey(String key) {
+    return _all.firstWhereOrNull((fk) {
+          return fk.key == key;
+        })?.displayName ??
+        '';
+  }
+}
 
 class FilterProvider extends ChangeNotifier {
-  //TODO: JCA - TEMP DATA FOR NOW
+  String _saleId = '';
+  String _searchQuery = '';
+  int _productTotal = 0;
+  double _minPrice; //min price of slider
+  double _maxPrice; //max price of slider
+  double _currentMinPrice;
+  double _currentMaxPrice;
+  String _currency;
+  List<FilterCategoryModel> _filterCategories;
+  List<CategoryNodeModel> _appliedCategories;
+  List<FacetFilterModel> _facetFilters;
+  List<FacetFilterModel> _appliedFilters;
+  CategoryNodeModel? _originCategory;
 
-  List<String> sorts = [
-    'Bestselling',
-    'Price: Low To High',
-    'Price: High To Low',
-    'New Arrivals',
-    'Category',
-  ];
+  int get productTotal => _productTotal;
+  double get minPrice => _minPrice;
+  double get maxPrice => _maxPrice;
+  double get currentMinPrice => _currentMinPrice;
+  double get currentMaxPrice => _currentMaxPrice;
+  String get currency => _currency;
+  List<FilterCategoryModel> get filterCategories => _filterCategories;
+  List<CategoryNodeModel> get appliedCategories => _appliedCategories;
+  List<FacetFilterModel> get facetFilters => _facetFilters;
+  CategoryNodeModel? get originCategory => _originCategory;
 
-  String? _selectedSort;
-  String? get selectedSort => _selectedSort;
-  void setSelectedSort(String? selectedSort) {
-    _selectedSort = selectedSort;
-    notifyListeners();
-  }
+  //used in filter_select
+  List<FacetFilterValueModel> _displayedFacetFilterValues = [];
+  List<FacetFilterValueModel> get displayedFacetFilterValues =>
+      _displayedFacetFilterValues;
 
-  List<String> mainFilters = ['Category', 'Brand', 'Price', 'Size'];
+  FilterProvider._(
+    this._saleId,
+    this._searchQuery,
+    this._productTotal,
+    this._minPrice,
+    this._maxPrice,
+    this._currentMinPrice,
+    this._currentMaxPrice,
+    this._currency,
+    this._filterCategories,
+    this._appliedCategories,
+    this._facetFilters,
+    this._appliedFilters,
+    this._originCategory,
+  );
 
-  //List<String> selectedFilters = [];
+  factory FilterProvider({
+    required String saleId,
+    required String searchQuery,
+    required int productTotal,
+    required String currency,
+    required double maxPrice,
+    required List<CategoryNodeModel> categories,
+    required List<CategoryNodeModel> selectedCategories,
+    required List<FacetFilterModel> facetFilters,
+    required List<FacetFilterModel> appliedFilters,
+    required CategoryNodeModel? originCategory,
+  }) {
+    List<FilterKey> includedFilters = [
+      FilterKey.brandName,
+      FilterKey.price,
+      FilterKey.size,
+    ];
+    List<FacetFilterModel> arrangedFacetFilters = includedFilters
+        .map<FacetFilterModel?>((filterKey) {
+          FacetFilterModel? facetFilter = facetFilters.firstWhereOrNull((ff) {
+            if (ff.name != null && ff.name!.isNotEmpty) {
+              return ff.name!.toLowerCase() == filterKey.key.toLowerCase();
+            } else {
+              return false;
+            }
+          });
+          return facetFilter;
+        })
+        .nonNulls
+        .toList();
 
-  List<FilterWrapperTemp> selectedFilters = [
-    FilterWrapperTemp(title: 'Round Neck'),
-    FilterWrapperTemp(title: "1-52"),
-  ];
+    double defaultMinPrice = 0;
 
-  //int productCount = 0;
-  int productCount = 522;
+    FilterProvider provider = FilterProvider._(
+      saleId,
+      searchQuery,
+      productTotal,
+      defaultMinPrice, //min price
+      maxPrice, //max price
+      defaultMinPrice, //current min price
+      maxPrice, //current max price
+      currency,
+      [], //categories
+      selectedCategories, //applied categories
+      arrangedFacetFilters, //filters
+      appliedFilters, //applied filters
+      originCategory, //origin category
+    );
 
-  List<SizeFilterTemp> _sizes = SizeFilterTemp.tempData();
-  late List<SizeFilterTemp> displayedSizes = _sizes;
+    //TODO: JCA no preapplied filters yet
+    //Important to be generated
+    provider._appliedFilters = arrangedFacetFilters.map<FacetFilterModel>((ff) {
+      List<FacetFilterValueModel> values =
+          appliedFilters.firstWhereOrNull((FacetFilterModel element) {
+            return provider._facetFilterKeyMatched(element.name, ff.name);
+          })?.values ??
+          [];
+      return FacetFilterModel(ff.name ?? '', values);
+    }).toList();
 
-  List<SizeFilterTemp> _selectedSizes = [];
-  List<SizeFilterTemp> get selectedSizes => _selectedSizes;
-  void addOrRemoveSelectedSize(SizeFilterTemp selectedSize) {
-    final index = _selectedSizes.indexWhere((size) {
-      return size.value == selectedSize.value;
-    });
-    if (index == -1) {
-      _selectedSizes.add(selectedSize);
-    } else {
-      _selectedSizes.removeAt(index);
+    List<CategoryNodeModel> categoriesToShow = [...categories];
+    if (originCategory != null) {
+      String? originRootKey = originCategory.key?.split('>>>').firstOrNull;
+      categoriesToShow = categoriesToShow
+          .where((CategoryNodeModel element) {
+            return provider._facetFilterKeyMatched(originRootKey, element.key);
+          })
+          .nonNulls
+          .toList();
+          
     }
-    notifyListeners();
-  }
 
-  void filter({String? searchTerm}) {
-    String st = (searchTerm?.trim().toLowerCase()) ?? '';
-    if (st.isEmpty) {
-      displayedSizes = _sizes;
-    } else {
-      displayedSizes = _sizes.where((size) {
-        return size.value.toLowerCase().contains(st);
-      }).toList();
+    provider._setCategories(categoriesToShow);
+
+    FacetFilterValueModel? facetFilterPrice = provider
+        .getAppliedFilter(FilterKey.price.key)
+        ?.values
+        ?.firstOrNull;
+    if (facetFilterPrice != null) {
+      final priceRange = (facetFilterPrice.value ?? '').parseRange(
+        currency: provider._currency,
+      );
+      if (priceRange != null) {
+        provider._currentMinPrice = priceRange.min;
+        provider._currentMaxPrice = priceRange.max;
+      }
     }
-    notifyListeners();
+
+    return provider;
   }
 
-  void sort({
-    required bool ascending,
-    required bool byName,
+  void _setCategories(
+    List<CategoryNodeModel> categories, {
     bool callNotify = true,
   }) {
-    if (byName) {
-      displayedSizes.sort((SizeFilterTemp a, SizeFilterTemp b) {
-        if (ascending) {
-          return b.value.toLowerCase().compareTo(a.value.toLowerCase());
-        } else {
-          return a.value.toLowerCase().compareTo(b.value.toLowerCase());
-        }
-      });
-    } else {
-      displayedSizes.sort((SizeFilterTemp a, SizeFilterTemp b) {
-        if (ascending) {
-          return a.count - b.count;
-        } else {
-          return b.count - a.count;
-        }
-      });
-    }
-
-    if (callNotify) {
-      notifyListeners();
-    }
-  }
-
-  void clearSelectedSizes() {
-    _selectedSizes = [];
-    notifyListeners();
-  }
-
-  void loadInitialSelectedSizes({bool shouldNotify = false}) {
-    if (_sizes.isNotEmpty) {
-      _selectedSizes = [_sizes.first];
-      if (shouldNotify) notifyListeners();
-    }
-  }
-
-  String currency = '\$';
-  double minPrice = 0;
-  double maxPrice = 189;
-  double _currentMinPrice = 10;
-  double get currentMinPrice => _currentMinPrice;
-  double _currentMaxPrice = 179;
-  double get currentMaxPrice => _currentMaxPrice;
-  void setCurrentPriceRange({
-    required double currentMinPrice,
-    required double currentMaxPrice,
-  }) {
-    _currentMinPrice = currentMinPrice;
-    _currentMaxPrice = currentMaxPrice;
-    notifyListeners();
-  }
-
-  List<CategoryNodeModel> _selectedCategories = [];
-  List<CategoryNodeModel> get selectedCategories => _selectedCategories;
-
-  List<FilterCategoryModel> _filterCategories = [];
-  List<FilterCategoryModel> get filterCategories => _filterCategories;
-
-  void setCategories(List<CategoryNodeModel> categories) {
     const int rootDepth = 1;
     _filterCategories = [
       for (CategoryNodeModel category in categories)
         _generateFilterCategoryModelFrom(
           category,
           rootDepth,
-          _selectedCategories,
+          _appliedCategories,
         ),
     ];
-    notifyListeners();
+    if (callNotify) notifyListeners();
   }
 
   FilterCategoryModel _generateFilterCategoryModelFrom(
@@ -158,7 +222,7 @@ class FilterProvider extends ChangeNotifier {
     }
 
     final FilterCategoryStatus status = _generateInitialCategoryStatus(
-      category.id ?? '',
+      category.key ?? '',
       sCategories,
     );
 
@@ -172,12 +236,12 @@ class FilterProvider extends ChangeNotifier {
   }
 
   FilterCategoryStatus _generateInitialCategoryStatus(
-    String categoryId,
+    String categoryKey,
     List<CategoryNodeModel> sCategories,
   ) {
-    if (categoryId.isNotEmpty) {
+    if (categoryKey.isNotEmpty) {
       for (CategoryNodeModel sCategory in sCategories) {
-        if (sCategory.id != null && categoryId.startsWith(sCategory.id!)) {
+        if (sCategory.key != null && categoryKey.startsWith(sCategory.key!)) {
           return FilterCategoryStatus.checked;
         }
       }
@@ -190,7 +254,8 @@ class FilterProvider extends ChangeNotifier {
     for (FilterCategoryModel filterCategory in _filterCategories) {
       result.addAll(_collectSelectedCategories(filterCategory));
     }
-    _selectedCategories = result;
+    _appliedCategories = result;
+
     if (callNotify) notifyListeners();
   }
 
@@ -216,6 +281,12 @@ class FilterProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void toggleIsExpandedOffAllFilterCategories() {
+    for (FilterCategoryModel fc in filterCategories) {
+      fc.childrenIsExpandedToggleOff();
+    }
+  }
+
   void setStatusOfLeafCategories(
     FilterCategoryModel fCategory,
     bool isSelected,
@@ -223,193 +294,348 @@ class FilterProvider extends ChangeNotifier {
     fCategory.setStatusOfLeafCategories(isSelected);
   }
 
-  //used for clearing all the selection
-  void clearAllSelecteCategories() {
+  FacetFilterModel? _getFacetFilter(String filterKey) {
+    return _facetFilters.firstWhereOrNull((k) {
+      return _facetFilterKeyMatched(k.name, filterKey);
+    });
+  }
+
+  void clearAllSelecteCategories({bool callNotify = true}) {
     for (FilterCategoryModel filterCategory in _filterCategories) {
       setStatusOfLeafCategories(filterCategory, false);
     }
+    generateSelectedCategories(callNotify: callNotify);
+  }
+
+  void resetDisplayedFacetFilterValues({
+    required String filterKey,
+    bool callNotify = true,
+  }) {
+    FacetFilterModel? facetFilter = _getFacetFilter(filterKey);
+    if (facetFilter?.values != null) {
+      _displayedFacetFilterValues = facetFilter!.values!;
+    } else {
+      _displayedFacetFilterValues = [];
+    }
+
+    if (callNotify) notifyListeners();
+  }
+
+  void searchDisplayedFacetFilterValues({
+    required String filterKey,
+    required String searchTerm,
+  }) {
+    FacetFilterModel? facetFilter = _getFacetFilter(filterKey);
+    if (facetFilter?.values != null) {
+      if (searchTerm.isEmpty) {
+        _displayedFacetFilterValues = facetFilter!.values!;
+      } else {
+        _displayedFacetFilterValues = facetFilter!.values!.where((value) {
+          return value.value?.toLowerCase().contains(searchTerm) ?? false;
+        }).toList();
+      }
+    } else {
+      _displayedFacetFilterValues = [];
+    }
+
     notifyListeners();
   }
 
-}
-
-//TEMP MODEL
-class FilterWrapperTemp implements FilterItem {
-  final String title;
-
-  const FilterWrapperTemp({required this.title});
-
-  @override
-  String getTitle() {
-    return title;
-  }
-}
-
-class SizeFilterTemp {
-  final String value;
-  final int count;
-
-  const SizeFilterTemp({required this.value, required this.count});
-
-  static List<SizeFilterTemp> tempData() {
-    List<Map<String, dynamic>> tempData = [
-      {"value": "30ml", "count": 108},
-      {"value": "Set", "count": 99},
-      {"value": "50ml", "count": 89},
-      {"value": "100ml", "count": 74},
-      {"value": "One Size", "count": 50},
-      {"value": "300ml", "count": 43},
-      {"value": "200ml", "count": 42},
-      {"value": "60ml", "count": 30},
-      {"value": "3 Pack", "count": 28},
-      {"value": "500ml", "count": 27},
-      {"value": "15ml", "count": 25},
-      {"value": "6 Pack", "count": 21},
-      {"value": "75ml", "count": 20},
-      {"value": "250ml", "count": 19},
-      {"value": "150ml", "count": 11},
-      {"value": "400ml", "count": 11},
-      {"value": "10g", "count": 10},
-      {"value": "2 Pack", "count": 9},
-      {"value": "6g", "count": 9},
-      {"value": "10ml", "count": 8},
-      {"value": "120ml", "count": 8},
-      {"value": "28ml", "count": 8},
-      {"value": "295ml", "count": 8},
-      {"value": "5.4ml", "count": 8},
-      {"value": "125ml", "count": 7},
-      {"value": "3.1ml", "count": 7},
-      {"value": "350ml", "count": 7},
-      {"value": "4.5ml", "count": 7},
-      {"value": "40ml", "count": 7},
-      {"value": "4ml", "count": 7},
-      {"value": "1.4g", "count": 6},
-      {"value": "14g", "count": 6},
-      {"value": "200g", "count": 6},
-      {"value": "236ml", "count": 6},
-      {"value": "4g", "count": 6},
-      {"value": "62ml", "count": 6},
-      {"value": "750ml", "count": 6},
-      {"value": "7ml", "count": 6},
-      {"value": "1000ml", "count": 5},
-      {"value": "11ml", "count": 5},
-      {"value": "80ml", "count": 5},
-      {"value": "1.2g", "count": 4},
-      {"value": "1.64g", "count": 4},
-      {"value": "150g", "count": 4},
-      {"value": "30 Capsules", "count": 4},
-      {"value": "3g", "count": 4},
-      {"value": "3ml", "count": 4},
-      {"value": "4 Pack", "count": 4},
-      {"value": "450ml", "count": 4},
-      {"value": "1.1g", "count": 3},
-      /*
-      {"value": "Grown Alchemist", "count": 24},
-      {"value": "Dr Botanicals", "count": 47},
-      {"value": "Elizabeth Arden", "count": 14},
-      {"value": "Revlon", "count": 31},
-      {"value": "Ted Baker", "count": 4},
-      {"value": "Lacoste", "count": 3},
-      {"value": "DKNY", "count": 7},
-      {"value": "Coach", "count": 2},
-      {"value": "Marc Jacobs", "count": 5},
-      {"value": "Molton Brown", "count": 66},
-      {"value": "Clarins", "count": 17},
-      {"value": "Shiseido", "count": 8},
-      {"value": "K18", "count": 6},
-      {"value": "Clinique", "count": 66},
-      {"value": "MAC", "count": 28},
-      {"value": "L'Occitane", "count": 1},
-      {"value": "Burberry", "count": 2},
-      {"value": "La Mer", "count": 1},
-      {"value": "Dolce & Gabbana", "count": 1},
-      {"value": "L'Oreal Paris", "count": 36},
-      {"value": "Max Factor", "count": 30},
-      {"value": "Rimmel London", "count": 15},
-      {"value": "Peppermint Grove Australia", "count": 20},
-      {"value": "Living Proof", "count": 26},
-      {"value": "RAWW Cosmetics", "count": 12},
-      {"value": "Bondi Sands", "count": 15},
-      {"value": "Tigi", "count": 16},
-      {"value": "Laura Mercier", "count": 50},
-      {"value": "Madonna", "count": 5},
-      {"value": "Sunday Rain", "count": 14},
-      {"value": "Sugar Baby", "count": 13},
-      {"value": "Calvin Klein", "count": 15},
-      {"value": "Estée Lauder", "count": 34},
-      {"value": "Wella", "count": 8},
-      {"value": "American Crew", "count": 7},
-      {"value": "Nude by Nature", "count": 38},
-      {"value": "Dermedicine", "count": 9},
-      {"value": "Nivea", "count": 5},
-      {"value": "Fanola", "count": 10},
-      {"value": "REN", "count": 5},
-      {"value": "Provoke", "count": 4},
-      {"value": "Impulse", "count": 3},
-      {"value": "Skin Chemists", "count": 14},
-      {"value": "Its Giving Glam", "count": 2},
-      {"value": "Wet Brush", "count": 3},
-      {"value": "Maybelline", "count": 6},
-      {"value": "It's A 10", "count": 17},
-      {"value": "Olay", "count": 7},
-      {"value": "Eylure", "count": 7},
-      {"value": "Schwarzkopf", "count": 2},
-      {"value": "Jack Black", "count": 3},
-      {"value": "Lancaster", "count": 6},
-      {"value": "Jimmy Choo", "count": 7},
-      {"value": "Lux", "count": 2},
-      {"value": "Clean & Clear", "count": 1},
-      {"value": "Neutrogena", "count": 7},
-      {"value": "Dr Dennis Gross", "count": 4},
-      {"value": "Regarding Skin", "count": 11},
-      {"value": "Murad", "count": 4},
-      {"value": "Al Haramain", "count": 3},
-      {"value": "Brut", "count": 1},
-      {"value": "Concentrated Naturals", "count": 1},
-      {"value": "Diesel", "count": 5},
-      {"value": "Britney Spears", "count": 7},
-      {"value": "Cosmesis Skincare", "count": 3},
-      {"value": "Vaseline", "count": 6},
-      {"value": "Giorgio Armani", "count": 3},
-      {"value": "So…?", "count": 1},
-      {"value": "Too Faced", "count": 3},
-      {"value": "Urban Decay", "count": 1},
-      {"value": "A'kin", "count": 2},
-      {"value": "Bosistos", "count": 1},
-      {"value": "Herbal Essences", "count": 3},
-      {"value": "Issey Miyake", "count": 5},
-      {"value": "Kate Somerville", "count": 9},
-      {"value": "Tresemme", "count": 3},
-      {"value": "W7", "count": 4},
-      {"value": "Davidoff", "count": 2},
-      {"value": "Nuxe", "count": 4},
-      {"value": "Police", "count": 2},
-      {"value": "Algenist", "count": 6},
-      {"value": "Anastasia Beverly Hills", "count": 3},
-      {"value": "Dr H", "count": 6},
-      {"value": "Community Sixty-Six", "count": 2},
-      {"value": "Coty", "count": 1},
-      {"value": "Elemis", "count": 10},
-      {"value": "Jane Iredale", "count": 5},
-      {"value": "Paco Rabanne", "count": 10},
-      {"value": "Style & Grace", "count": 1},
-      {"value": "Veet", "count": 2},
-      {"value": "Cabello", "count": 2},
-      {"value": "Colgate", "count": 1},
-      {"value": "Escada", "count": 3},
-      {"value": "Guerlain", "count": 5},
-      {"value": "Sally Hansen", "count": 1},
-      {"value": "Stila", "count": 9},
-      {"value": "Yeauty", "count": 3},
-      {"value": "Anna Sui", "count": 1},
-      {"value": "Charlotte Tilbury", "count": 2},
-      {"value": "Essano", "count": 2},
-      */
+  void sortDisplayedFacetFilterValues({
+    required String filterKey,
+    required bool ascending,
+    required bool byName,
+    bool callNotify = true,
+  }) {
+    List<FacetFilterValueModel> ffv = [
+      ...(_getFacetFilter(filterKey)?.values ?? []),
     ];
-    return tempData.map((dict) {
-      String value = (dict['value'] as String?) ?? '';
-      int count = (dict['count'] as int?) ?? 0;
-      return SizeFilterTemp(value: value, count: count);
-    }).toList();
+    if (byName) {
+      ffv.sort((FacetFilterValueModel a, FacetFilterValueModel b) {
+        if (ascending) {
+          return b.value?.toLowerCase().compareTo(
+                a.value?.toLowerCase() ?? '',
+              ) ??
+              -1;
+        } else {
+          return a.value?.toLowerCase().compareTo(
+                b.value?.toLowerCase() ?? '',
+              ) ??
+              -1;
+        }
+      });
+    } else {
+      ffv.sort((FacetFilterValueModel a, FacetFilterValueModel b) {
+        if (ascending) {
+          return (a.count ?? 0) - (b.count ?? 0);
+        } else {
+          return (b.count ?? 0) - (a.count ?? 0);
+        }
+      });
+    }
+    _displayedFacetFilterValues = ffv;
+    if (callNotify) notifyListeners();
+  }
+
+  FacetFilterModel? getAppliedFilter(String filterKey) {
+    return _appliedFilters.firstWhereOrNull((k) {
+      return _facetFilterKeyMatched(k.name, filterKey);
+    });
+  }
+
+  bool isFacetFilterValueSelected({
+    required String filterKey,
+    required FacetFilterValueModel facetFilterValue,
+  }) {
+    FacetFilterModel? appliedFacetFilter = getAppliedFilter(filterKey);
+    return appliedFacetFilter?.values?.firstWhereOrNull((filter) {
+          return _facetFilterKeyMatched(facetFilterValue.value, filter.value);
+        }) !=
+        null;
+  }
+
+  //used for removing applied filters via filterbar
+  void removeAppliedFilter({required String facetFilterValueKey}) {
+    FacetFilterModel? targetFacet = null;
+    FacetFilterValueModel? targetFacetValue = null;
+    for (FacetFilterModel ff in _appliedFilters) {
+      for (FacetFilterValueModel ffv in (ff.values ?? [])) {
+        if (_facetFilterKeyMatched(facetFilterValueKey, ffv.value)) {
+          targetFacetValue = ffv;
+          targetFacet = ff;
+          break;
+        }
+      }
+      if (targetFacetValue != null && targetFacet != null) break;
+    }
+
+    if (targetFacetValue != null && targetFacet != null) {
+      if (_facetFilterKeyMatched(targetFacet.name, FilterKey.price.key)) {
+        updateAppliedFilterPrice(_minPrice, _maxPrice, callNotify: false);
+      } else {
+        targetFacet.values?.remove(targetFacetValue);
+      }
+    }
+
+    notifyListeners();
+  }
+
+  //used for removing applied filtercategory via filterbar
+  void removeAppliedFilterCategory({required CategoryNodeModel category}) {
+    CategoryNodeModel? targetCategory = null;
+    for (CategoryNodeModel sc in _appliedCategories) {
+      if (_facetFilterKeyMatched(category.key, sc.key)) {
+        targetCategory = sc;
+        break;
+      }
+    }
+    if (targetCategory != null &&
+        targetCategory.key != null &&
+        targetCategory.key!.isNotEmpty) {
+      FilterCategoryModel? targetFilterCategory = _findCategoryByPath(
+        _filterCategories,
+        targetCategory.key!,
+      );
+      if (targetFilterCategory != null) {
+        setStatusOfLeafCategories(targetFilterCategory, false);
+        generateSelectedCategories(callNotify: true);
+      }
+    }
+  }
+
+  FilterCategoryModel? _findCategoryByPath(
+    List<FilterCategoryModel> roots,
+    String path, {
+    String separator = '>>>',
+  }) {
+    final parts = path
+        .split(separator)
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return null;
+
+    var currentLevel = roots;
+    FilterCategoryModel? current;
+    var acc = '';
+
+    for (var i = 0; i < parts.length; i++) {
+      acc = (i == 0) ? parts[0] : '$acc$separator${parts[i]}';
+
+      FilterCategoryModel? found;
+      for (final n in currentLevel) {
+        final k = n.category.key;
+        if (k != null && k == acc) {
+          found = n;
+          break;
+        }
+      }
+      if (found == null) return null;
+
+      current = found;
+      currentLevel = found.filterChildren;
+    }
+    return current;
+  }
+
+  void addOrRemoveAppliedFilter(
+    String filterKey,
+    FacetFilterValueModel facetFilterValue, {
+    bool callNotify = true,
+  }) {
+    FacetFilterModel? appliedFacetFilter = getAppliedFilter(filterKey);
+    if (appliedFacetFilter?.values != null) {
+      int? retrievedFilterIndex = null;
+      for (final (index, ffv) in appliedFacetFilter!.values!.indexed) {
+        if (_facetFilterKeyMatched(ffv.value, facetFilterValue.value)) {
+          retrievedFilterIndex = index;
+          break;
+        }
+      }
+
+      if (retrievedFilterIndex == null) {
+        appliedFacetFilter.values?.add(facetFilterValue);
+      } else {
+        appliedFacetFilter.values?.removeAt(retrievedFilterIndex);
+      }
+    } else {}
+    if (callNotify) notifyListeners();
+  }
+
+  void clearAllAppliedFilters() {
+    for (FacetFilterModel ff in _appliedFilters) {
+      clearAppliedFilter(ff.name ?? '', callNotify: false);
+    }
+    clearAllSelecteCategories(callNotify: false);
+    notifyListeners();
+  }
+
+  void clearAppliedFilter(String filterKey, {bool callNotify = true}) {
+    FacetFilterModel? appliedFacetFilter = getAppliedFilter(filterKey);
+    appliedFacetFilter?.values = [];
+    if (filterKey == FilterKey.price.key) {
+      _currentMinPrice = _minPrice;
+      _currentMaxPrice = _maxPrice;
+    }
+    if (callNotify) notifyListeners();
+  }
+
+  void updateAppliedFilterPrice(
+    double currentMinPrice,
+    double currentMaxPrice, {
+    bool callNotify = true,
+  }) {
+    FacetFilterModel? appliedFacetFilter = getAppliedFilter(
+      FilterKey.price.key,
+    );
+    if (currentMinPrice <= _minPrice && currentMaxPrice >= _maxPrice) {
+      appliedFacetFilter?.values = [];
+    } else {
+      String price =
+          '${_currency}${currentMinPrice.toInt()} to ${_currency}${currentMaxPrice.toInt()}';
+      FacetFilterValueModel newValue = FacetFilterValueModel(price, 1);
+      appliedFacetFilter?.values = [newValue];
+    }
+    _currentMinPrice = currentMinPrice;
+    _currentMaxPrice = currentMaxPrice;
+
+    if (callNotify) notifyListeners();
+  }
+
+  List<FacetFilterValueModel> getFlatAppliedFilters() {
+    List<FacetFilterValueModel> v = [];
+    for (FacetFilterModel ff in _appliedFilters) {
+      v.addAll(ff.values ?? []);
+    }
+    return v;
+  }
+
+  //used for both FacetFilterModel and FacetFilterValueModel
+  //similar to productlistprovider
+  bool _facetFilterKeyMatched(String? key1, String? key2) {
+    return key1 != null &&
+        key2 != null &&
+        key1.isNotEmpty &&
+        key2.isNotEmpty &&
+        key1.toLowerCase() == key2.toLowerCase();
+  }
+
+  //similar to productlistprovider
+  bool isOriginCategorySelected() {
+    if (_originCategory == null) {
+      return false;
+    } else {
+      return (_appliedCategories.firstWhereOrNull(
+            (e) => _facetFilterKeyMatched(e.key, _originCategory?.key),
+          ) !=
+          null);
+    }
+  }
+
+  GetProductListRequest generateGetProductListRequest() {
+    List<String> appliedCategories = _appliedCategories
+        .map<String?>((CategoryNodeModel e) => e.key)
+        .nonNulls
+        .toList();
+    Map<String, List<String>> filterMap = FacetFilterModel.toMapStringValues(
+      _appliedFilters,
+      currency: _currency,
+    );
+    if (_saleId.isNotEmpty) {
+      filterMap['saleId'] = [_saleId];
+    }
+    return GetProductListRequest(
+      _searchQuery,
+      '0',
+      '10',
+      jsonEncode(appliedCategories),
+      jsonEncode(filterMap),
+      '',
+    );
+  }
+
+  bool isLoading = false;
+  UserAgentHelper? _userAgentHelper;
+  AppHttp? _http;
+  //CancelToken? _cancelToken;
+
+  void getProductList(BuildContext context) async {
+    isLoading = true;
+
+    //commented cancel logic, still debugging request cancellation
+    //_cancelToken?.cancel('cancel current request, will have a new getProductList request');
+    //_cancelToken = CancelToken();
+
+    _userAgentHelper ??= UserAgentHelper.shared;
+    final userAgent = await _userAgentHelper!.userAgent;
+    _http ??= AppHttp(
+      baseUrl: dotenv.get("SETTINGS_ROOT"),
+      headers: {'User-Agent': userAgent},
+    );
+
+    Response res = await _http!.get(
+      ApiEndpoint.getProducts(),
+      params: generateGetProductListRequest().toMap(),
+      token: null, //put cancel token here
+    );
+
+    //_cancelToken?.whenCancel.then((_){});
+    //_cancelToken = null;
+
+    if (res.statusCode == 200 && res.statusCode != 429) {
+      final pl = ProductListResponse.fromJson(jsonDecode(res.toString()));
+      isLoading = false;
+      _productTotal = pl.total ?? 0;
+      notifyListeners();
+    }
+  }
+
+  void appyFilterToProductList(ProductListProvider productListProvider) {
+    productListProvider.updateAppliedFilters(
+      aAppliedCategories: _appliedCategories,
+      aAppliedFilters: _appliedFilters,
+    );
+    productListProvider.resetProductList();
+    productListProvider.getProductList();
   }
 }

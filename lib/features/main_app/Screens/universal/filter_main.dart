@@ -3,10 +3,35 @@ import 'package:flutter_mysale/core/classes/route_manager.dart';
 import 'package:flutter_mysale/core/core.dart';
 import 'package:flutter_mysale/core/helpers/style_helper.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
+import 'package:flutter_mysale/features/main_app/controllers/controller.dart';
+import 'package:flutter_mysale/features/main_app/models/main/categorynode_model.dart';
 import 'package:flutter_mysale/features/main_app/providers/filter_provider.dart';
+import 'package:flutter_mysale/features/main_app/providers/productlist_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:flutter_mysale/features/main_app/widgets/filter_bar.dart';
 import 'package:provider/provider.dart';
+
+class _FilterItem extends FilterItem {
+  String title;
+
+  _FilterItem({required this.title});
+
+  @override
+  String getTitle() {
+    return title;
+  }
+}
+
+class _FilterCategoryItem extends FilterItem {
+  CategoryNodeModel category;
+
+  _FilterCategoryItem({required this.category});
+
+  @override
+  String getTitle() {
+    return category.name ?? '';
+  }
+}
 
 class FilterMain extends StatefulWidget {
   @override
@@ -77,9 +102,17 @@ class _FilterMainState extends State<FilterMain> {
 
   Widget _createClearButton() {
     return TextButton(
-      onPressed: () {},
+      onPressed: () {
+        FilterProvider provider = context.read<FilterProvider>();
+        provider.clearAllAppliedFilters();
+        provider.getProductList(context);
+      },
       child: Text('Clear All'),
-      style: TextButton.styleFrom(foregroundColor: 'CCA68B'.toColor()),
+      style: TextButton.styleFrom(
+        foregroundColor: 'CCA68B'.toColor(),
+        splashFactory: NoSplash.splashFactory,
+        overlayColor: Colors.transparent,
+      ),
     );
   }
 
@@ -96,7 +129,7 @@ class _FilterMainState extends State<FilterMain> {
       child: Column(
         children: [
           _createFilteredBySection(provider),
-          Expanded(child: _createFilterListView(provider)),
+          Expanded(child: _createCustomScrollView(provider)),
           _createFilterButtonSection(provider),
         ],
       ),
@@ -104,21 +137,38 @@ class _FilterMainState extends State<FilterMain> {
   }
 
   Widget _createFilteredBySection(FilterProvider provider) {
+    List<FilterItem> filterItems = [];
+    filterItems.addAll(
+      provider.appliedCategories
+          .map<_FilterCategoryItem>((e) => _FilterCategoryItem(category: e))
+          .toList(),
+    );
+    filterItems.addAll(
+      provider
+          .getFlatAppliedFilters()
+          .map((e) => _FilterItem(title: e.value ?? ''))
+          .toList(),
+    );
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: FilterBar<FilterWrapperTemp>(
+      child: FilterBar<FilterItem>(
         title: 'Filtered by',
-        filters: provider.selectedFilters,
+        filters: filterItems,
         onTap: (selected, index) {
-          print(selected.title);
-          print(index);
+          if (selected is _FilterItem) {
+            provider.removeAppliedFilter(facetFilterValueKey: selected.title);
+          } else if (selected is _FilterCategoryItem) {
+            provider.removeAppliedFilterCategory(category: selected.category);
+          }
+          provider.getProductList(context);
         },
       ),
     );
   }
 
   Widget _createFilterButtonSection(FilterProvider provider) {
-    int productCount = provider.productCount;
+    int productCount = provider.productTotal;
     String text = (productCount == 0)
         ? 'See all products'
         : 'See all $productCount products';
@@ -126,7 +176,10 @@ class _FilterMainState extends State<FilterMain> {
       padding: const EdgeInsets.all(16.0),
       child: ElevatedButton(
         onPressed: () {
-          print('Filter');
+          ProductListProvider productListProvider = context
+              .read<ProductListProvider>();
+          provider.appyFilterToProductList(productListProvider);
+          Nav.close(context);
         },
         style: appElevatedButtonStyle,
         child: Text(text),
@@ -134,16 +187,35 @@ class _FilterMainState extends State<FilterMain> {
     );
   }
 
+  Widget _createCustomScrollView(FilterProvider provider) {
+    return CustomScrollView(
+      slivers: [
+        if (_shouldShowCategoryTab(provider))
+          SliverToBoxAdapter(child: _createCategoryTile(provider)),
+        _createFilterListView(provider),
+      ],
+    );
+  }
+
+  Widget _createCategoryTile(FilterProvider provider) {
+    return _createListTile(provider, FilterKey.categories.displayName);
+  }
+
   Widget _createFilterListView(FilterProvider provider) {
-    return ListView.separated(
-      itemBuilder: (context, index) {
-        String title = provider.mainFilters[index];
-        return _createListTile(provider, title);
-      },
-      separatorBuilder: (context, index) {
-        return _createDivider();
-      },
-      itemCount: provider.mainFilters.length,
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          final facetFilter = provider.facetFilters[index];
+          return _createListTile(
+            provider,
+            FilterKey.getDisplayNameWithKey(facetFilter.name ?? ''),
+          );
+        },
+        childCount: provider.facetFilters.length,
+
+        addAutomaticKeepAlives: true,
+        addRepaintBoundaries: true,
+      ),
     );
   }
 
@@ -154,30 +226,49 @@ class _FilterMainState extends State<FilterMain> {
         highlightColor: Colors.transparent,
         hoverColor: Colors.transparent,
       ),
-      child: ListTile(
-        leading: null,
-        title: Text(title),
-        trailing: Icon(Icons.chevron_right, color: "#CCA68B".toColor()),
-        onTap: () {
-          print(title);
-          if (title == 'Category') {
-            Nav.toNamed(context, App.filtercategory);
-          } else if (title == 'Brand') {
-            Nav.toNamed(
-              context,
-              App.filterselect,
-              arguments: (title: 'Brand', showSearch: false, showSort: true),
-            );
-          } else if (title == 'Size') {
-            Nav.toNamed(
-              context,
-              App.filterselect,
-              arguments: (title: 'Size', showSearch: true, showSort: false),
-            );
-          } else if (title == 'Price') {
-            Nav.toNamed(context, App.filterprice);
-          }
-        },
+      child: Column(
+        children: [
+          ListTile(
+            leading: null,
+            title: Text(title),
+            trailing: Icon(Icons.chevron_right, color: "#CCA68B".toColor()),
+            onTap: () {
+              print(title);
+              if (title == FilterKey.categories.displayName) {
+                FilterCategoryArguments args = FilterCategoryArguments(
+                  filterProvider: provider,
+                  productListProvider: context.read<ProductListProvider>(),
+                );
+                Nav.toNamed(context, App.filtercategory, arguments: args);
+              } else if (title == FilterKey.brandName.displayName) {
+                FilterSelectArguments args = FilterSelectArguments(
+                  filterKey: FilterKey.brandName,
+                  showSearch: false,
+                  showSort: true,
+                  filterProvider: provider,
+                  productListProvider: context.read<ProductListProvider>(),
+                );
+                Nav.toNamed(context, App.filterselect, arguments: args);
+              } else if (title == FilterKey.size.displayName) {
+                FilterSelectArguments args = FilterSelectArguments(
+                  filterKey: FilterKey.size,
+                  showSearch: true,
+                  showSort: false,
+                  filterProvider: provider,
+                  productListProvider: context.read<ProductListProvider>(),
+                );
+                Nav.toNamed(context, App.filterselect, arguments: args);
+              } else if (title == FilterKey.price.displayName) {
+                FilterPriceArguments args = FilterPriceArguments(
+                  filterProvider: provider,
+                  productListProvider: context.read<ProductListProvider>(),
+                );
+                Nav.toNamed(context, App.filterprice, arguments: args);
+              }
+            },
+          ),
+          _createDivider(),
+        ],
       ),
     );
   }
@@ -190,5 +281,18 @@ class _FilterMainState extends State<FilterMain> {
       endIndent: 0,
       color: "#F6F6F6".toColor(),
     );
+  }
+
+  bool _shouldShowCategoryTab(FilterProvider provider) {
+    CategoryNodeModel? oc = provider.originCategory;
+    if (oc == null) {
+      return true;
+    } else {
+      if (!oc.hasChild && provider.isOriginCategorySelected()) {
+        return false;
+      } else {
+        return true;
+      }
+    }
   }
 }
