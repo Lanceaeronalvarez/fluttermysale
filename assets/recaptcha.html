@@ -1,0 +1,26 @@
+<html>
+
+<head>
+    <script>
+        var onSubmit = function (token) {
+            console.log('token received');
+            console.log(token);
+            Captcha.postMessage(token);
+        };
+
+        var onloadCallback = function () {
+            console.log('begin');
+            grecaptcha.render('submit', {
+                'sitekey': '6LdxiZ4UAAAAAGKk5Xzpbps1vHtDy0cfAEbr-88n',
+                'callback': onSubmit
+            });
+        };
+    </script>
+</head>
+<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit"></script>
+
+<body>
+    <div id="submit"></div>
+</body>
+
+</html>

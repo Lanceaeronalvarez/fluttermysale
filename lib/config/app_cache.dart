@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import '../core/classes/cache_manager.dart';
 
 class AppCache {
@@ -24,6 +25,7 @@ class AppCache {
 
   void doLogout() {
     Cache.deleteData('auth_data');
+    Cache.deleteData('login_ticket');
   }
 
   Future<bool> isLogout() async {
@@ -32,5 +34,14 @@ class AppCache {
       return true;
     }
     return false;
+  }
+
+  void saveLoginTicket(String ticket) {
+    Cache.saveData('login_ticket', ticket);
+  }
+
+  Future<String> retrieveLoginTicket() async {
+    var data = await Cache.readData('login_ticket');
+    return data.toString();
   }
 }
