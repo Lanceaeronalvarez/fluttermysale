@@ -35,7 +35,7 @@ class _AuthenthicationState extends State<Authenthication> {
     super.initState();
   }
 
-  void login(String token, AuthenthicationProvider provider) {
+  void _login(String token, AuthenthicationProvider provider) {
     provider
         .callLoginViaEmail(
           emailTextField.value.text,
@@ -55,6 +55,19 @@ class _AuthenthicationState extends State<Authenthication> {
           provider.isLoading = false;
           print("Error: $error");
         });
+  }
+
+  void _onButtonClick(bool isSignUpValue, AuthenthicationProvider provider) {
+    if (isSignUpValue) {
+      //TODO: Register
+    } else {
+      if (emailTextField.text.isNotEmpty || passwordTextField.text.isNotEmpty) {
+        _createCaptcha(provider);
+        provider.isLoading = true;
+      } else {
+        isShowError.value = true;
+      }
+    }
   }
 
   InputDecoration textDecoration(String title) {
@@ -189,19 +202,9 @@ class _AuthenthicationState extends State<Authenthication> {
             builder: (context, isSignUpValue, child) {
               return ElevatedButton(
                 onPressed: () {
-                  if (isSignUpValue) {
-                    //TODO: Register
-                  } else {
-                    if (!provider.isLoading) {
-                      if (emailTextField.text.isNotEmpty ||
-                          passwordTextField.text.isNotEmpty) {
-                        _createCaptcha(provider);
-                        provider.isLoading = true;
-                      } else {
-                        isShowError.value = true;
-                      }
-                    }
-                  }
+                  provider.isLoading
+                      ? null
+                      : _onButtonClick(isSignUpValue, provider);
                 },
                 style: appElevatedButtonStyle,
                 child: provider.isLoading
@@ -283,7 +286,7 @@ class _AuthenthicationState extends State<Authenthication> {
     controller.addJavaScriptChannel(
       'Captcha',
       onMessageReceived: (data) {
-        login(data.message, provider);
+        _login(data.message, provider);
         Navigator.of(context).pop();
       },
     );
