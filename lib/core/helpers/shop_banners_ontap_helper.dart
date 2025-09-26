@@ -13,14 +13,14 @@ class ShopBannersOnTapHelper {
     if (banner.linkOptions != null &&
         banner.linkOptions?.getLinkOptionType() == LinkOptionType.category) {
       ProductListArguments arguments = ProductListArguments(
-        initialSearchQuery: null,
+        initialSearchQuery: banner.linkOptions?.searchQuery,
         saleId: "",
         appliedCategories: [],
         appliedFilters: [],
         sort: null,
         originCategory: null,
       );
-      Nav.to(context, App.productList, arguments: arguments);
+      Nav.toNamed(context, App.productList, arguments: arguments);
     } else if (banner.bannerType == "brandBanner") {
       // support for no linkOptions category banner
 
@@ -51,7 +51,7 @@ class ShopBannersOnTapHelper {
             sort: null,
             originCategory: null,
           );
-          Nav.to(context, App.productList, arguments: arguments);
+          Nav.toNamed(context, App.productList, arguments: arguments);
         } else {
           String id = uri.pathSegments.last;
 
@@ -76,7 +76,7 @@ class ShopBannersOnTapHelper {
             sort: null,
             originCategory: null,
           );
-          Nav.to(context, App.productList, arguments: arguments);
+          Nav.toNamed(context, App.productList, arguments: arguments);
         }
       } else {
         launchInBrowser(uri);
@@ -106,7 +106,7 @@ class ShopBannersOnTapHelper {
         sort: null,
         originCategory: null,
       );
-      Nav.to(context, App.productList, arguments: arguments);
+      Nav.toNamed(context, App.productList, arguments: arguments);
     }
   }
 }

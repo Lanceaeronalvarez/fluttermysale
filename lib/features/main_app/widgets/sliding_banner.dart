@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/core/helpers/banner_image_url_helper.dart';
 import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart';
 
 typedef SlidingBannerTappedCallback = void Function(BannerModel);
@@ -16,34 +17,6 @@ class SlidingBannerWidget extends StatefulWidget {
 
 class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
   int _currentIndex = 0;
-
-  String appendBannerSizeUrl(String? url) {
-    // will move to utils
-    int width = 475;
-    int height = 325;
-    int resolutionOverride = 800;
-
-    if (url != null) {
-      String removedExtension = url.substring(0, url.lastIndexOf("."));
-      String extension = "";
-
-      int i = url.lastIndexOf('.');
-      if (i > 0) {
-        extension = url.substring(i + 1);
-      }
-
-      url = "${removedExtension}_${width}x${height}.${extension}";
-
-      if (url.contains("?")) {
-        url = "$url&width=$resolutionOverride";
-      } else {
-        url = "$url?width=$resolutionOverride";
-      }
-      return url;
-    } else {
-      return "";
-    }
-  }
 
   Widget slidingBanner(BannerModel banner) {
     return SizedBox(
@@ -73,7 +46,7 @@ class _SlidingBannerWidgetState extends State<SlidingBannerWidget> {
   Widget slidingBannerImage(BannerModel banner) {
     return SizedBox(
       child: Image.network(
-        appendBannerSizeUrl(banner.image),
+        BannerImageUrlHelper.appendBannerSizeUrl(banner.image, 475, 325, 800),
         fit: BoxFit.cover,
         width: MediaQuery.sizeOf(context).width,
         height: 250,

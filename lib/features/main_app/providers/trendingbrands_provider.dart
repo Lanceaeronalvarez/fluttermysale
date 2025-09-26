@@ -14,11 +14,11 @@ class TrendingBrandsProvider extends ChangeNotifier {
   late UserAgentHelper _userAgentHelper;
   AppHttp? _http;
 
-  GetBannersResponse? _trendingBrands;
+  List<BannerModel>? _trendingBrands;
 
   bool isLoading = false;
 
-  GetBannersResponse get trendingBrands => _trendingBrands!;
+  List<BannerModel>? get trendingBrands => _trendingBrands!;
 
   TrendingBrandsProvider({required this.context}) {
     _userAgentHelper = UserAgentHelper.shared;
@@ -50,7 +50,18 @@ class TrendingBrandsProvider extends ChangeNotifier {
       params: request.toMap(),
     );
     if (res.statusCode == 200 && res.statusCode != 429) {
-      _trendingBrands = GetBannersResponse.fromJson(jsonDecode(res.toString()));
+      List<BannerModel> output = [];
+      GetBannersResponse response = GetBannersResponse.fromJson(jsonDecode(res.toString()));
+      response.groups?.forEach((Group group) {
+        if (group.type == "brand") {
+          group.banners?.forEach((BannerModel banner) {
+            if (banner.bannerType == "brandBanner") {
+              output.add(banner);
+            }
+          });
+        }
+      });
+      _trendingBrands = output;
       isLoading = false;
       notifyListeners();
     }

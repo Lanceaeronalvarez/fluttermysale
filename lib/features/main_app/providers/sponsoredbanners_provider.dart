@@ -14,11 +14,11 @@ class SponsoredBannersProvider extends ChangeNotifier {
   late UserAgentHelper _userAgentHelper;
   AppHttp? _http;
 
-  GetBannersResponse? _sponsoredBanners;
+  List<BannerModel>? _sponsoredBanners;
 
   bool isLoading = false;
 
-  GetBannersResponse? get sponsoredBanners => _sponsoredBanners;
+  List<BannerModel>? get sponsoredBanners => _sponsoredBanners;
 
   SponsoredBannersProvider({required this.context}) {
     _userAgentHelper = UserAgentHelper.shared;
@@ -50,9 +50,21 @@ class SponsoredBannersProvider extends ChangeNotifier {
       params: request.toMap(),
     );
     if (res.statusCode == 200 && res.statusCode != 429) {
-      _sponsoredBanners = GetBannersResponse.fromJson(
-        jsonDecode(res.toString()),
-      );
+      List<BannerModel> output = [];
+      GetBannersResponse response = GetBannersResponse.fromJson(jsonDecode(res.toString()));
+      response.groups?.forEach((Group group) {
+        if (group.type == "brand") {
+          group.banners?.forEach((BannerModel banner) {
+            banner.categories?.forEach((String category) {
+              if (category.toLowerCase() == "sponsored") {
+                output.add(banner);
+              }
+            });
+          });
+        }
+      });
+
+      _sponsoredBanners = output;
       isLoading = false;
       notifyListeners();
     }

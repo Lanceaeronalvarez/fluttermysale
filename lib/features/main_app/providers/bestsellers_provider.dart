@@ -14,10 +14,11 @@ class BestSellersProvider extends ChangeNotifier {
   late UserAgentHelper _userAgentHelper;
   AppHttp? _http;
 
-  GetBestSellersResponse? _model;
+  List<GetBestSellersResponse>? _getBestSellersResponse;
   bool isLoading = false;
 
-  GetBestSellersResponse get getBannersResponse => _model!;
+  List<GetBestSellersResponse>? get getBestSellersResponse =>
+      _getBestSellersResponse!;
 
   BestSellersProvider({required this.context}) {
     _userAgentHelper = UserAgentHelper.shared;
@@ -37,7 +38,12 @@ class BestSellersProvider extends ChangeNotifier {
       params: {"category": category},
     );
     if (res.statusCode == 200 && res.statusCode != 429) {
-      _model = GetBestSellersResponse.fromJson(jsonDecode(res.toString()));
+      //res.toString() when data is a list isn't handled in library code
+      Iterable it = jsonDecode(json.encode(res.data));
+      List<GetBestSellersResponse> items = List<GetBestSellersResponse>.from(
+        it.map((model) => GetBestSellersResponse.fromJson(model)),
+      );
+      _getBestSellersResponse = items;
       isLoading = false;
       notifyListeners();
     }

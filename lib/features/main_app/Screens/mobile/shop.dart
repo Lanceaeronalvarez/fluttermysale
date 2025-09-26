@@ -6,10 +6,13 @@ import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/controllers/main/productlist_controller.dart';
 import 'package:flutter_mysale/features/main_app/widgets/leaderboard_banner.dart';
 import 'package:flutter_mysale/features/main_app/widgets/normal_banner.dart';
+import 'package:flutter_mysale/features/main_app/widgets/product_carousel.dart';
 import 'package:flutter_mysale/features/main_app/widgets/sliding_banner.dart';
+import 'package:flutter_mysale/features/main_app/widgets/trending_brands.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/main/banners_model.dart';
+import '../../models/main/productitem_model.dart';
 import '../../providers/bestsellers_provider.dart';
 import '../../providers/leaderboardbanner_provider.dart';
 import '../../providers/shopbanners_provider.dart';
@@ -57,7 +60,10 @@ class _ShopState extends State<Shop> {
     dayAndNight = tm.isDarkMode;
     getSlidingBanners();
     getShopBanners(_requestFromArgs());
-    getLeaderboardBanner("");
+    getLeaderboardBanner(args.category ?? "");
+    getTrendingBrands(args.category ?? "");
+    getSponsoredBanners(args.category ?? "");
+    getBestSellers(args.category ?? "");
   }
 
   void getShopBanners(GetBannersRequest request) {
@@ -140,7 +146,7 @@ class _ShopState extends State<Shop> {
                 sort: null,
                 originCategory: null,
               );
-              Nav.to(context, App.productList, arguments: args);
+              Nav.toNamed(context, App.productList, arguments: args);
             },
             icon: const Icon(Icons.search),
           ),
@@ -153,11 +159,15 @@ class _ShopState extends State<Shop> {
 
   Widget _shopScrollView() {
     return SingleChildScrollView(
-      child: Column(
+      child: Column( // TODO: optimize, maybe slower than list/grid?
         children: [
           _createLeaderBoardBanner(),
+          _createPromoBanner(),
           _createSlidingBanner(),
+          _createTrendingBrands(),
+          _createSponsoredBanner(),
           _createNormalBanner(),
+          _createBestSellers(),
         ],
       ),
     );
@@ -225,6 +235,88 @@ class _ShopState extends State<Shop> {
                 Uri.parse((banner!.link)!),
               );
             },
+          );
+        }
+      },
+    );
+  }
+
+  Widget _createTrendingBrands() {
+    return Consumer<TrendingBrandsProvider>(
+      builder: (_, provider, __) {
+        if (provider.trendingBrands == null) {
+          return SizedBox();
+        } else {
+          return TrendingBrandsWidget(
+            brands: provider.trendingBrands,
+            onTap: (BannerModel? banner) {
+              if (banner != null) {
+                ShopBannersOnTapHelper.onBannerTapped(context, banner);
+              }
+            },
+          );
+        }
+      },
+    );
+  }
+
+  Widget _createSponsoredBanner() {
+    return Consumer<SponsoredBannersProvider>(
+      builder: (_, provider, __) {
+        if (provider.sponsoredBanners == null || provider.sponsoredBanners!.isEmpty) {
+          return SizedBox();
+        } else {
+          return SlidingBannerWidget(
+            banners: provider.sponsoredBanners,
+            onTap: (BannerModel? banner) {
+              if (banner != null) {
+                ShopBannersOnTapHelper.onBannerTapped(context, banner);
+              }
+            },
+          );
+        }
+      },
+    );
+  }
+
+  Widget _createPromoBanner() {
+    return Consumer<ShopBannersProvider>(
+      builder: (_, provider, __) {
+        if (provider.shopBanners == null) {
+          return SizedBox();
+        } else {
+          List<BannerModel> promoBanners = [];
+          provider.shopBanners?.groups?.forEach((Group it) {
+            if (it.type == "promo") {
+              if (it.banners?.first != null) {
+              promoBanners.add(it.banners!.first);
+              }
+            }
+          });
+          return NormalBannerWidget(
+            banners: promoBanners,
+            onTap: (BannerModel? banner) {
+              if (banner != null) {
+                ShopBannersOnTapHelper.onBannerTapped(context, banner);
+              }
+            },
+          );
+        }
+      },
+    );
+  }
+
+  Widget _createBestSellers() {
+    return Consumer<BestSellersProvider>(
+      builder: (_, provider, __) {
+        if (provider.getBestSellersResponse == null || provider.getBestSellersResponse!.isEmpty) {
+          return SizedBox();
+        } else {
+          return ProductCarousel(
+            products: provider.getBestSellersResponse,
+            onTap: (ProductItem productItem) {
+              //TODO: pdp
+            }, title: '',
           );
         }
       },

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/core/helpers/banner_image_url_helper.dart';
 import 'package:flutter_mysale/features/main_app/controllers/main/productlist_controller.dart';
 import 'package:flutter_mysale/features/main_app/models/main/banners_model.dart';
 
@@ -21,33 +22,6 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
   @override
   void initState() {
     super.initState();
-  }
-
-  String appendBannerSizeUrl(String? url) {
-    int width = 475;
-    int height = 325;
-
-    if (url != null) {
-      String removedExtension = url.substring(0, url.lastIndexOf("."));
-      String extension = "";
-
-      int i = url.lastIndexOf('.');
-      if (i > 0) {
-        extension = url.substring(i + 1);
-      }
-
-      url = "${removedExtension}_${width}x${height}.${extension}";
-
-      if (url.contains("?")) {
-        url = "${url}&width=800";
-      } else {
-        url = "$url?width=800";
-      }
-      print("bannerrul $url");
-      return url;
-    } else {
-      return "";
-    }
   }
 
   Widget normalBannerGestureDetector(BannerModel banner) {
@@ -78,7 +52,7 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
 
   Widget normalBannerImage(BannerModel banner) {
     return Image.network(
-      appendBannerSizeUrl(banner.image),
+      BannerImageUrlHelper.appendBannerSizeUrl(banner.image, 475, 325, 800),
       fit: BoxFit.contain,
     );
   }

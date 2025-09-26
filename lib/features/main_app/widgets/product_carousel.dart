@@ -4,11 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mysale/core/widgets/product_card.dart';
 import 'package:flutter_mysale/features/main_app/models/main/productitem_model.dart';
 
+typedef ProductCarouselTappedCallback = void Function(ProductItem);
+
 class ProductCarousel extends StatefulWidget {
   final List<ProductItem>? products;
   final String title;
+  final ProductCarouselTappedCallback? onTap;
 
-  const ProductCarousel({super.key, this.products, required this.title});
+  const ProductCarousel({
+    super.key,
+    this.products,
+    required this.title,
+    this.onTap,
+  });
 
   @override
   State<ProductCarousel> createState() => _ProductCarouselState();
@@ -55,11 +63,7 @@ class _ProductCarouselState extends State<ProductCarousel> {
       itemBuilder: (context, index, realIdx) {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4.0),
-          child: ProductCard(
-            product: products[index],
-            borderRadius: 8,
-            borderWidth: 1,
-          ),
+          child: _createProductCard(products[index]),
         );
       },
       options: CarouselOptions(
@@ -93,6 +97,17 @@ class _ProductCarouselState extends State<ProductCarousel> {
           ),
         );
       }),
+    );
+  }
+
+  Widget _createProductCard(ProductItem productItem) {
+    return GestureDetector(
+      onTap: () {
+        if (widget.onTap != null) {
+          widget.onTap!(productItem);
+        }
+      },
+      child: ProductCard(product: productItem, borderRadius: 8, borderWidth: 1),
     );
   }
 

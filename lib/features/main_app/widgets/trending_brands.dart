@@ -2,11 +2,17 @@
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/core/helpers/banner_image_url_helper.dart';
+
+import '../models/main/banners_model.dart';
+
+typedef TrendingBrandBannerTappedCallback = void Function(BannerModel);
 
 class TrendingBrandsWidget extends StatefulWidget {
-  final List<TrendingBrand>? brands;
+  final List<BannerModel>? brands;
+  final TrendingBrandBannerTappedCallback? onTap;
 
-  const TrendingBrandsWidget({super.key, this.brands});
+  const TrendingBrandsWidget({super.key, this.brands, this.onTap});
 
   @override
   State<TrendingBrandsWidget> createState() => _TrendingBrandsWidgetState();
@@ -15,48 +21,9 @@ class TrendingBrandsWidget extends StatefulWidget {
 class _TrendingBrandsWidgetState extends State<TrendingBrandsWidget> {
   int _currentIndex = 0;
 
-  final List<TrendingBrand> defaultBrands = [
-    TrendingBrand(
-      imageUrl:
-          'https://images.unsplash.com/photo-1586882829491-b81178aa622e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2850&q=80',
-      description: 'Brand A',
-      discount: 'Up to 30% Off',
-    ),
-    TrendingBrand(
-      imageUrl:
-          'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2xvdGhlc3xlbnwwfHwwfHx8MA%3D%3D',
-      description: 'Brand B',
-      discount: 'Up to 40% Off',
-    ),
-    TrendingBrand(
-      imageUrl:
-          'https://images.unsplash.com/photo-1503602642458-232111445657?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2850&q=80',
-      description: 'Brand C',
-      discount: 'Up to 20% Off',
-    ),
-    TrendingBrand(
-      imageUrl:
-          'https://images.unsplash.com/photo-1521334884684-d80222895322?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2850&q=80',
-      description: 'Brand D',
-      discount: 'Up to 50% Off',
-    ),
-    TrendingBrand(
-      imageUrl:
-          'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2850&q=80',
-      description: 'Brand E',
-      discount: 'Up to 30% Off',
-    ),
-    TrendingBrand(
-      imageUrl:
-          'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2850&q=80',
-      description: 'Brand F',
-      discount: 'Up to 80% Off',
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    final brands = widget.brands ?? defaultBrands;
+    final brands = widget.brands ?? [];
     final int totalPages = (brands.length / 3).ceil();
 
     return Container(
@@ -84,7 +51,7 @@ class _TrendingBrandsWidgetState extends State<TrendingBrandsWidget> {
     );
   }
 
-  Widget _buildCarousel(List<TrendingBrand> brands, int totalPages) {
+  Widget _buildCarousel(List<BannerModel> brands, int totalPages) {
     return CarouselSlider.builder(
       itemCount: totalPages,
       options: CarouselOptions(
@@ -110,7 +77,7 @@ class _TrendingBrandsWidgetState extends State<TrendingBrandsWidget> {
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: indexes
-              .map((idx) => Expanded(child: _BrandItem(brand: brands[idx])))
+              .map((idx) => Expanded(child: _buildBrandItem(brands[idx])))
               .toList(),
         );
       },
@@ -134,10 +101,21 @@ class _TrendingBrandsWidgetState extends State<TrendingBrandsWidget> {
       }),
     );
   }
+
+  Widget _buildBrandItem(BannerModel banner) {
+    return GestureDetector(
+      onTap: () {
+        if (widget.onTap != null) {
+          widget.onTap!(banner);
+        }
+      },
+      child: _BrandItem(brand: banner),
+    );
+  }
 }
 
 class _BrandItem extends StatelessWidget {
-  final TrendingBrand brand;
+  final BannerModel brand;
 
   const _BrandItem({required this.brand});
 
@@ -151,7 +129,7 @@ class _BrandItem extends StatelessWidget {
         children: [
           ClipOval(
             child: Image.network(
-              brand.imageUrl,
+              BannerImageUrlHelper.appendBannerSizeUrl(brand.image, 313, 603, 440),
               fit: BoxFit.cover,
               width: 120,
               height: 120,
@@ -159,12 +137,12 @@ class _BrandItem extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            brand.discount,
+            brand.percentOffText ?? "",
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
           Text(
-            brand.description,
+            brand.description ?? "",
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 14),
           ),

@@ -185,7 +185,7 @@ class DeepLinkHelper {
       sort: null,
       originCategory: null,
     );
-    Nav.to(context, App.productList, arguments: arguments);
+    Nav.toNamed(context, App.productList, arguments: arguments);
   }
 
   static void _deepLinkSaleItems(
@@ -202,7 +202,7 @@ class DeepLinkHelper {
       sort: null,
       originCategory: null,
     );
-    Nav.to(context, App.productList, arguments: arguments);
+    Nav.toNamed(context, App.productList, arguments: arguments);
   }
 
   static void _deepLinkSearchQuery(BuildContext context, String searchQuery) {
@@ -214,7 +214,7 @@ class DeepLinkHelper {
       sort: null,
       originCategory: null,
     );
-    Nav.to(context, App.productList, arguments: arguments);
+    Nav.toNamed(context, App.productList, arguments: arguments);
   }
 
   static void _deepLinkSaleCategory(
@@ -238,7 +238,7 @@ class DeepLinkHelper {
           appliedFilters: [],
           sort: null,
         );
-    Nav.to(context, App.productList, arguments: arguments);
+    Nav.toNamed(context, App.productList, arguments: arguments);
   }
 
   static void _deepLinkBrands(BuildContext context) {
@@ -260,7 +260,7 @@ class DeepLinkHelper {
       sort: null,
       originCategory: null,
     );
-    Nav.to(context, App.productList, arguments: arguments);
+    Nav.toNamed(context, App.productList, arguments: arguments);
   }
 
   static void _navigateToShopRoot(BuildContext context) {
