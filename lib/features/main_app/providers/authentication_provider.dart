@@ -19,7 +19,7 @@ class AuthenthicationProvider extends ChangeNotifier {
   bool? isSuccess;
 
   AuthenthicationProvider({required this.context}) {
-    _userAgentHelper = UserAgentHelper(context);
+    _userAgentHelper = UserAgentHelper.shared;
   }
 
   Future<String?> callLoginViaEmail(
