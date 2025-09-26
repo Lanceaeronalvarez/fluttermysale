@@ -19,9 +19,6 @@ class ApiEndpoint {
 
   // Apps Internals Links
   static const appLoginUrl = AuthApp.login;
-  static const appRegiaterUrl = AuthApp.register;
-  static const appForgetUrl = AuthApp.forget;
-  static const appProfileUrl = AuthApp.profile;
 
   //Mysale below
 
