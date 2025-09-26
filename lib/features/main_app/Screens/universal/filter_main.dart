@@ -190,7 +190,8 @@ class _FilterMainState extends State<FilterMain> {
   Widget _createCustomScrollView(FilterProvider provider) {
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(child: _createCategoryTile(provider)),
+        if (_shouldShowCategoryTab(provider))
+          SliverToBoxAdapter(child: _createCategoryTile(provider)),
         _createFilterListView(provider),
       ],
     );
@@ -280,5 +281,18 @@ class _FilterMainState extends State<FilterMain> {
       endIndent: 0,
       color: "#F6F6F6".toColor(),
     );
+  }
+
+  bool _shouldShowCategoryTab(FilterProvider provider) {
+    CategoryNodeModel? oc = provider.originCategory;
+    if (oc == null) {
+      return true;
+    } else {
+      if (!oc.hasChild && provider.isOriginCategorySelected()) {
+        return false;
+      } else {
+        return true;
+      }
+    }
   }
 }

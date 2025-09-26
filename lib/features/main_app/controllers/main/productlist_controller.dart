@@ -14,12 +14,14 @@ class ProductListArguments {
   List<CategoryNodeModel> appliedCategories;
   List<FacetFilterModel> appliedFilters;
   ProductSortModel? sort;
+  CategoryNodeModel? originCategory;
 
   ProductListArguments._({
     required this.saleId,
     required this.appliedCategories,
     required this.appliedFilters,
     required this.sort,
+    required this.originCategory,
   });
 
   factory ProductListArguments({
@@ -27,12 +29,14 @@ class ProductListArguments {
     required List<CategoryNodeModel> appliedCategories,
     required List<FacetFilterModel> appliedFilters,
     required ProductSortModel? sort,
+    required CategoryNodeModel? originCategory,
   }) {
     return ProductListArguments._(
       saleId: saleId,
       appliedCategories: appliedCategories,
       appliedFilters: appliedFilters,
       sort: sort,
+      originCategory: originCategory,
     );
   }
 }
@@ -61,6 +65,7 @@ class _ProductListState extends ControllerState<ProductListController> {
       appliedCategories: widget.args.appliedCategories,
       appliedFilters: widget.args.appliedFilters,
       sort: widget.args.sort,
+      originCategory: widget.args.originCategory,
     );
   }
 

@@ -277,6 +277,7 @@ class _ProductListState extends State<ProductList>
             selectedCategories: [...pl.appliedCategories],
             facetFilters: [...pl.initialProductListResponse?.facets ?? []],
             appliedFilters: [...pl.appliedFilters],
+            originCategory: pl.originCategory,
           );
           FilterMainArguments args = FilterMainArguments(
             filterProvider: fp,

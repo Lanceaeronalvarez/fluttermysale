@@ -83,6 +83,7 @@ class _ShippingAndDeliveryWidgetState extends State<ShippingAndDeliveryWidget> {
                 appliedCategories: [],
                 appliedFilters: [],
                 sort: null,
+                originCategory: null,
               );
               Nav.to(context, App.productList, arguments: args);
             },

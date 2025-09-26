@@ -60,6 +60,7 @@ class FilterProvider extends ChangeNotifier {
   List<CategoryNodeModel> _appliedCategories;
   List<FacetFilterModel> _facetFilters;
   List<FacetFilterModel> _appliedFilters;
+  CategoryNodeModel? _originCategory;
 
   int get productTotal => _productTotal;
   double get minPrice => _minPrice;
@@ -70,6 +71,7 @@ class FilterProvider extends ChangeNotifier {
   List<FilterCategoryModel> get filterCategories => _filterCategories;
   List<CategoryNodeModel> get appliedCategories => _appliedCategories;
   List<FacetFilterModel> get facetFilters => _facetFilters;
+  CategoryNodeModel? get originCategory => _originCategory;
 
   //used in filter_select
   List<FacetFilterValueModel> _displayedFacetFilterValues = [];
@@ -89,6 +91,7 @@ class FilterProvider extends ChangeNotifier {
     this._appliedCategories,
     this._facetFilters,
     this._appliedFilters,
+    this._originCategory,
   );
 
   factory FilterProvider({
@@ -101,6 +104,7 @@ class FilterProvider extends ChangeNotifier {
     required List<CategoryNodeModel> selectedCategories,
     required List<FacetFilterModel> facetFilters,
     required List<FacetFilterModel> appliedFilters,
+    required CategoryNodeModel? originCategory,
   }) {
     List<FilterKey> includedFilters = [
       FilterKey.brandName,
@@ -136,6 +140,7 @@ class FilterProvider extends ChangeNotifier {
       selectedCategories, //applied categories
       arrangedFacetFilters, //filters
       appliedFilters, //applied filters
+      originCategory, //origin category
     );
 
     //TODO: JCA no preapplied filters yet
@@ -149,7 +154,19 @@ class FilterProvider extends ChangeNotifier {
       return FacetFilterModel(ff.name ?? '', values);
     }).toList();
 
-    provider._setCategories(categories);
+    List<CategoryNodeModel> categoriesToShow = [...categories];
+    if (originCategory != null) {
+      String? originRootKey = originCategory.key?.split('>>>').firstOrNull;
+      categoriesToShow = categoriesToShow
+          .where((CategoryNodeModel element) {
+            return provider._facetFilterKeyMatched(originRootKey, element.key);
+          })
+          .nonNulls
+          .toList();
+          
+    }
+
+    provider._setCategories(categoriesToShow);
 
     FacetFilterValueModel? facetFilterPrice = provider
         .getAppliedFilter(FilterKey.price.key)
@@ -534,12 +551,25 @@ class FilterProvider extends ChangeNotifier {
   }
 
   //used for both FacetFilterModel and FacetFilterValueModel
+  //similar to productlistprovider
   bool _facetFilterKeyMatched(String? key1, String? key2) {
     return key1 != null &&
         key2 != null &&
         key1.isNotEmpty &&
         key2.isNotEmpty &&
         key1.toLowerCase() == key2.toLowerCase();
+  }
+
+  //similar to productlistprovider
+  bool isOriginCategorySelected() {
+    if (_originCategory == null) {
+      return false;
+    } else {
+      return (_appliedCategories.firstWhereOrNull(
+            (e) => _facetFilterKeyMatched(e.key, _originCategory?.key),
+          ) !=
+          null);
+    }
   }
 
   GetProductListRequest generateGetProductListRequest() {

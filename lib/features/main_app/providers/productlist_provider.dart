@@ -30,6 +30,8 @@ class ProductListProvider extends ChangeNotifier {
   int _pageSize = 10;
   ProductListResponse? _initialProductListResponse;
   String? _searchQuery;
+  CategoryNodeModel?
+  _originCategory; // if plp came from categories/subcategories otherwise this should be null
 
   String get saleId => _saleId;
   List<CategoryNodeModel> get appliedCategories => _appliedCategories;
@@ -40,8 +42,10 @@ class ProductListProvider extends ChangeNotifier {
   List<ProductItem> get products => _products;
   int get page => _page;
   int get pageSize => _pageSize;
-  ProductListResponse? get initialProductListResponse => _initialProductListResponse;
+  ProductListResponse? get initialProductListResponse =>
+      _initialProductListResponse;
   String? get searchQuery => _searchQuery;
+  CategoryNodeModel? get originCategory => _originCategory;
 
   ProductListProvider._(
     this._userAgentHelper,
@@ -49,6 +53,7 @@ class ProductListProvider extends ChangeNotifier {
     this._appliedCategories,
     this._appliedFilters,
     this._sort,
+    this._originCategory,
   );
 
   factory ProductListProvider({
@@ -57,14 +62,28 @@ class ProductListProvider extends ChangeNotifier {
     required List<CategoryNodeModel> appliedCategories,
     required List<FacetFilterModel> appliedFilters,
     required ProductSortModel? sort,
+    required CategoryNodeModel? originCategory,
   }) {
-    return ProductListProvider._(
+    ProductListProvider p = ProductListProvider._(
       userAgentHelper,
       saleId,
       appliedCategories,
       appliedFilters,
       sort,
+      originCategory,
     );
+
+    if (originCategory != null &&
+        originCategory.key != null &&
+        originCategory.key!.isNotEmpty) {
+      bool isRootCategory = originCategory.key!.split('>>>').length == 1;
+      //if origincategory is not root and also not selected, add to applied filters
+      if (!isRootCategory && !p._isOriginCategorySelected()) {
+        p._appliedCategories.add(originCategory);
+      }
+    }
+
+    return p;
   }
 
   void getProductList() async {
@@ -98,16 +117,18 @@ class ProductListProvider extends ChangeNotifier {
       _productList = ProductListResponse.fromJson(jsonDecode(res.toString()));
       _initialProductListResponse ??= _productList;
       _isLoading = false;
+
       notifyListeners();
     }
   }
 
   double? getInitialMaxPrice() {
-    FacetFilterModel? priceFilter = _initialProductListResponse?.facets?.firstWhereOrNull((e) {
-      return (e.name != null &&
-          e.name!.isNotEmpty &&
-          e.name! == FilterKey.price.key);
-    });
+    FacetFilterModel? priceFilter = _initialProductListResponse?.facets
+        ?.firstWhereOrNull((e) {
+          return (e.name != null &&
+              e.name!.isNotEmpty &&
+              e.name! == FilterKey.price.key);
+        });
     String maxPriceString = priceFilter?.values?.firstOrNull?.value ?? '';
     double? maxPrice = double.tryParse(maxPriceString);
     return maxPrice;
@@ -123,6 +144,46 @@ class ProductListProvider extends ChangeNotifier {
   }) {
     _appliedCategories = aAppliedCategories;
     _appliedFilters = aAppliedFilters;
+    _updateOriginCategory();
+  }
+
+  void _updateOriginCategory() {
+    if (_originCategory != null && !_isOriginCategorySelected()) {
+      //update originCategory to root category if originCategory is removed from appliedCategories
+      String? rootKey = _originCategory?.key?.split('>>>').firstOrNull;
+      if (rootKey != null && rootKey.isNotEmpty) {
+        List<CategoryNodeModel> categories =
+            initialProductListResponse?.categories ?? [];
+        CategoryNodeModel? rootCategory = categories.firstWhereOrNull((e) {
+          return _facetFilterKeyMatched(e.key, rootKey);
+        });
+        if (rootCategory != null) {
+          _originCategory = rootCategory;
+        }
+      }
+    }
+  }
+
+  //used for both FacetFilterModel and FacetFilterValueModel
+  //similar to filterprovider
+  bool _facetFilterKeyMatched(String? key1, String? key2) {
+    return key1 != null &&
+        key2 != null &&
+        key1.isNotEmpty &&
+        key2.isNotEmpty &&
+        key1.toLowerCase() == key2.toLowerCase();
+  }
+
+  //similar to filterprovider
+  bool _isOriginCategorySelected() {
+    if (_originCategory == null) {
+      return false;
+    } else {
+      return (appliedCategories.firstWhereOrNull(
+            (e) => _facetFilterKeyMatched(e.key, _originCategory?.key),
+          ) !=
+          null);
+    }
   }
 
   void updateSort(ProductSortModel? sort) {

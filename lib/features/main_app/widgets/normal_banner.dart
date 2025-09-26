@@ -55,6 +55,7 @@ class _NormalBannerWidgetState extends State<NormalBannerWidget> {
           appliedCategories: [],
           appliedFilters: [],
           sort: null,
+          originCategory: null
         );
         Nav.toNamed(context, App.productList, arguments: args);
       },

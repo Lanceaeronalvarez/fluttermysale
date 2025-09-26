@@ -132,6 +132,7 @@ class _ShopState extends State<Shop> {
                 appliedCategories: [],
                 appliedFilters: [],
                 sort: null,
+                originCategory: null,
               );
               Nav.to(context, App.productList, arguments: args);
             },
