@@ -5,7 +5,7 @@ export 'filter/filter_select_controller.dart';
 export 'filter/productsort_controller.dart';
 export 'main/about_controller.dart';
 export 'main/category_controller.dart';
-export 'main/checkoutcart_controller.dart';
+export 'main/checkout_controller.dart';
 export 'main/contact_controller.dart';
 export 'main/getappsettings_controller.dart';
 export 'main/home_controller.dart';

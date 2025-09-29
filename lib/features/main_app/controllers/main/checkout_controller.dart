@@ -4,7 +4,7 @@ import 'package:flutter_mysale/features/main_app/Screens/universal/checkoutcart.
     as universal;
 
 class CheckoutCartController extends StatelessController {
-  const CheckoutCartController({Key? key}) : super(key: key);
+  const CheckoutCartController.CheckoutController({Key? key}) : super(key: key);
 
   @override
   Display view(BuildContext context) {
