@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/features/main_app/controllers/main/address_controller.dart';
 import 'package:flutter_mysale/features/main_app/controllers/main/productlist_controller.dart';
 import 'package:flutter_mysale/features/main_app/controllers/main/shop_controller.dart';
 import 'package:flutter_mysale/features/main_app/widgets/image_gallery.dart';
@@ -26,6 +27,8 @@ class App extends RouteManager {
   static const String cart = '${App.name}/cart)';
   static const String cartModal =
       '${App.name}/cart/modal'; //not added on routes, navigation handled in MaterialApp onGenerateRoute since this have a custom transition
+  static const String address = '${App.name}/address';
+  static const String newAddress = '${App.name}/newaddress';
 
   App() {
     addRoute(App.home, (context) => const ShopController());
@@ -44,5 +47,11 @@ class App extends RouteManager {
     addRoute(App.imagegallery, (context) => const ImageGalleryWidget());
     addRoute(App.imagegalleryzoom, (context) => const ImageGalleryZoomWidget());
     addRoute(App.cart, (context) => const CheckoutCartController());
+    addRoute(App.address, (context) => const AddressController());
+    addRoute(App.newAddress, (context) {
+      AddressArguments args =
+          (ModalRoute.of(context)?.settings.arguments as AddressArguments);
+      return NewAddressController(args: args);
+    });
   }
 }

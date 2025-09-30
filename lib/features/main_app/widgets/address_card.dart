@@ -5,8 +5,14 @@ import '../models/model.dart';
 class AddressCard extends StatelessWidget {
   final AddressItem? address;
   final VoidCallback onTap;
+  final bool showChevron;
 
-  const AddressCard({super.key, required this.address, required this.onTap});
+  const AddressCard({
+    super.key,
+    required this.address,
+    required this.onTap,
+    this.showChevron = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,49 +27,64 @@ class AddressCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
         color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Colors.grey, width: 1),
-          bottom: BorderSide(color: Colors.grey, width: 1),
-        ),
+        border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(child: _createTextColumn()),
-          _createIcon(),
+          if (showChevron) _createIcon(),
         ],
       ),
     );
   }
 
   Widget _createTextColumn() {
+    if (address == null) {
+      return const Text("Add new address");
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         _createName(),
         const SizedBox(height: 4),
-        if (address != null) _createSuburbCityPostcodePhone(),
+        _createAddressLine(),
+        _createSuburbCityPostcode(),
+        _createPhone(),
       ],
     );
   }
 
   Widget _createName() {
     return Text(
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
       address?.name ?? "Add new address",
+      style: const TextStyle(fontWeight: FontWeight.w600),
     );
   }
 
-  Widget _createSuburbCityPostcodePhone() {
-    return Text(
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      '${address!.addressLines} ${address!.suburb} ${address!.city} ${address!.postcode} ${address!.phone}',
-    );
+  Widget _createAddressLine() {
+    if (address?.addressLines?.isEmpty ?? true) return const SizedBox.shrink();
+    return Text(address!.addressLines!);
+  }
+
+  Widget _createSuburbCityPostcode() {
+    final suburb = address?.suburb ?? "";
+    final city = address?.city ?? "";
+    final postcode = address?.postcode ?? "";
+    if ([suburb, city, postcode].every((e) => e.isEmpty)) {
+      return const SizedBox.shrink();
+    }
+    return Text("$suburb, $city $postcode");
+  }
+
+  Widget _createPhone() {
+    if (address?.phone?.isEmpty ?? true) return const SizedBox.shrink();
+    return Text(address!.phone!);
   }
 
   Widget _createIcon() {
