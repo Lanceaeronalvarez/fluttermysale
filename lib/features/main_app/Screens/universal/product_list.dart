@@ -157,6 +157,7 @@ class _ProductListState extends State<ProductList>
     _searchTextFieldController.dispose();
     _searchAndFilterAnimationController?.dispose();
     _searchBoxAnimationController?.dispose();
+    (Provider.of<ProductListProvider>(context, listen: false)).dispose();
   }
 
   @override
@@ -168,7 +169,7 @@ class _ProductListState extends State<ProductList>
         leadingWidth: 56,
         centerTitle: true,
         toolbarHeight: 56,
-        leading: _backButton(),
+        leading: null,
         scrolledUnderElevation: 0,
         // stop darkening appbar on scroll
         surfaceTintColor: Colors.transparent,
@@ -425,15 +426,6 @@ class _ProductListState extends State<ProductList>
           child: Image.asset(_logoImagePath),
         ),
       ),
-    );
-  }
-
-  Widget _backButton() {
-    return GestureDetector(
-      onTap: () {
-        Nav.close(context);
-      },
-      child: Icon(Icons.backspace),
     );
   }
 

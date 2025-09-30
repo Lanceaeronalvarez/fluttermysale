@@ -18,13 +18,15 @@ class BestSellersProvider extends ChangeNotifier {
   bool isLoading = false;
 
   List<GetBestSellersResponse>? get getBestSellersResponse =>
-      _getBestSellersResponse!;
+      _getBestSellersResponse;
 
-  BestSellersProvider({required this.context}) {
+  final String? category;
+
+  BestSellersProvider({required this.context, this.category}) {
     _userAgentHelper = UserAgentHelper.shared;
   }
 
-  void getBestSellers(String category) async {
+  void getBestSellers() async {
     isLoading = true;
 
     final userAgent = await _userAgentHelper.userAgent;
@@ -35,7 +37,7 @@ class BestSellersProvider extends ChangeNotifier {
 
     Response res = await _http!.get(
       ApiEndpoint.bestSellers(),
-      params: {"category": category},
+      params: {"category": category ?? ""},
     );
     if (res.statusCode == 200 && res.statusCode != 429) {
       //res.toString() when data is a list isn't handled in library code

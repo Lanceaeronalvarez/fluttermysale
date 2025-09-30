@@ -18,20 +18,22 @@ class TrendingBrandsProvider extends ChangeNotifier {
 
   bool isLoading = false;
 
-  List<BannerModel>? get trendingBrands => _trendingBrands!;
+  List<BannerModel>? get trendingBrands => _trendingBrands;
 
-  TrendingBrandsProvider({required this.context}) {
+  final String? category;
+
+  TrendingBrandsProvider({required this.context, this.category}) {
     _userAgentHelper = UserAgentHelper.shared;
   }
 
-  void getTrendingBrands(String categoryId) async {
+  void getTrendingBrands() async {
     isLoading = true;
 
     GetBannersRequest request = GetBannersRequest(
       null,
       null,
       "50",
-      categoryId,
+      category ?? "",
       null,
       null,
       true,

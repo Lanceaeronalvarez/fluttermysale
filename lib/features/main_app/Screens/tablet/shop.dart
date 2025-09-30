@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/architect.dart';
+import 'package:flutter_mysale/core/helpers/deeplink_helper.dart';
+import 'package:flutter_mysale/core/helpers/shop_banners_ontap_helper.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/controllers/main/productlist_controller.dart';
 import 'package:flutter_mysale/features/main_app/widgets/leaderboard_banner.dart';
 import 'package:flutter_mysale/features/main_app/widgets/normal_banner.dart';
+import 'package:flutter_mysale/features/main_app/widgets/product_carousel.dart';
 import 'package:flutter_mysale/features/main_app/widgets/sliding_banner.dart';
+import 'package:flutter_mysale/features/main_app/widgets/trending_brands.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../config/config.dart';
-import '../../../../core/core.dart';
 import '../../models/main/banners_model.dart';
-import '../../models/main/facetfilter_model.dart';
+import '../../models/main/productitem_model.dart';
 import '../../providers/bestsellers_provider.dart';
 import '../../providers/leaderboardbanner_provider.dart';
 import '../../providers/shopbanners_provider.dart';
 import '../../providers/slidingbanners_provider.dart';
 import '../../providers/sponsoredbanners_provider.dart';
 import '../../providers/trendingbrands_provider.dart';
-
-typedef ShopArguments = ({String? category});
 
 class Shop extends StatefulWidget {
   final String? title;
@@ -34,74 +35,61 @@ class _ShopState extends State<Shop> {
   List<BannerModel> _normalBanners = [];
   String _logoImagePath = "assets/images/logo.png";
 
-  ShopArguments args = (category: null);
-
-  GetBannersRequest _requestFromArgs() {
-    return GetBannersRequest(
-      null,
-      null,
-      "50",
-      args.category,
-      null,
-      null,
-      true,
-      true,
-      null,
-    );
-  }
-
   @override
   void initState() {
     super.initState();
     var tm = context.read<ThemeProvider>();
     dayAndNight = tm.isDarkMode;
-    getShopBanners(_requestFromArgs());
-    getSlidingBanners();
-    getLeaderboardBanner("");
+    _getSlidingBanners((p) => p.getSlidingBanners());
+    _getShopBanners((p) => p.getShopBanners());
+    _getLeaderboardBanner((p) => p.getleaderboardBanners("MobileBrowser"));
+    _getTrendingBrands((p) => p.getTrendingBrands());
+    _getSponsoredBanners((p) => p.getSponsoredBanners());
+    _getBestSellers((p) => p.getBestSellers());
   }
 
-  void getShopBanners(GetBannersRequest request) {
+  @override
+  void dispose() {
+    super.dispose();
+    _getSlidingBanners((p) => p.dispose());
+    _getShopBanners((p) => p.dispose());
+    _getLeaderboardBanner((p) => p.dispose());
+    _getTrendingBrands((p) => p.dispose());
+    _getSponsoredBanners((p) => p.dispose());
+    _getBestSellers((p) => p.dispose());
+  }
+
+  bool hasCategory() {
     final ShopBannersProvider provider = Provider.of<ShopBannersProvider>(
       context,
       listen: false,
     );
-    provider.getShopBanners(request);
+    String? category = provider.category;
+    return category != null && category.isNotEmpty;
   }
 
-  void getSlidingBanners() {
-    final SlidingBannersProvider provider = Provider.of<SlidingBannersProvider>(
-      context,
-      listen: false,
-    );
-    provider.getSlidingBanners();
+  void _getShopBanners(void Function(ShopBannersProvider) action) {
+    action(Provider.of<ShopBannersProvider>(context, listen: false));
   }
 
-  void getSponsoredBanners(String categoryId) {
-    final SponsoredBannersProvider provider =
-        Provider.of<SponsoredBannersProvider>(context, listen: false);
-    provider.getSponsoredBanners(categoryId);
+  void _getSlidingBanners(void Function(SlidingBannersProvider) action) {
+    action(Provider.of<SlidingBannersProvider>(context, listen: false));
   }
 
-  void getLeaderboardBanner(String categoryId) {
-    final LeaderboardBannerProvider provider =
-        Provider.of<LeaderboardBannerProvider>(context, listen: false);
-    provider.getleaderboardBanners("ShopPage", "DesktopBrowser", categoryId);
+  void _getSponsoredBanners(void Function(SponsoredBannersProvider) action) {
+    action(Provider.of<SponsoredBannersProvider>(context, listen: false));
   }
 
-  void getTrendingBrands(String categoryId) {
-    final TrendingBrandsProvider provider = Provider.of<TrendingBrandsProvider>(
-      context,
-      listen: false,
-    );
-    provider.getTrendingBrands(categoryId);
+  void _getLeaderboardBanner(void Function(LeaderboardBannerProvider) action) {
+    action(Provider.of<LeaderboardBannerProvider>(context, listen: false));
   }
 
-  void getBestSellers(String category) {
-    final BestSellersProvider provider = Provider.of<BestSellersProvider>(
-      context,
-      listen: false,
-    );
-    provider.getBestSellers(category);
+  void _getTrendingBrands(void Function(TrendingBrandsProvider) action) {
+    action(Provider.of<TrendingBrandsProvider>(context, listen: false));
+  }
+
+  void _getBestSellers(void Function(BestSellersProvider) action) {
+    action(Provider.of<BestSellersProvider>(context, listen: false));
   }
 
   @override
@@ -113,7 +101,7 @@ class _ShopState extends State<Shop> {
         leadingWidth: 56,
         centerTitle: true,
         toolbarHeight: 56,
-        leading: _catergoryScreen(),
+        leading: hasCategory() ? null : _catergoryScreen(),
         scrolledUnderElevation: 0,
         // stop darkening appbar on scroll
         surfaceTintColor: Colors.transparent,
@@ -140,7 +128,7 @@ class _ShopState extends State<Shop> {
                 sort: null,
                 originCategory: null,
               );
-              Nav.to(context, App.productList, arguments: args);
+              Nav.toNamed(context, App.productList, arguments: args);
             },
             icon: const Icon(Icons.search),
           ),
@@ -154,10 +142,15 @@ class _ShopState extends State<Shop> {
   Widget _shopScrollView() {
     return SingleChildScrollView(
       child: Column(
+        // TODO: tablet-specific UI
         children: [
           _createLeaderBoardBanner(),
+          _createPromoBanner(),
           _createSlidingBanner(),
+          _createTrendingBrands(),
+          _createSponsoredBanner(),
           _createNormalBanner(),
+          _createBestSellers(),
         ],
       ),
     );
@@ -176,7 +169,14 @@ class _ShopState extends State<Shop> {
               ); //TODO: paging
             }
           });
-          return NormalBannerWidget(banners: _normalBanners);
+          return NormalBannerWidget(
+            banners: _normalBanners,
+            onTap: (BannerModel? banner) {
+              if (banner != null) {
+                ShopBannersOnTapHelper.onBannerTapped(context, banner);
+              }
+            },
+          );
         }
       },
     );
@@ -188,7 +188,14 @@ class _ShopState extends State<Shop> {
         if (provider.slidingBanners == null) {
           return SizedBox();
         } else {
-          return SlidingBannerWidget(banners: provider.slidingBanners);
+          return SlidingBannerWidget(
+            banners: provider.slidingBanners,
+            onTap: (BannerModel? banner) {
+              if (banner != null) {
+                ShopBannersOnTapHelper.onBannerTapped(context, banner);
+              }
+            },
+          );
         }
       },
     );
@@ -200,7 +207,104 @@ class _ShopState extends State<Shop> {
         if (provider.leaderboardBanner == null) {
           return SizedBox();
         } else {
-          return LeaderboardBannerWidget(banner: provider.leaderboardBanner);
+          return LeaderboardBannerWidget(
+            banner: provider.leaderboardBanner,
+            onTap: (BannerModel? banner) {
+              if (banner?.link == null) {
+                return;
+              }
+              DeepLinkHelper.processDeeplinkUri(
+                context,
+                Uri.parse((banner!.link)!),
+              );
+            },
+          );
+        }
+      },
+    );
+  }
+
+  Widget _createTrendingBrands() {
+    return Consumer<TrendingBrandsProvider>(
+      builder: (_, provider, __) {
+        if (provider.trendingBrands == null ||
+            provider.trendingBrands!.isEmpty) {
+          return SizedBox();
+        } else {
+          return TrendingBrandsWidget(
+            brands: provider.trendingBrands,
+            onTap: (BannerModel? banner) {
+              if (banner != null) {
+                ShopBannersOnTapHelper.onBannerTapped(context, banner);
+              }
+            },
+          );
+        }
+      },
+    );
+  }
+
+  Widget _createSponsoredBanner() {
+    return Consumer<SponsoredBannersProvider>(
+      builder: (_, provider, __) {
+        if (provider.sponsoredBanners == null ||
+            provider.sponsoredBanners!.isEmpty) {
+          return SizedBox();
+        } else {
+          return SlidingBannerWidget(
+            banners: provider.sponsoredBanners,
+            onTap: (BannerModel? banner) {
+              if (banner != null) {
+                ShopBannersOnTapHelper.onBannerTapped(context, banner);
+              }
+            },
+          );
+        }
+      },
+    );
+  }
+
+  Widget _createPromoBanner() {
+    return Consumer<ShopBannersProvider>(
+      builder: (_, provider, __) {
+        if (provider.shopBanners == null) {
+          return SizedBox();
+        } else {
+          List<BannerModel> promoBanners = [];
+          provider.shopBanners?.groups?.forEach((Group it) {
+            if (it.type == "promo") {
+              if (it.banners?.first != null) {
+                promoBanners.add(it.banners!.first);
+              }
+            }
+          });
+          return NormalBannerWidget(
+            banners: promoBanners,
+            onTap: (BannerModel? banner) {
+              if (banner != null) {
+                ShopBannersOnTapHelper.onBannerTapped(context, banner);
+              }
+            },
+          );
+        }
+      },
+    );
+  }
+
+  Widget _createBestSellers() {
+    return Consumer<BestSellersProvider>(
+      builder: (_, provider, __) {
+        if (provider.getBestSellersResponse == null ||
+            provider.getBestSellersResponse!.isEmpty) {
+          return SizedBox();
+        } else {
+          return ProductCarousel(
+            products: provider.getBestSellersResponse,
+            onTap: (ProductItem productItem) {
+              //TODO: pdp
+            },
+            title: '',
+          );
         }
       },
     );

@@ -9,14 +9,26 @@ import 'package:provider/single_child_widget.dart';
 
 import '../../../../config/config.dart';
 import '../../../../core/core.dart';
-import '../../Screens/desktop/shop.dart' as desktop;
 import '../../Screens/mobile/shop.dart' as mobile;
 import '../../Screens/tablet/shop.dart' as tablet;
 import '../../providers/shopbanners_provider.dart';
 
+class ShopArguments {
+  String? category;
+
+  ShopArguments._(this.category);
+
+  factory ShopArguments({String? category}) {
+    return ShopArguments._(category);
+  }
+}
+
 class ShopController extends StatelessController {
+  final ShopArguments args;
+
   final String _title = 'Shop Page';
-  const ShopController({Key? key}) : super(key: key);
+
+  ShopController({Key? key, required this.args}) : super(key: key);
 
   @override
   Display view(BuildContext context) {
@@ -36,7 +48,7 @@ class ShopController extends StatelessController {
       ),
       desktop: MultiProvider(
         providers: _providers(),
-        child: desktop.Shop(title: _title), //TODO?
+        child: tablet.Shop(title: _title), //TODO?
       ),
     );
   }
@@ -44,22 +56,29 @@ class ShopController extends StatelessController {
   List<SingleChildWidget> _providers() {
     return [
       ChangeNotifierProvider<ShopBannersProvider>(
-        create: (context) => ShopBannersProvider(context: context),
+        create: (context) =>
+            ShopBannersProvider(context: context, category: args.category),
       ),
       ChangeNotifierProvider<SlidingBannersProvider>(
         create: (context) => SlidingBannersProvider(context: context),
       ),
       ChangeNotifierProvider<SponsoredBannersProvider>(
-        create: (context) => SponsoredBannersProvider(context: context),
+        create: (context) =>
+            SponsoredBannersProvider(context: context, category: args.category),
       ),
       ChangeNotifierProvider<LeaderboardBannerProvider>(
-        create: (context) => LeaderboardBannerProvider(context: context),
+        create: (context) => LeaderboardBannerProvider(
+          context: context,
+          category: args.category,
+        ),
       ),
       ChangeNotifierProvider<TrendingBrandsProvider>(
-        create: (context) => TrendingBrandsProvider(context: context),
+        create: (context) =>
+            TrendingBrandsProvider(context: context, category: args.category),
       ),
       ChangeNotifierProvider<BestSellersProvider>(
-        create: (context) => BestSellersProvider(context: context),
+        create: (context) =>
+            BestSellersProvider(context: context, category: args.category),
       ),
     ];
   }

@@ -68,7 +68,7 @@ class ProductListArguments {
 class ProductListController extends StatefulController {
   final ProductListArguments args;
 
-  ProductListController({required this.args});
+  ProductListController({Key? key, required this.args}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {

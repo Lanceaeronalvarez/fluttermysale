@@ -9,3 +9,13 @@ final ButtonStyle appElevatedButtonStyle = ElevatedButton.styleFrom(
   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
   overlayColor: Colors.transparent,
 );
+
+final BoxDecoration appPrimaryButtonBoxDecoration = const BoxDecoration(
+  color: Color(0xFF54ECFF),
+  boxShadow: [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
+);
+
+final BoxDecoration appSecondaryButtonBoxDecoration = const BoxDecoration(
+  color: Colors.black,
+  boxShadow: [BoxShadow(color: Color(0xFF54ECFF), offset: Offset(2, 2))],
+);

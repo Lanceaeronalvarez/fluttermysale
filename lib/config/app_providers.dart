@@ -1,3 +1,4 @@
+import 'package:flutter_mysale/features/main_app/providers/address_provider.dart';
 import 'package:flutter_mysale/features/main_app/providers/authentication_provider.dart';
 import 'package:flutter_mysale/features/main_app/providers/categorytree_provider.dart';
 import 'package:flutter_mysale/features/main_app/providers/checkout_provider.dart';
@@ -27,6 +28,9 @@ List<SingleChildWidget> appProviders = [
   ),
   ChangeNotifierProvider<CheckoutProvider>(
     create: (context) => CheckoutProvider(),
+  ),
+  ChangeNotifierProvider<AddressProvider>(
+    create: (context) => AddressProvider(),
   ),
   ChangeNotifierProvider<AuthenthicationProvider>(
     create: (context) => AuthenthicationProvider(context: context),

@@ -9,4 +9,5 @@ export 'main/checkout_controller.dart';
 export 'main/contact_controller.dart';
 export 'main/getappsettings_controller.dart';
 export 'main/home_controller.dart';
+export 'main/new_address_controller.dart';
 export 'main/news_controller.dart';

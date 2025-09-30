@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/features/main_app/controllers/main/address_controller.dart';
 import 'package:flutter_mysale/features/main_app/controllers/main/productlist_controller.dart';
 import 'package:flutter_mysale/features/main_app/controllers/main/shop_controller.dart';
 import 'package:flutter_mysale/features/main_app/widgets/image_gallery.dart';
@@ -26,9 +27,20 @@ class App extends RouteManager {
   static const String checkout = '${App.name}/checkout)';
   static const String cartModal =
       '${App.name}/cart/modal'; //not added on routes, navigation handled in MaterialApp onGenerateRoute since this have a custom transition
+  static const String address = '${App.name}/address';
+  static const String newAddress = '${App.name}/newaddress';
 
   App() {
-    addRoute(App.home, (context) => const ShopController());
+    addRoute(App.home, (context) {
+      Object? object = ModalRoute.of(context)?.settings.arguments;
+      ShopArguments args;
+      if (object == null) {
+        args = ShopArguments();
+      } else {
+        args = object as ShopArguments;
+      }
+      return ShopController(args: args);
+    });
     addRoute(App.productList, (context) {
       ProductListArguments args =
           (ModalRoute.of(context)?.settings.arguments as ProductListArguments);
@@ -43,9 +55,12 @@ class App extends RouteManager {
     addRoute(App.productSort, (context) => const ProductSortController());
     addRoute(App.imagegallery, (context) => const ImageGalleryWidget());
     addRoute(App.imagegalleryzoom, (context) => const ImageGalleryZoomWidget());
-    addRoute(
-      App.checkout,
-      (context) => const CheckoutController(),
-    );
+    addRoute(App.checkout, (context) => const CheckoutController());
+    addRoute(App.address, (context) => const AddressController());
+    addRoute(App.newAddress, (context) {
+      AddressArguments args =
+          (ModalRoute.of(context)?.settings.arguments as AddressArguments);
+      return NewAddressController(args: args);
+    });
   }
 }

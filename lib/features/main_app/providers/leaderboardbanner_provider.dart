@@ -20,23 +20,23 @@ class LeaderboardBannerProvider extends ChangeNotifier {
 
   BannerModel? get leaderboardBanner => _leaderboardBanner;
 
-  LeaderboardBannerProvider({required this.context}) {
+  final String? category;
+
+  LeaderboardBannerProvider({required this.context, this.category}) {
     _userAgentHelper = UserAgentHelper.shared;
   }
 
   void getleaderboardBanners(
-    String pageName,
     String frontEnd,
-    String category,
   ) async {
     isLoading = true;
 
     Map<String, dynamic> request = {
-      "pageName": pageName,
+      "pageName": "ShopPage",
       "limit": 50,
       "bannergroups": 12,
       "frontEnd": frontEnd,
-      "category": category,
+      "category": category ?? "",
     };
 
     request.removeWhere((k, v) => (v == null));
