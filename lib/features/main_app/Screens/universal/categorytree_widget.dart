@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/architect.dart';
+import 'package:flutter_mysale/core/helpers/deeplink_helper.dart';
 import 'package:flutter_mysale/core/helpers/style_helper.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
+import 'package:flutter_mysale/features/main_app/controllers/main/productlist_controller.dart';
+import 'package:flutter_mysale/features/main_app/controllers/main/shop_controller.dart';
 import 'package:flutter_mysale/features/main_app/models/main/categorynode_model.dart';
 import 'package:flutter_mysale/features/main_app/providers/categorytree_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
@@ -50,6 +53,7 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
       backgroundColor: Colors.white,
       appBar: _createAppBar(),
       body: _consumer(context),
+      bottomNavigationBar: BottomBar(),
     );
   }
 
@@ -59,14 +63,16 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
       leadingWidth: 56,
       centerTitle: true,
       toolbarHeight: 56,
-      leading: _parentCategory == null
-          ? const SizedBox.shrink()
-          : null, //hide back button when on root category
-      scrolledUnderElevation: 0, // stop darkening appbar on scroll
-      surfaceTintColor: Colors.transparent, // disable Material 3 tint overlay
+      leading: _parentCategory == null ? const SizedBox.shrink() : null,
+      //hide back button when on root category
+      scrolledUnderElevation: 0,
+      // stop darkening appbar on scroll
+      surfaceTintColor: Colors.transparent,
+      // disable Material 3 tint overlay
       backgroundColor: const Color(0xfff7f7f7),
       iconTheme: const IconThemeData(color: Colors.black),
-      elevation: 0, // no shadow
+      elevation: 0,
+      // no shadow
       bottom: const PreferredSize(
         preferredSize: Size.fromHeight(0.75),
         child: Divider(height: 0.75, thickness: 0.75, color: Color(0xFFCCA68B)),
@@ -158,7 +164,11 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: ElevatedButton(
         onPressed: () {
-          _navigateToSales(parentCategory);
+          if (parentCategory.level == 2) {
+            _navigateToPLP(parentCategory);
+          } else {
+            _navigateToSales(parentCategory);
+          }
         },
         style: appElevatedButtonStyle,
         child: Text(
@@ -223,8 +233,14 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
           if (category.getNodeType() == NodeType.clearance &&
               (provider.clearanceUrl ?? "").isNotEmpty) {
             print('$index ${provider.clearanceUrl}');
+            DeepLinkHelper.processDeeplinkUri(
+              context,
+              Uri.parse(provider.clearanceUrl!),
+            );
           } else if (category.hasChild) {
             _navigateToSubcategory(category);
+          } else if (category.level == 0) {
+            _navigateToSales(category);
           } else {
             _navigateToPLP(category);
           }
@@ -239,14 +255,37 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
   }
 
   void _navigateToPLP(CategoryNodeModel? category) {
+    ProductListArguments args;
     if (category == null) {
       print("Navigating to PLP - search");
+      args = ProductListArguments(
+        saleId: '',
+        appliedCategories: [],
+        appliedFilters: [],
+        sort: null,
+        originCategory: null,
+      );
     } else {
       print('Navigating to PLP - ${category.name}');
+      args = ProductListArguments(
+        saleId: '',
+        appliedCategories: [category],
+        appliedFilters: [],
+        sort: null,
+        originCategory: category,
+      );
     }
+    Nav.toNamed(context, App.productList, arguments: args);
   }
 
   void _navigateToSales(CategoryNodeModel? category) {
     print('Navigating to Sales - ${category?.name}');
+    String? categoryId = category?.id;
+    if (categoryId == null) {
+      Nav.to(context, App.home);
+    } else {
+      ShopArguments args = ShopArguments(category: categoryId);
+      Nav.toNamed(context, App.home, arguments: args);
+    }
   }
 }

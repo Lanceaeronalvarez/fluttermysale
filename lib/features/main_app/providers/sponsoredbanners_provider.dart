@@ -20,18 +20,20 @@ class SponsoredBannersProvider extends ChangeNotifier {
 
   List<BannerModel>? get sponsoredBanners => _sponsoredBanners;
 
-  SponsoredBannersProvider({required this.context}) {
+  final String? category;
+
+  SponsoredBannersProvider({required this.context, this.category}) {
     _userAgentHelper = UserAgentHelper.shared;
   }
 
-  void getSponsoredBanners(String categoryId) async {
+  void getSponsoredBanners() async {
     isLoading = true;
 
     GetBannersRequest request = GetBannersRequest(
       null,
       null,
       "999",
-      categoryId,
+      category ?? "",
       null,
       null,
       true,

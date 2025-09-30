@@ -20,8 +20,6 @@ import '../../providers/slidingbanners_provider.dart';
 import '../../providers/sponsoredbanners_provider.dart';
 import '../../providers/trendingbrands_provider.dart';
 
-typedef ShopArguments = ({String? category});
-
 class Shop extends StatefulWidget {
   final String? title;
 
@@ -37,77 +35,61 @@ class _ShopState extends State<Shop> {
   List<BannerModel> _normalBanners = [];
   String _logoImagePath = "assets/images/logo.png";
 
-  ShopArguments args = (category: null);
-
-  GetBannersRequest _requestFromArgs() {
-    return GetBannersRequest(
-      null,
-      null,
-      "10",
-      args.category,
-      null,
-      null,
-      true,
-      true,
-      null,
-    );
-  }
-
   @override
   void initState() {
     super.initState();
     var tm = context.read<ThemeProvider>();
     dayAndNight = tm.isDarkMode;
-    getSlidingBanners();
-    getShopBanners(_requestFromArgs());
-    getLeaderboardBanner(args.category ?? "");
-    getTrendingBrands(args.category ?? "");
-    getSponsoredBanners(args.category ?? "");
-    getBestSellers(args.category ?? "");
+    _getSlidingBanners((p) => p.getSlidingBanners());
+    _getShopBanners((p) => p.getShopBanners());
+    _getLeaderboardBanner((p) => p.getleaderboardBanners("MobileBrowser"));
+    _getTrendingBrands((p) => p.getTrendingBrands());
+    _getSponsoredBanners((p) => p.getSponsoredBanners());
+    _getBestSellers((p) => p.getBestSellers());
   }
 
-  void getShopBanners(GetBannersRequest request) {
+  @override
+  void dispose() {
+    super.dispose();
+    _getSlidingBanners((p) => p.dispose());
+    _getShopBanners((p) => p.dispose());
+    _getLeaderboardBanner((p) => p.dispose());
+    _getTrendingBrands((p) => p.dispose());
+    _getSponsoredBanners((p) => p.dispose());
+    _getBestSellers((p) => p.dispose());
+  }
+
+  bool hasCategory() {
     final ShopBannersProvider provider = Provider.of<ShopBannersProvider>(
       context,
       listen: false,
     );
-    provider.getShopBanners(request);
+    String? category = provider.category;
+    return category != null && category.isNotEmpty;
   }
 
-  void getSlidingBanners() {
-    final SlidingBannersProvider provider = Provider.of<SlidingBannersProvider>(
-      context,
-      listen: false,
-    );
-    provider.getSlidingBanners();
+  void _getShopBanners(void Function(ShopBannersProvider) action) {
+    action(Provider.of<ShopBannersProvider>(context, listen: false));
   }
 
-  void getSponsoredBanners(String categoryId) {
-    final SponsoredBannersProvider provider =
-        Provider.of<SponsoredBannersProvider>(context, listen: false);
-    provider.getSponsoredBanners(categoryId);
+  void _getSlidingBanners(void Function(SlidingBannersProvider) action) {
+    action(Provider.of<SlidingBannersProvider>(context, listen: false));
   }
 
-  void getLeaderboardBanner(String categoryId) {
-    final LeaderboardBannerProvider provider =
-        Provider.of<LeaderboardBannerProvider>(context, listen: false);
-    provider.getleaderboardBanners("ShopPage", "MobileBrowser", categoryId);
+  void _getSponsoredBanners(void Function(SponsoredBannersProvider) action) {
+    action(Provider.of<SponsoredBannersProvider>(context, listen: false));
   }
 
-  void getTrendingBrands(String categoryId) {
-    final TrendingBrandsProvider provider = Provider.of<TrendingBrandsProvider>(
-      context,
-      listen: false,
-    );
-    provider.getTrendingBrands(categoryId);
+  void _getLeaderboardBanner(void Function(LeaderboardBannerProvider) action) {
+    action(Provider.of<LeaderboardBannerProvider>(context, listen: false));
   }
 
-  void getBestSellers(String category) {
-    final BestSellersProvider provider = Provider.of<BestSellersProvider>(
-      context,
-      listen: false,
-    );
-    provider.getBestSellers(category);
+  void _getTrendingBrands(void Function(TrendingBrandsProvider) action) {
+    action(Provider.of<TrendingBrandsProvider>(context, listen: false));
+  }
+
+  void _getBestSellers(void Function(BestSellersProvider) action) {
+    action(Provider.of<BestSellersProvider>(context, listen: false));
   }
 
   @override
@@ -119,7 +101,7 @@ class _ShopState extends State<Shop> {
         leadingWidth: 56,
         centerTitle: true,
         toolbarHeight: 56,
-        leading: _catergoryScreen(),
+        leading: hasCategory() ? null : _catergoryScreen(),
         scrolledUnderElevation: 0,
         // stop darkening appbar on scroll
         surfaceTintColor: Colors.transparent,
@@ -159,7 +141,8 @@ class _ShopState extends State<Shop> {
 
   Widget _shopScrollView() {
     return SingleChildScrollView(
-      child: Column( // TODO: optimize, maybe slower than list/grid?
+      child: Column(
+        // TODO: optimize, maybe slower than list/grid?
         children: [
           _createLeaderBoardBanner(),
           _createPromoBanner(),
@@ -244,7 +227,8 @@ class _ShopState extends State<Shop> {
   Widget _createTrendingBrands() {
     return Consumer<TrendingBrandsProvider>(
       builder: (_, provider, __) {
-        if (provider.trendingBrands == null) {
+        if (provider.trendingBrands == null ||
+            provider.trendingBrands!.isEmpty) {
           return SizedBox();
         } else {
           return TrendingBrandsWidget(
@@ -263,7 +247,8 @@ class _ShopState extends State<Shop> {
   Widget _createSponsoredBanner() {
     return Consumer<SponsoredBannersProvider>(
       builder: (_, provider, __) {
-        if (provider.sponsoredBanners == null || provider.sponsoredBanners!.isEmpty) {
+        if (provider.sponsoredBanners == null ||
+            provider.sponsoredBanners!.isEmpty) {
           return SizedBox();
         } else {
           return SlidingBannerWidget(
@@ -289,7 +274,7 @@ class _ShopState extends State<Shop> {
           provider.shopBanners?.groups?.forEach((Group it) {
             if (it.type == "promo") {
               if (it.banners?.first != null) {
-              promoBanners.add(it.banners!.first);
+                promoBanners.add(it.banners!.first);
               }
             }
           });
@@ -309,14 +294,16 @@ class _ShopState extends State<Shop> {
   Widget _createBestSellers() {
     return Consumer<BestSellersProvider>(
       builder: (_, provider, __) {
-        if (provider.getBestSellersResponse == null || provider.getBestSellersResponse!.isEmpty) {
+        if (provider.getBestSellersResponse == null ||
+            provider.getBestSellersResponse!.isEmpty) {
           return SizedBox();
         } else {
           return ProductCarousel(
             products: provider.getBestSellersResponse,
             onTap: (ProductItem productItem) {
               //TODO: pdp
-            }, title: '',
+            },
+            title: '',
           );
         }
       },

@@ -52,7 +52,10 @@ class CategoryNodeModel {
   final bool? isCustomCategory;
   final String? textColor;
 
+  final int level;
+
   const CategoryNodeModel({
+    int? level,
     this.id,
     this.payload,
     this.count,
@@ -65,15 +68,19 @@ class CategoryNodeModel {
     this.isHighlighted,
     this.isCustomCategory,
     this.textColor,
-  });
+  }) : this.level = level ?? 0;
 
   factory CategoryNodeModel.fromJson(Map<String, dynamic> j) =>
+      CategoryNodeModel._childFromJson(j, 0);
+
+  factory CategoryNodeModel._childFromJson(Map<String, dynamic> j, int level) =>
       CategoryNodeModel(
+        level: level,
         id: j[K.id] as String?,
         payload: j[K.payload] as String?,
         count: j[K.count] as int?,
         children: (j[K.children] as List? ?? const [])
-            .map((e) => CategoryNodeModel.fromJson(e as Map<String, dynamic>))
+            .map((e) => CategoryNodeModel._childFromJson(e as Map<String, dynamic>, level + 1))
             .toList(),
         brands: (j[K.brands] as List? ?? const [])
             .map((e) => CategoryBrandModel.fromJson(e as Map<String, dynamic>))

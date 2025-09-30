@@ -20,12 +20,26 @@ class ShopBannersProvider extends ChangeNotifier {
 
   GetBannersResponse? get shopBanners => _shopBanners;
 
-  ShopBannersProvider({required this.context}) {
+  final String? category;
+
+  ShopBannersProvider({required this.context, this.category}) {
     _userAgentHelper = UserAgentHelper.shared;
   }
 
-  void getShopBanners(GetBannersRequest request) async {
+  void getShopBanners() async {
     isLoading = true;
+
+    GetBannersRequest request = GetBannersRequest(
+      null,
+      null,
+      "10",
+      category,
+      null,
+      null,
+      true,
+      true,
+      null,
+    );
 
     final userAgent = await _userAgentHelper.userAgent;
     _http ??= AppHttp(

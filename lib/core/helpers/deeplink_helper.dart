@@ -196,7 +196,7 @@ class DeepLinkHelper {
   ) {
     ProductListArguments arguments = ProductListArguments(
       initialSearchQuery: null,
-      saleId: "",
+      saleId: saleId,
       appliedCategories: [],
       appliedFilters: [],
       sort: null,

@@ -31,7 +31,16 @@ class App extends RouteManager {
   static const String newAddress = '${App.name}/newaddress';
 
   App() {
-    addRoute(App.home, (context) => const ShopController());
+    addRoute(App.home, (context) {
+      Object? object = ModalRoute.of(context)?.settings.arguments;
+      ShopArguments args;
+      if (object == null) {
+        args = ShopArguments();
+      } else {
+        args = object as ShopArguments;
+      }
+      return ShopController(args: args);
+    });
     addRoute(App.productList, (context) {
       ProductListArguments args =
           (ModalRoute.of(context)?.settings.arguments as ProductListArguments);
