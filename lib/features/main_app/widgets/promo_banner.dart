@@ -14,16 +14,14 @@ class PromoBanner extends StatelessWidget {
       },
       child: Container(
         color: Color(0xFFD7D7D7),
-        child: Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'You have \$25 worth of vouchers. Don\'t forget to use them in the next 29 days.',
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.black, fontSize: 15),
-            ),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            'You have \$25 worth of vouchers. Don\'t forget to use them in the next 29 days.',
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: Colors.black, fontSize: 15),
           ),
         ),
       ),

@@ -4,11 +4,18 @@ import 'package:flutter_mysale/features/main_app/providers/checkout_provider.dar
 import 'package:flutter_mysale/features/main_app/widgets/cart_product_row.dart';
 import 'package:provider/provider.dart';
 
-enum CheckoutCartMode { addToCart, checkoutCart, summaryOnly }
+enum CheckoutCartMode { 
+  addToCart, //add to cart 
+  cart, //checkout - cart left side 
+  summary, //checkout - cart right side
+  summaryFull, //checkout - other steps - right side
+  cartModal, //cart modal inside checkout
+}
 
 class _CheckoutCartStyle {
   Color sectionColor;
   bool showAppBar;
+  String appBarTitle;
   bool showProductListHeader;
   bool showProductList;
   bool productRowPriceAtBottom;
@@ -19,6 +26,7 @@ class _CheckoutCartStyle {
   bool showOrderSummarySectionTitle;
   bool showOrderSummarySection;
   bool showContinueToCheckout;
+  bool showExpressCheckout;
 
   double hSpacing = 16;
   double vSpacing = 16;
@@ -29,6 +37,7 @@ class _CheckoutCartStyle {
   _CheckoutCartStyle._({
     required this.sectionColor,
     required this.showAppBar,
+    required this.appBarTitle,
     required this.showProductListHeader,
     required this.showProductList,
     required this.productRowPriceAtBottom,
@@ -39,12 +48,14 @@ class _CheckoutCartStyle {
     required this.showOrderSummarySectionTitle,
     required this.showOrderSummarySection,
     required this.showContinueToCheckout,
+    required this.showExpressCheckout,
   });
 
   factory _CheckoutCartStyle.defaultInstance({bool show = false}) {
     return _CheckoutCartStyle._(
       sectionColor: Colors.white,
       showAppBar: show,
+      appBarTitle: '',
       showProductListHeader: show,
       showProductList: show,
       productRowPriceAtBottom: show,
@@ -55,6 +66,7 @@ class _CheckoutCartStyle {
       showOrderSummarySectionTitle: show,
       showOrderSummarySection: show,
       showContinueToCheckout: show,
+      showExpressCheckout: show,
     );
   }
 
@@ -64,6 +76,7 @@ class _CheckoutCartStyle {
         return _CheckoutCartStyle._(
           sectionColor: Colors.white,
           showAppBar: true,
+          appBarTitle: 'SHOPPING CART',
           showProductListHeader: false,
           showProductList: true,
           productRowPriceAtBottom: false,
@@ -74,11 +87,13 @@ class _CheckoutCartStyle {
           showOrderSummarySectionTitle: false,
           showOrderSummarySection: true,
           showContinueToCheckout: true,
+          showExpressCheckout: true,
         );
-      case CheckoutCartMode.checkoutCart:
+      case CheckoutCartMode.cart:
         return _CheckoutCartStyle._(
           sectionColor: Color(0xFFEFEFEF),
           showAppBar: false,
+          appBarTitle: '',
           showProductListHeader: true,
           showProductList: true,
           productRowPriceAtBottom: true,
@@ -89,11 +104,13 @@ class _CheckoutCartStyle {
           showOrderSummarySectionTitle: true,
           showOrderSummarySection: true,
           showContinueToCheckout: false,
+          showExpressCheckout: false,
         );
-      case CheckoutCartMode.summaryOnly:
+      case CheckoutCartMode.summary:
         return _CheckoutCartStyle._(
           sectionColor: Color(0xFFEFEFEF),
           showAppBar: false,
+          appBarTitle: '',
           showProductListHeader: false,
           showProductList: false,
           productRowPriceAtBottom: true,
@@ -104,6 +121,41 @@ class _CheckoutCartStyle {
           showOrderSummarySectionTitle: true,
           showOrderSummarySection: true,
           showContinueToCheckout: false,
+          showExpressCheckout: false,
+        );
+      case CheckoutCartMode.summaryFull:
+        return _CheckoutCartStyle._(
+          sectionColor: Color(0xFFEFEFEF),
+          showAppBar: false,
+          appBarTitle: '',
+          showProductListHeader: true,
+          showProductList: true,
+          productRowPriceAtBottom: true,
+          productRowShowDivider: false,
+          showContinueToContact: false,
+          addDividerBetweenProductAndSummary: false,
+          showAddVoucher: true,
+          showOrderSummarySectionTitle: false,
+          showOrderSummarySection: true,
+          showContinueToCheckout: false,
+          showExpressCheckout: false,
+        );
+      case CheckoutCartMode.cartModal:
+        return _CheckoutCartStyle._(
+          sectionColor: Colors.white,
+          showAppBar: true,
+          appBarTitle: 'ORDER SUMMARY',
+          showProductListHeader: false,
+          showProductList: true,
+          productRowPriceAtBottom: true,
+          productRowShowDivider: false,
+          showContinueToContact: false,
+          addDividerBetweenProductAndSummary: false,
+          showAddVoucher: true,
+          showOrderSummarySectionTitle: false,
+          showOrderSummarySection: true,
+          showContinueToCheckout: false,
+          showExpressCheckout: false,
         );
     }
   }
@@ -161,9 +213,9 @@ class _CheckoutCart extends State<CheckoutCart> {
         preferredSize: Size.fromHeight(0.75),
         child: Divider(height: 0.75, thickness: 0.75, color: Colors.grey),
       ),
-      title: const Text(
-        'SHOPPING CART',
-        style: TextStyle(
+      title: Text(
+        _style.appBarTitle,
+        style: const TextStyle(
           color: Colors.black,
           fontWeight: FontWeight.w800,
           letterSpacing: 0.8,
@@ -273,7 +325,7 @@ class _CheckoutCart extends State<CheckoutCart> {
       delegate: SliverChildBuilderDelegate(
         (context, index) {
           final p = widget.productList[index];
-          return CartProductRow(
+          final productRow = CartProductRow(
             item: p,
             sectionColor: _style.sectionColor,
             showPriceAtBottom: _style.productRowPriceAtBottom,
@@ -283,6 +335,8 @@ class _CheckoutCart extends State<CheckoutCart> {
             onMinus: (_) {},
             onRemove: (_) {},
           );
+          final shippingRow = _createShippingRow(p.shippingFee());
+          return Column(children: [productRow, shippingRow]);
         },
         childCount: widget.productList.length,
 
@@ -290,6 +344,37 @@ class _CheckoutCart extends State<CheckoutCart> {
         addRepaintBoundaries: true,
       ),
     );
+  }
+
+  Widget _createShippingRow(double shippingFee) {
+    return SizedBox(
+      height: 25,
+      child: Container(
+        color: Color(0xFFEFEFEF),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: (shippingFee == 0)
+                ? _createFreeShipping()
+                : _createShippingText(shippingFee),
+          ),
+        ),
+      ),
+    );
+  }
+
+  //TODO: JCA zip code is bold
+  Widget _createShippingText(double shippingFee) {
+    return Text(
+      'Shipping to Postcode 2150: \$9.99',
+      style: TextStyle(fontSize: 11),
+    );
+  }
+
+  //TODO: JCA change to image
+  Widget _createFreeShipping() {
+    return Text('Free Shipping', style: TextStyle(fontSize: 11));
   }
 
   Widget _createSummarySection() {
@@ -339,7 +424,7 @@ class _CheckoutCart extends State<CheckoutCart> {
     return Container(
       color: _style.sectionColor,
       child: _createButton(
-        title: 'CONTINUE TO CHECKOUT',
+        title: 'CONTINUE TO CONTACT',
         onTap: () {
           print('continue to contact');
         },
@@ -352,11 +437,14 @@ class _CheckoutCart extends State<CheckoutCart> {
       children: [
         Divider(height: 1, color: Colors.grey),
         _createButton(
-          title: 'Continue to Checkout',
+          title: 'CONTINUE TO CHECKOUT',
           onTap: () {
             print('continue to checkout');
           },
+          bottomSpacing: 4,
         ),
+        _createExpressCheckoutTitle(),
+        _createExpressCheckoutGrid(),
       ],
     );
   }
@@ -373,6 +461,46 @@ class _CheckoutCart extends State<CheckoutCart> {
         topSpacing: 0,
         rightSpacing: 0,
       ),
+    );
+  }
+
+  Widget _createExpressCheckoutTitle() {
+    return Text('EXPRESS CHECKOUT', style: TextStyle(color: Colors.grey));
+  }
+
+  Widget _createExpressCheckoutGrid() {
+    //TODO: JCA temp only
+    List<(String, Color)> items = [
+      ('assets/images/ec_paypal.png', Color(0xffFCC702)),
+      ('assets/images/ec_afterpay.png', Color(0xffB2FCE4)),
+    ];
+    double spacing = 16;
+    double height = 40;
+    int rows = 2;
+    return GridView.builder(
+      padding: EdgeInsets.fromLTRB(spacing, spacing / 2, spacing, spacing / 2),
+      shrinkWrap: true,
+      scrollDirection: Axis.vertical,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: rows,
+        mainAxisSpacing: spacing,
+        crossAxisSpacing: spacing,
+        mainAxisExtent: height,
+      ),
+      itemBuilder: (_, index) {
+        final item = items[index];
+        return Container(
+          color: item.$2,
+          child: Center(
+            child: SizedBox(
+              height: height / 2,
+              child: Image.asset(item.$1, fit: BoxFit.contain),
+            ),
+          ),
+        );
+      },
+      itemCount: items.length,
     );
   }
 }
@@ -402,10 +530,13 @@ extension CheckoutCartSideMenu on CheckoutCart {
     );
   }
 
-  PageRoute<T> asSideMenuRoute<T>({RouteSettings? settings}) {
+  PageRoute<T> asSideMenuRoute<T>({
+    RouteSettings? settings,
+    required double widthPercentage,
+  }) {
     final Color barrierColor = Colors.black54;
     final Duration duration = Duration(milliseconds: 300);
-    final double screenWidthPercentage = 0.9;
+    final double screenWidthPercentage = widthPercentage;
     return PageRouteBuilder<T>(
       settings: settings,
       opaque: false,

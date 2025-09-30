@@ -25,10 +25,12 @@ class App extends RouteManager {
   static const String imagegallery = '${App.name}/imagegallery';
   static const String imagegalleryzoom = '${App.name}/imagegalleryzoom';
   static const String checkout = '${App.name}/checkout)';
-  static const String cartModal =
-      '${App.name}/cart/modal'; //not added on routes, navigation handled in MaterialApp onGenerateRoute since this have a custom transition
   static const String address = '${App.name}/address';
   static const String newAddress = '${App.name}/newaddress';
+
+  //not added on routes, navigation handled in MaterialApp onGenerateRoute since this have a custom transition
+  static const String addToCart = '${App.name}/addToCart';
+  static const String cartModal = '${App.name}/cart/modal';
 
   App() {
     addRoute(App.home, (context) {

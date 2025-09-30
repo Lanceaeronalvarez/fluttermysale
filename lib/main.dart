@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
 import 'package:flutter_mysale/features/main_app/Screens/universal/checkoutcart.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
+import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:provider/provider.dart';
 
 import 'config/config.dart';
@@ -33,11 +34,20 @@ class MysaleApp extends StatelessWidget {
       initialRoute: '/',
       routes: Routes().routes,
       onGenerateRoute: (settings) {
-        if (settings.name == App.cartModal) {
+        if (settings.name == App.addToCart) {
+          MediaQueryData mqd = MediaQuery.of(context);
+          double widthPercentage = mqd.isTablet ? 0.5 : 0.9;
           //final a = settings.arguments as CartArgs;
           return CheckoutCart(
             mode: CheckoutCartMode.addToCart,
-          ).asSideMenuRoute();
+          ).asSideMenuRoute(widthPercentage: widthPercentage);
+        } else if (settings.name == App.cartModal) {
+          MediaQueryData mqd = MediaQuery.of(context);
+          double widthPercentage = mqd.isTablet ? 0.5 : 0.9;
+          //final a = settings.arguments as CartArgs;
+          return CheckoutCart(
+            mode: CheckoutCartMode.cartModal,
+          ).asSideMenuRoute(widthPercentage: widthPercentage);
         }
         return null;
       },
