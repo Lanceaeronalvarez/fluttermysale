@@ -98,3 +98,7 @@ extension StringServerApostropheS on String {
     return output;
   }
 }
+
+extension MediaQuerySizeExt on MediaQueryData {
+  bool get isTablet => size.shortestSide >= 600;
+}

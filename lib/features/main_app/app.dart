@@ -45,7 +45,7 @@ class App extends RouteManager {
     addRoute(App.imagegalleryzoom, (context) => const ImageGalleryZoomWidget());
     addRoute(
       App.checkout,
-      (context) => const CheckoutCartController.CheckoutController(),
+      (context) => const CheckoutController(),
     );
   }
 }

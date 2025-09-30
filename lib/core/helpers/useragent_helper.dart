@@ -4,6 +4,7 @@ import 'package:device_marketing_names/device_marketing_names.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 
 class UserAgentHelper {
 
@@ -42,7 +43,7 @@ class UserAgentHelper {
     }
     OSVersion = Platform.operatingSystemVersion;
     locale = Platform.localeName;
-    interfaceIdiom = await _getIsTablet() ? "07" : "06";
+    interfaceIdiom = await _mediaQueryData.isTablet ? "07" : "06";
     countryId = dotenv.get("SETTINGS_COUNTRY_ID");
 
     _userAgent =
@@ -66,25 +67,4 @@ class UserAgentHelper {
     return true;
   }
 
-  Future<bool> _getIsTablet() async {
-    bool isTab = false;
-    if (Platform.isIOS) {
-      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-      if(iosInfo.model.toLowerCase() == "ipad") {
-        isTab = true;
-      } else {
-        isTab = false;
-      }
-      return isTab;
-    } else {
-      var shortestSide = _mediaQueryData.size.shortestSide;
-      if(shortestSide > 600) {
-        isTab = true;
-      } else {
-        isTab = false;
-      }
-      return isTab;
-    }
-  }
 }

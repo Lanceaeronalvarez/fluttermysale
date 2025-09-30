@@ -15,6 +15,7 @@ class _CheckoutCartStyle {
   bool productRowShowDivider;
   bool showContinueToContact;
   bool addDividerBetweenProductAndSummary;
+  bool showAddVoucher;
   bool showOrderSummarySectionTitle;
   bool showOrderSummarySection;
   bool showContinueToCheckout;
@@ -34,6 +35,7 @@ class _CheckoutCartStyle {
     required this.productRowShowDivider,
     required this.showContinueToContact,
     required this.addDividerBetweenProductAndSummary,
+    required this.showAddVoucher,
     required this.showOrderSummarySectionTitle,
     required this.showOrderSummarySection,
     required this.showContinueToCheckout,
@@ -49,6 +51,7 @@ class _CheckoutCartStyle {
       productRowShowDivider: show,
       showContinueToContact: show,
       addDividerBetweenProductAndSummary: show,
+      showAddVoucher: show,
       showOrderSummarySectionTitle: show,
       showOrderSummarySection: show,
       showContinueToCheckout: show,
@@ -67,13 +70,14 @@ class _CheckoutCartStyle {
           productRowShowDivider: true,
           showContinueToContact: false,
           addDividerBetweenProductAndSummary: false,
+          showAddVoucher: false,
           showOrderSummarySectionTitle: false,
           showOrderSummarySection: true,
           showContinueToCheckout: true,
         );
       case CheckoutCartMode.checkoutCart:
         return _CheckoutCartStyle._(
-          sectionColor: Color(0xfff7f7f7),
+          sectionColor: Color(0xFFEFEFEF),
           showAppBar: false,
           showProductListHeader: true,
           showProductList: true,
@@ -81,13 +85,14 @@ class _CheckoutCartStyle {
           productRowShowDivider: false,
           showContinueToContact: true,
           addDividerBetweenProductAndSummary: true,
+          showAddVoucher: true,
           showOrderSummarySectionTitle: true,
           showOrderSummarySection: true,
           showContinueToCheckout: false,
         );
       case CheckoutCartMode.summaryOnly:
         return _CheckoutCartStyle._(
-          sectionColor: Color(0xfff7f7f7),
+          sectionColor: Color(0xFFEFEFEF),
           showAppBar: false,
           showProductListHeader: false,
           showProductList: false,
@@ -95,6 +100,7 @@ class _CheckoutCartStyle {
           productRowShowDivider: false,
           showContinueToContact: false,
           addDividerBetweenProductAndSummary: false,
+          showAddVoucher: false,
           showOrderSummarySectionTitle: true,
           showOrderSummarySection: true,
           showContinueToCheckout: false,
@@ -104,8 +110,6 @@ class _CheckoutCartStyle {
 }
 
 class CheckoutCart extends StatefulWidget {
-  late final _CheckoutCartStyle _style;
-
   final List<CartProductWrapper> productList = CartProductWrapper.tempList();
 
   final CheckoutCartMode mode;
@@ -119,11 +123,13 @@ class CheckoutCart extends StatefulWidget {
 }
 
 class _CheckoutCart extends State<CheckoutCart> {
+  _CheckoutCartStyle _style = _CheckoutCartStyle.defaultInstance(show: false);
+
   @override
   void initState() {
     super.initState();
 
-    widget._style = _CheckoutCartStyle.fromCheckoutCartMode(widget.mode);
+    _style = _CheckoutCartStyle.fromCheckoutCartMode(widget.mode);
     //widget._style = _CheckoutCartStyle.defaultInstance(show: true);
     Future.microtask(() {});
   }
@@ -132,7 +138,7 @@ class _CheckoutCart extends State<CheckoutCart> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: (widget._style.showAppBar) ? _createAppBar() : null,
+      appBar: (_style.showAppBar) ? _createAppBar() : null,
       body: _createBody(context),
     );
   }
@@ -196,8 +202,7 @@ class _CheckoutCart extends State<CheckoutCart> {
       child: Column(
         children: [
           _createCustomScrollView(),
-          if (widget._style.showContinueToCheckout)
-            _createCheckoutButtonSection(),
+          if (_style.showContinueToCheckout) _createCheckoutButtonSection(),
         ],
       ),
     );
@@ -209,14 +214,14 @@ class _CheckoutCart extends State<CheckoutCart> {
         return Expanded(
           child: CustomScrollView(
             slivers: [
-              if (widget._style.showProductListHeader)
+              if (_style.showProductListHeader)
                 SliverToBoxAdapter(child: _createHeader('Order Summary')),
-              if (widget._style.showProductList) _createProductList(),
-              if (widget._style.showContinueToContact)
+              if (_style.showProductList) _createProductList(),
+              if (_style.showContinueToContact)
                 SliverToBoxAdapter(child: _createContactButtonSection()),
-              if (widget._style.addDividerBetweenProductAndSummary)
+              if (_style.addDividerBetweenProductAndSummary)
                 SliverToBoxAdapter(child: SizedBox(height: 16)),
-              if (widget._style.showOrderSummarySection)
+              if (_style.showOrderSummarySection)
                 SliverToBoxAdapter(child: _createSummarySection()),
             ],
           ),
@@ -227,22 +232,32 @@ class _CheckoutCart extends State<CheckoutCart> {
 
   Widget _createHeader(String title) {
     return Container(
-      color: widget._style.sectionColor,
+      color: _style.sectionColor,
       child: Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: widget._style.vSpacing,
-          vertical: widget._style.hSpacing,
+          horizontal: _style.vSpacing,
+          vertical: _style.hSpacing,
         ),
-        child: Text(title, style: widget._style.textBold),
+        child: Text(title, style: _style.textBold),
       ),
     );
   }
 
-  Widget _createButton(String title, VoidCallback onTap) {
-    double hSpacing = widget._style.hSpacing;
-    double vSpacing = widget._style.vSpacing;
+  Widget _createButton({
+    required String title,
+    required VoidCallback onTap,
+    double? leftSpacing = null,
+    double? topSpacing = null,
+    double? rightSpacing = null,
+    double? bottomSpacing = null,
+  }) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(hSpacing, vSpacing, hSpacing, vSpacing),
+      padding: EdgeInsets.fromLTRB(
+        leftSpacing ?? _style.hSpacing,
+        topSpacing ?? _style.vSpacing,
+        rightSpacing ?? _style.hSpacing,
+        bottomSpacing ?? _style.vSpacing,
+      ),
       child: ElevatedButton(
         onPressed: () {
           onTap.call();
@@ -260,9 +275,9 @@ class _CheckoutCart extends State<CheckoutCart> {
           final p = widget.productList[index];
           return CartProductRow(
             item: p,
-            sectionColor: widget._style.sectionColor,
-            showPriceAtBottom: widget._style.productRowPriceAtBottom,
-            showDivider: widget._style.productRowShowDivider,
+            sectionColor: _style.sectionColor,
+            showPriceAtBottom: _style.productRowPriceAtBottom,
+            showDivider: _style.productRowShowDivider,
             onTap: (_) {},
             onPlus: (_) {},
             onMinus: (_) {},
@@ -278,29 +293,25 @@ class _CheckoutCart extends State<CheckoutCart> {
   }
 
   Widget _createSummarySection() {
-    double hSpacing = widget._style.hSpacing;
-    double vSpacing = widget._style.vSpacing;
+    double hSpacing = _style.hSpacing;
+    double vSpacing = _style.vSpacing;
     return Container(
-      color: widget._style.sectionColor,
+      color: _style.sectionColor,
       child: Padding(
         padding: EdgeInsets.fromLTRB(hSpacing, vSpacing, hSpacing, vSpacing),
         child: Column(
           children: [
-            if (widget._style.showOrderSummarySectionTitle)
-              _createSummaryRow('Order Summary', '', widget._style.textBold, 8),
+            if (_style.showAddVoucher) _createAddVoucherButton(),
+            if (_style.showOrderSummarySectionTitle)
+              _createSummaryRow('Order Summary', '', _style.textBold, 8),
             _createSummaryRow(
               'Subtotal (2 items)',
               '\$196.00',
-              widget._style.textRegular,
+              _style.textRegular,
               16,
             ),
-            _createSummaryRow('Total', '\$196.00', widget._style.textBold, 4),
-            _createSummaryRow(
-              '',
-              'Including GST',
-              widget._style.textRegular,
-              0,
-            ),
+            _createSummaryRow('Total', '\$196.00', _style.textBold, 4),
+            _createSummaryRow('', 'Including GST', _style.textRegular, 0),
           ],
         ),
       ),
@@ -326,10 +337,13 @@ class _CheckoutCart extends State<CheckoutCart> {
 
   Widget _createContactButtonSection() {
     return Container(
-      color: widget._style.sectionColor,
-      child: _createButton('Continue to Contact', () {
-        print('continue to contact');
-      }),
+      color: _style.sectionColor,
+      child: _createButton(
+        title: 'CONTINUE TO CHECKOUT',
+        onTap: () {
+          print('continue to contact');
+        },
+      ),
     );
   }
 
@@ -337,10 +351,28 @@ class _CheckoutCart extends State<CheckoutCart> {
     return Column(
       children: [
         Divider(height: 1, color: Colors.grey),
-        _createButton('Continue to Checkout', () {
-          print('continue to checkout');
-        }),
+        _createButton(
+          title: 'Continue to Checkout',
+          onTap: () {
+            print('continue to checkout');
+          },
+        ),
       ],
+    );
+  }
+
+  Widget _createAddVoucherButton() {
+    return Container(
+      color: _style.sectionColor,
+      child: _createButton(
+        title: 'ADD NEW VOUCHER',
+        onTap: () {
+          print('continue to contact');
+        },
+        leftSpacing: 0,
+        topSpacing: 0,
+        rightSpacing: 0,
+      ),
     );
   }
 }
