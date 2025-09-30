@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../utils/button_data.dart';
+import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:provider/provider.dart';
 
 import '../../config/app_theme.dart';
 import '../classes/route_manager.dart';
 import '../utils/bottom_util.dart';
+import '../utils/button_data.dart';
 
 // ignore: must_be_immutable
 class BottomBar extends StatelessWidget {
@@ -13,13 +14,21 @@ class BottomBar extends StatelessWidget {
 
   List<ButtonData>? buttonDatas;
   BottomBar({Key? key, this.buttonDatas}) : super(key: key) {
-    buttonDatas = buttonDatas ??
+    buttonDatas =
+        buttonDatas ??
         [
           ButtonData(icon: Icons.home, label: 'Shop', link: '/'),
           ButtonData(icon: Icons.people, label: 'Brands', link: '/'),
           ButtonData(
-              icon: Icons.shopping_cart, label: 'Checkout', link: '/'),
-          ButtonData(icon: Icons.heart_broken_rounded, label: 'Wishlist', link: '/'),
+            icon: Icons.shopping_cart,
+            label: 'Checkout',
+            link: App.checkout,
+          ),
+          ButtonData(
+            icon: Icons.heart_broken_rounded,
+            label: 'Wishlist',
+            link: '/',
+          ),
           ButtonData(icon: Icons.account_circle, label: 'Account', link: '/'),
         ];
   }
@@ -51,10 +60,8 @@ class BottomBar extends StatelessWidget {
         // ],
         items: buttonData
             .map(
-              (e) => bottomNavigationBarItem(
-                icon: Icon(e.icon),
-                label: e.label,
-              ),
+              (e) =>
+                  bottomNavigationBarItem(icon: Icon(e.icon), label: e.label),
             )
             .toList(),
       );
