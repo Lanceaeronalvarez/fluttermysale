@@ -42,7 +42,6 @@ class _CheckoutMain extends State<CheckoutMain> {
         children: [
           _createSecureCheckoutContainer(isTablet),
           _createStepperContainer(),
-
           PromoBanner(
             onTap: () {
               print('promo banner tap');

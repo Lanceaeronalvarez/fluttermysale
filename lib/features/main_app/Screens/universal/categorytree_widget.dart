@@ -284,7 +284,7 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
     if (categoryId == null) {
       Nav.to(context, App.home);
     } else {
-      ShopArguments args = ShopArguments(category: categoryId);
+      ShopArguments args = ShopArguments(title: category?.name, category: categoryId);
       Nav.toNamed(context, App.home, arguments: args);
     }
   }

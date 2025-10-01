@@ -65,4 +65,64 @@ class AuthenthicationProvider extends ChangeNotifier {
       return _loginTicket;
     }
   }
+
+  Future<String?> callRegistration(
+    String firstname,
+    String lastname,
+    String email,
+    String password,
+    String token,
+    bool tcAccepted,
+    bool emailsAccepted,
+  ) async {
+    isLoading = true;
+
+    final userAgent = await _userAgentHelper.userAgent;
+    _http ??= AppHttp(
+      baseUrl: dotenv.get("SETTINGS_ROOT"),
+      headers: {'User-Agent': userAgent},
+    );
+
+    Map<String, bool> parameters = {
+      "tcAccepted": tcAccepted,
+      "emailsAccepted": emailsAccepted,
+    };
+
+    RegisterRequest request = RegisterRequest(
+      languageID: dotenv.get("SETTINGS_LANGUAGE_ID"),
+      countryID: dotenv.get("SETTINGS_COUNTRY_ID"),
+      email: email,
+      password: password,
+      foreName: firstname,
+      surName: lastname,
+      captchaResponse: token,
+      clientType: 1,
+      clientID: 1,
+      parameters: parameters,
+      referredBy: "android",
+      invitedBy: "",
+      voucherID: "00000000-0000-0000-0000-000000000000",
+    );
+
+    Response res = await _http!.post(
+      ApiEndpoint.registration(),
+      data: request.toJson(),
+    );
+
+    if (res.statusCode == 200 && res.statusCode != 429) {
+      isLoading = false;
+
+      LoginResponse response = LoginResponse.fromJson(
+        jsonDecode(res.toString()),
+      );
+
+      String _loginTicket = response.d!.value!.Ticket!;
+
+      AppCache ac = AppCache();
+      ac.saveLoginTicket(_loginTicket);
+
+      notifyListeners();
+      return _loginTicket;
+    }
+  }
 }

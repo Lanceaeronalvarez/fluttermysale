@@ -18,6 +18,8 @@ class Authenthication extends StatefulWidget {
 class _AuthenthicationState extends State<Authenthication> {
   ValueNotifier<bool> isSignUp = ValueNotifier<bool>(false);
   ValueNotifier<bool> isShowError = ValueNotifier<bool>(false);
+  ValueNotifier<bool> isAgreeToTermsAndPrivacy = ValueNotifier<bool>(true);
+  ValueNotifier<bool> isAgreeToReceivePromotions = ValueNotifier<bool>(true);
 
   WebViewController controller = WebViewController();
 
@@ -28,7 +30,14 @@ class _AuthenthicationState extends State<Authenthication> {
 
   final String _recaptchaHtml = 'assets/recaptcha.html';
 
-  final Color _beige = const Color.fromARGB(255, 196, 137, 81);
+  final Color _beige = const Color(0xFFc9a184);
+  final Color _cyan = const Color(0xFF54ECFF);
+
+  final ListTileThemeData _tileThemeData = const ListTileThemeData(
+    titleAlignment: ListTileTitleAlignment.top,
+    contentPadding: EdgeInsets.zero,
+    minVerticalPadding: 0,
+  );
 
   @override
   void initState() {
@@ -53,20 +62,49 @@ class _AuthenthicationState extends State<Authenthication> {
         })
         .catchError((error) {
           provider.isLoading = false;
-          print("Error: $error");
+          showMessage(context, error);
+        });
+  }
+
+  void _register(String token, AuthenthicationProvider provider) {
+    provider
+        .callRegistration(
+          firstNameTextField.value.text,
+          lastNameTextField.value.text,
+          emailTextField.value.text,
+          passwordTextField.value.text,
+          token,
+          isAgreeToTermsAndPrivacy.value,
+          isAgreeToReceivePromotions.value,
+        )
+        .then((data) {
+          provider.isLoading = false;
+          doAuth(
+            context,
+            emailTextField.value.text,
+            passwordTextField.value.text,
+          );
+          showMessage(context, 'Login Successful');
+        })
+        .catchError((error) {
+          provider.isLoading = false;
+          showMessage(context, error);
         });
   }
 
   void _onButtonClick(bool isSignUpValue, AuthenthicationProvider provider) {
-    if (isSignUpValue) {
-      //TODO: Register
+    bool areFieldsValid = isSignUpValue
+        ? firstNameTextField.text.isNotEmpty &&
+              lastNameTextField.text.isNotEmpty &&
+              emailTextField.text.isNotEmpty &&
+              passwordTextField.text.isNotEmpty &&
+              isAgreeToTermsAndPrivacy.value
+        : emailTextField.text.isNotEmpty && passwordTextField.text.isNotEmpty;
+    if (areFieldsValid) {
+      _createCaptcha(provider, isSignUpValue);
+      provider.isLoading = true;
     } else {
-      if (emailTextField.text.isNotEmpty || passwordTextField.text.isNotEmpty) {
-        _createCaptcha(provider);
-        provider.isLoading = true;
-      } else {
-        isShowError.value = true;
-      }
+      isShowError.value = true;
     }
   }
 
@@ -77,7 +115,7 @@ class _AuthenthicationState extends State<Authenthication> {
       floatingLabelAlignment: FloatingLabelAlignment.start,
       focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: _beige)),
       enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: _beige)),
-      fillColor: const Color.fromARGB(30, 255, 188, 130),
+      fillColor: const Color(0xFFfaf2f3),
       filled: true,
     );
   }
@@ -130,7 +168,7 @@ class _AuthenthicationState extends State<Authenthication> {
             lastNameTextField,
           );
         } else {
-          return SizedBox();
+          return const SizedBox();
         }
       },
     );
@@ -179,12 +217,14 @@ class _AuthenthicationState extends State<Authenthication> {
       valueListenable: isShowError,
       builder: (context, value, child) {
         if (value) {
-          return const Text(
-            "Fill up all fields.",
-            style: TextStyle(color: Colors.red),
+          return Text(
+            isSignUp.value
+                ? "Fill up all fields. \nPlease agree to the Terms and Conditions and Privacy Policy."
+                : "Fill up all fields.",
+            style: const TextStyle(color: Colors.red),
           );
         } else {
-          return SizedBox();
+          return const SizedBox();
         }
       },
     );
@@ -209,7 +249,13 @@ class _AuthenthicationState extends State<Authenthication> {
                 style: appElevatedButtonStyle,
                 child: provider.isLoading
                     ? const CircularProgressIndicator(color: Colors.black)
-                    : Text(isSignUpValue ? signUpText : signInText),
+                    : Text(
+                        isSignUpValue ? signUpText : signInText,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
               );
             },
           ),
@@ -223,7 +269,14 @@ class _AuthenthicationState extends State<Authenthication> {
       valueListenable: isSignUp,
       builder: (context, value, child) {
         if (value) {
-          return _createAlreadyHaveAnAccountText();
+          return Column(
+            children: [
+              _createAlreadyHaveAnAccountText(),
+              const SizedBox(height: 20),
+              _createTnCAndPrivacyPolicySection(),
+              _createPromotionCheckbox(),
+            ],
+          );
         } else {
           return _createDontHaveAnAccountText();
         }
@@ -249,6 +302,7 @@ class _AuthenthicationState extends State<Authenthication> {
             ),
             onTap: () {
               isSignUp.value = false;
+              isShowError.value = false;
             },
           ),
         ],
@@ -274,6 +328,7 @@ class _AuthenthicationState extends State<Authenthication> {
             ),
             onTap: () {
               isSignUp.value = true;
+              isShowError.value = false;
             },
           ),
         ],
@@ -281,12 +336,98 @@ class _AuthenthicationState extends State<Authenthication> {
     );
   }
 
-  Future<void> _createCaptcha(AuthenthicationProvider provider) async {
+  Widget _createTnCAndPrivacyPolicySection() {
+    return ValueListenableBuilder(
+      valueListenable: isAgreeToTermsAndPrivacy,
+      builder: (context, value, child) {
+        return ListTileTheme(
+          data: _tileThemeData,
+          child: CheckboxListTile(
+            controlAffinity: ListTileControlAffinity.leading,
+            visualDensity: VisualDensity.standard,
+            dense: true,
+            activeColor: _cyan,
+            checkColor: Colors.black,
+            value: value,
+            onChanged: (cbValue) {
+              isAgreeToTermsAndPrivacy.value = cbValue!;
+            },
+            title: Wrap(
+              children: [
+                const Text("Agree to the "),
+                GestureDetector(
+                  child: Text(
+                    "Terms and Conditions",
+                    style: TextStyle(
+                      color: _beige,
+                      decoration: TextDecoration.underline,
+                      decorationColor: _beige,
+                    ),
+                  ),
+                  onTap: () {
+                    //TODO: show Terms and Conditions
+                  },
+                ),
+                const Text(" and "),
+                GestureDetector(
+                  child: Text(
+                    "Privacy Policy",
+                    style: TextStyle(
+                      color: _beige,
+                      decoration: TextDecoration.underline,
+                      decorationColor: _beige,
+                    ),
+                  ),
+                  onTap: () {
+                    //TODO: show privacy policy
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _createPromotionCheckbox() {
+    return ValueListenableBuilder(
+      valueListenable: isAgreeToReceivePromotions,
+      builder: (context, value, child) {
+        return ListTileTheme(
+          data: _tileThemeData,
+          child: CheckboxListTile(
+            visualDensity: VisualDensity.standard,
+            dense: true,
+            controlAffinity: ListTileControlAffinity.leading,
+            activeColor: _cyan,
+            checkColor: Colors.black,
+            value: value,
+            onChanged: (cbValue) {
+              isAgreeToReceivePromotions.value = cbValue!;
+            },
+            title: const Text(
+              "I agree to receive promotional communication featuring our hottest deals and smartest prices on leading brands",
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _createCaptcha(
+    AuthenthicationProvider provider,
+    bool isSignUpValue,
+  ) async {
     controller.setJavaScriptMode(JavaScriptMode.unrestricted);
     controller.addJavaScriptChannel(
       'Captcha',
       onMessageReceived: (data) {
-        _login(data.message, provider);
+        if (isSignUpValue) {
+          _register(data.message, provider);
+        } else {
+          _login(data.message, provider);
+        }
         Navigator.of(context).pop();
       },
     );
@@ -332,6 +473,7 @@ class _AuthenthicationState extends State<Authenthication> {
       color: const Color.fromARGB(255, 231, 231, 231),
       padding: const EdgeInsets.all(20),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _createTitle(),
