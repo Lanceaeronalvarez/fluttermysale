@@ -23,12 +23,42 @@ class ShopArguments {
   }
 }
 
-class ShopController extends StatelessController {
+class ShopController extends StatefulController {
   final ShopArguments args;
 
   final String _title = 'Shop Page';
 
   ShopController({Key? key, required this.args}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() {
+    return _ShopControllerState();
+  }
+}
+
+class _ShopControllerState extends ControllerState<ShopController> {
+  final List<ChangeNotifier> _providers = [];
+  final List<ChangeNotifierProvider<ChangeNotifier>> _changeNotifierProviders = [];
+
+  @override
+  void initState() {
+    super.initState();
+    String? category = widget.args.category;
+    _createProvider<ShopBannersProvider>(ShopBannersProvider(context: context, category: category));
+    _createProvider<SlidingBannersProvider>(SlidingBannersProvider(context: context));
+    _createProvider<SponsoredBannersProvider>(SponsoredBannersProvider(context: context, category: category));
+    _createProvider<LeaderboardBannerProvider>(LeaderboardBannerProvider(context: context, category: category));
+    _createProvider<TrendingBrandsProvider>(TrendingBrandsProvider(context: context, category: category));
+    _createProvider<BestSellersProvider>(BestSellersProvider(context: context, category: category));
+  }
+
+  @override
+  void dispose() {
+    _providers.forEach((p) {
+      p.dispose();
+    });
+    super.dispose();
+  }
 
   @override
   Display view(BuildContext context) {
@@ -37,49 +67,24 @@ class ShopController extends StatelessController {
     tm.setNavIndex(0);
 
     return Display(
-      title: _title,
+      title: widget._title,
       mobile: MultiProvider(
-        providers: _providers(),
-        child: mobile.Shop(title: _title),
+        providers: _changeNotifierProviders,
+        child: mobile.Shop(title: widget._title),
       ),
       tabletLandscape: MultiProvider(
-        providers: _providers(),
-        child: tablet.Shop(title: _title), //TODO
+        providers: _changeNotifierProviders,
+        child: tablet.Shop(title: widget._title), //TODO
       ),
       desktop: MultiProvider(
-        providers: _providers(),
-        child: tablet.Shop(title: _title), //TODO?
+        providers: _changeNotifierProviders,
+        child: tablet.Shop(title: widget._title), //TODO?
       ),
     );
   }
 
-  List<SingleChildWidget> _providers() {
-    return [
-      ChangeNotifierProvider<ShopBannersProvider>(
-        create: (context) =>
-            ShopBannersProvider(context: context, category: args.category),
-      ),
-      ChangeNotifierProvider<SlidingBannersProvider>(
-        create: (context) => SlidingBannersProvider(context: context),
-      ),
-      ChangeNotifierProvider<SponsoredBannersProvider>(
-        create: (context) =>
-            SponsoredBannersProvider(context: context, category: args.category),
-      ),
-      ChangeNotifierProvider<LeaderboardBannerProvider>(
-        create: (context) => LeaderboardBannerProvider(
-          context: context,
-          category: args.category,
-        ),
-      ),
-      ChangeNotifierProvider<TrendingBrandsProvider>(
-        create: (context) =>
-            TrendingBrandsProvider(context: context, category: args.category),
-      ),
-      ChangeNotifierProvider<BestSellersProvider>(
-        create: (context) =>
-            BestSellersProvider(context: context, category: args.category),
-      ),
-    ];
+  void _createProvider<T extends ChangeNotifier>(T p) {
+    _providers.add(p);
+    _changeNotifierProviders.add(ChangeNotifierProvider<T>(create: (context) => p));
   }
 }

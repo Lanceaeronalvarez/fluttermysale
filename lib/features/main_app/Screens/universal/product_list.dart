@@ -152,12 +152,11 @@ class _ProductListState extends State<ProductList>
 
   @override
   void dispose() {
-    super.dispose();
     _scrollController.dispose();
     _searchTextFieldController.dispose();
     _searchAndFilterAnimationController?.dispose();
     _searchBoxAnimationController?.dispose();
-    (Provider.of<ProductListProvider>(context, listen: false)).dispose();
+    super.dispose();
   }
 
   @override

@@ -40,23 +40,12 @@ class _ShopState extends State<Shop> {
     super.initState();
     var tm = context.read<ThemeProvider>();
     dayAndNight = tm.isDarkMode;
-    _getSlidingBanners((p) => p.getSlidingBanners());
-    _getShopBanners((p) => p.getShopBanners());
-    _getLeaderboardBanner((p) => p.getleaderboardBanners("MobileBrowser"));
-    _getTrendingBrands((p) => p.getTrendingBrands());
-    _getSponsoredBanners((p) => p.getSponsoredBanners());
-    _getBestSellers((p) => p.getBestSellers());
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _getSlidingBanners((p) => p.dispose());
-    _getShopBanners((p) => p.dispose());
-    _getLeaderboardBanner((p) => p.dispose());
-    _getTrendingBrands((p) => p.dispose());
-    _getSponsoredBanners((p) => p.dispose());
-    _getBestSellers((p) => p.dispose());
+    (Provider.of<SlidingBannersProvider>(context, listen: false)).getSlidingBanners();
+    (Provider.of<ShopBannersProvider>(context, listen: false)).getShopBanners();
+    (Provider.of<SponsoredBannersProvider>(context, listen: false)).getSponsoredBanners();
+    (Provider.of<LeaderboardBannerProvider>(context, listen: false)).getleaderboardBanners("DesktopBrowser");
+    (Provider.of<TrendingBrandsProvider>(context, listen: false)).getTrendingBrands();
+    (Provider.of<BestSellersProvider>(context, listen: false)).getBestSellers();
   }
 
   bool hasCategory() {
@@ -66,30 +55,6 @@ class _ShopState extends State<Shop> {
     );
     String? category = provider.category;
     return category != null && category.isNotEmpty;
-  }
-
-  void _getShopBanners(void Function(ShopBannersProvider) action) {
-    action(Provider.of<ShopBannersProvider>(context, listen: false));
-  }
-
-  void _getSlidingBanners(void Function(SlidingBannersProvider) action) {
-    action(Provider.of<SlidingBannersProvider>(context, listen: false));
-  }
-
-  void _getSponsoredBanners(void Function(SponsoredBannersProvider) action) {
-    action(Provider.of<SponsoredBannersProvider>(context, listen: false));
-  }
-
-  void _getLeaderboardBanner(void Function(LeaderboardBannerProvider) action) {
-    action(Provider.of<LeaderboardBannerProvider>(context, listen: false));
-  }
-
-  void _getTrendingBrands(void Function(TrendingBrandsProvider) action) {
-    action(Provider.of<TrendingBrandsProvider>(context, listen: false));
-  }
-
-  void _getBestSellers(void Function(BestSellersProvider) action) {
-    action(Provider.of<BestSellersProvider>(context, listen: false));
   }
 
   @override
