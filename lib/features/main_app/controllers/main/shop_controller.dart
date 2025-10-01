@@ -5,7 +5,6 @@ import 'package:flutter_mysale/features/main_app/providers/slidingbanners_provid
 import 'package:flutter_mysale/features/main_app/providers/sponsoredbanners_provider.dart';
 import 'package:flutter_mysale/features/main_app/providers/trendingbrands_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:provider/single_child_widget.dart';
 
 import '../../../../config/config.dart';
 import '../../../../core/core.dart';
@@ -14,12 +13,13 @@ import '../../Screens/tablet/shop.dart' as tablet;
 import '../../providers/shopbanners_provider.dart';
 
 class ShopArguments {
+  String? title;
   String? category;
 
-  ShopArguments._(this.category);
+  ShopArguments._(this.title, this.category);
 
-  factory ShopArguments({String? category}) {
-    return ShopArguments._(category);
+  factory ShopArguments({String? title, String? category}) {
+    return ShopArguments._(title, category);
   }
 }
 
@@ -38,18 +38,31 @@ class ShopController extends StatefulController {
 
 class _ShopControllerState extends ControllerState<ShopController> {
   final List<ChangeNotifier> _providers = [];
-  final List<ChangeNotifierProvider<ChangeNotifier>> _changeNotifierProviders = [];
+  final List<ChangeNotifierProvider<ChangeNotifier>> _changeNotifierProviders =
+      [];
 
   @override
   void initState() {
     super.initState();
     String? category = widget.args.category;
-    _createProvider<ShopBannersProvider>(ShopBannersProvider(context: context, category: category));
-    _createProvider<SlidingBannersProvider>(SlidingBannersProvider(context: context));
-    _createProvider<SponsoredBannersProvider>(SponsoredBannersProvider(context: context, category: category));
-    _createProvider<LeaderboardBannerProvider>(LeaderboardBannerProvider(context: context, category: category));
-    _createProvider<TrendingBrandsProvider>(TrendingBrandsProvider(context: context, category: category));
-    _createProvider<BestSellersProvider>(BestSellersProvider(context: context, category: category));
+    _createProvider<ShopBannersProvider>(
+      ShopBannersProvider(context: context, category: category),
+    );
+    _createProvider<SlidingBannersProvider>(
+      SlidingBannersProvider(context: context),
+    );
+    _createProvider<SponsoredBannersProvider>(
+      SponsoredBannersProvider(context: context, category: category),
+    );
+    _createProvider<LeaderboardBannerProvider>(
+      LeaderboardBannerProvider(context: context, category: category),
+    );
+    _createProvider<TrendingBrandsProvider>(
+      TrendingBrandsProvider(context: context, category: category),
+    );
+    _createProvider<BestSellersProvider>(
+      BestSellersProvider(context: context, category: category),
+    );
   }
 
   @override
@@ -70,21 +83,23 @@ class _ShopControllerState extends ControllerState<ShopController> {
       title: widget._title,
       mobile: MultiProvider(
         providers: _changeNotifierProviders,
-        child: mobile.Shop(title: widget._title),
+        child: mobile.Shop(title: widget.args.title),
       ),
       tabletLandscape: MultiProvider(
         providers: _changeNotifierProviders,
-        child: tablet.Shop(title: widget._title), //TODO
+        child: tablet.Shop(title: widget.args.title), //TODO
       ),
       desktop: MultiProvider(
         providers: _changeNotifierProviders,
-        child: tablet.Shop(title: widget._title), //TODO?
+        child: tablet.Shop(title: widget.args.title), //TODO?
       ),
     );
   }
 
   void _createProvider<T extends ChangeNotifier>(T p) {
     _providers.add(p);
-    _changeNotifierProviders.add(ChangeNotifierProvider<T>(create: (context) => p));
+    _changeNotifierProviders.add(
+      ChangeNotifierProvider<T>(create: (context) => p),
+    );
   }
 }

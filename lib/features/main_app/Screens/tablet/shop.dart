@@ -82,7 +82,9 @@ class _ShopState extends State<Shop> {
             color: Color(0xFFCCA68B),
           ),
         ),
-        title: SizedBox(height: 32, child: _createAppbarLogo()),
+        title: widget.title != null && widget.title!.isNotEmpty
+            ? Text(widget.title!, style: TextStyle(color: Colors.black))
+            : SizedBox(height: 32, child: _createAppbarLogo()),
         actions: [
           IconButton(
             onPressed: () {
