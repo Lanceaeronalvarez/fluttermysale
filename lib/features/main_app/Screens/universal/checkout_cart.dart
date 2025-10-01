@@ -91,7 +91,7 @@ class _CheckoutCartStyle {
         );
       case CheckoutCartMode.cart:
         return _CheckoutCartStyle._(
-          sectionColor: Color(0xFFEFEFEF),
+          sectionColor: checkoutGrey,
           showAppBar: false,
           appBarTitle: '',
           showProductListHeader: true,
@@ -108,7 +108,7 @@ class _CheckoutCartStyle {
         );
       case CheckoutCartMode.summary:
         return _CheckoutCartStyle._(
-          sectionColor: Color(0xFFEFEFEF),
+          sectionColor: checkoutGrey,
           showAppBar: false,
           appBarTitle: '',
           showProductListHeader: false,
@@ -125,7 +125,7 @@ class _CheckoutCartStyle {
         );
       case CheckoutCartMode.summaryFull:
         return _CheckoutCartStyle._(
-          sectionColor: Color(0xFFEFEFEF),
+          sectionColor: checkoutGrey,
           showAppBar: false,
           appBarTitle: '',
           showProductListHeader: true,
@@ -350,7 +350,7 @@ class _CheckoutCart extends State<CheckoutCart> {
     return SizedBox(
       height: 25,
       child: Container(
-        color: Color(0xFFEFEFEF),
+        color: checkoutGrey,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Align(

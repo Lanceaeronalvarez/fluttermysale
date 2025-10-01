@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/core/helpers/style_helper.dart';
 
 enum CheckoutStep { cart, contact, shipping, payment }
 
@@ -64,7 +65,7 @@ class CheckoutStepper extends StatelessWidget {
       child: Container(
         width: minimalView ? 6 : 12,
         height: 2,
-        decoration: const BoxDecoration(color: Colors.grey),
+        decoration: BoxDecoration(color: checkoutDarkGrey),
       ),
     );
   }
@@ -88,7 +89,7 @@ class CheckoutStepper extends StatelessWidget {
           if (!minimalView)
             CircleAvatar(
               radius: 10,
-              backgroundColor: isSelected ? Colors.black : Colors.grey,
+              backgroundColor: isSelected ? Colors.black : checkoutDarkGrey,
               child: Text(
                 (index + 1).toString(),
                 style: TextStyle(

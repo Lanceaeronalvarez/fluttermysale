@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/architect.dart';
+import 'package:flutter_mysale/core/helpers/style_helper.dart';
 import 'package:flutter_mysale/features/main_app/Screens/universal/checkout_cart.dart';
+import 'package:flutter_mysale/features/main_app/Screens/universal/checkout_contact.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
+import 'package:flutter_mysale/features/main_app/providers/checkout_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:flutter_mysale/features/main_app/widgets/checkout_stepper.dart';
 import 'package:flutter_mysale/features/main_app/widgets/promo_banner.dart';
+import 'package:provider/provider.dart';
 
 class CheckoutMain extends StatefulWidget {
   @override
@@ -147,9 +151,18 @@ class _CheckoutMain extends State<CheckoutMain> {
           case CheckoutStep.cart:
             return CheckoutCart(mode: CheckoutCartMode.cart);
           case CheckoutStep.contact:
-            return Container(
-              child: Center(child: Text('Contact')),
-              color: Colors.grey,
+            return Consumer<CheckoutProvider>(
+              builder:
+                  (
+                    BuildContext context,
+                    CheckoutProvider value,
+                    Widget? child,
+                  ) {
+                    //TODO: JCA - determine mode based on value in provider
+                    return CheckoutContact(
+                      mode: CheckoutContactMode.guestCheckoutForm,
+                    );
+                  },
             );
           case CheckoutStep.shipping:
             return Container(
@@ -177,7 +190,7 @@ class _CheckoutMain extends State<CheckoutMain> {
       valueListenable: _currentCheckoutStep,
       builder: (_, value, _) {
         return Container(
-          color: Color(0xFFEFEFEF),
+          color: checkoutGrey,
           child: Column(
             children: [
               CheckoutStepper(

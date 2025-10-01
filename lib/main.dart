@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
-import 'package:flutter_mysale/features/main_app/Screens/universal/checkoutcart.dart';
+import 'package:flutter_mysale/features/main_app/Screens/universal/checkout_cart.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:provider/provider.dart';

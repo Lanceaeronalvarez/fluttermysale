@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/core/helpers/style_helper.dart';
 
 class PromoBanner extends StatelessWidget {
   VoidCallback onTap;
@@ -13,7 +14,7 @@ class PromoBanner extends StatelessWidget {
         onTap.call();
       },
       child: Container(
-        color: Color(0xFFD7D7D7),
+        color: checkoutDarkGrey,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
