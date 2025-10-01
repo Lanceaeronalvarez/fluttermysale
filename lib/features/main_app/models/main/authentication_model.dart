@@ -27,6 +27,44 @@ class LoginEmailRequest {
 }
 
 @JsonSerializable()
+class RegisterRequest {
+  String? languageID;
+  String? countryID;
+  int? clientType;
+  int? clientID;
+  String? foreName;
+  String? surName;
+  String? email;
+  String? password;
+  String? referredBy;
+  String? invitedBy;
+  String? voucherID;
+  Map<String, bool>? parameters;
+  String? captchaResponse;
+
+  RegisterRequest({
+    this.languageID,
+    this.countryID,
+    this.clientType,
+    this.clientID,
+    this.foreName,
+    this.surName,
+    this.email,
+    this.password,
+    this.referredBy,
+    this.invitedBy,
+    this.voucherID,
+    this.parameters,
+    this.captchaResponse,
+  });
+
+  factory RegisterRequest.fromJson(Map<String, dynamic> json) =>
+      _$RegisterRequestFromJson(json);
+
+  Map<String, dynamic> toJson() => _$RegisterRequestToJson(this);
+}
+
+@JsonSerializable()
 class LoginResponse {
   LoginResponseValue? d;
 

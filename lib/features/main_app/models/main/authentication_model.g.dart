@@ -26,6 +26,42 @@ Map<String, dynamic> _$LoginEmailRequestToJson(LoginEmailRequest instance) =>
       'clientID': instance.clientID,
     };
 
+RegisterRequest _$RegisterRequestFromJson(Map<String, dynamic> json) =>
+    RegisterRequest(
+      languageID: json['languageID'] as String?,
+      countryID: json['countryID'] as String?,
+      clientType: (json['clientType'] as num?)?.toInt(),
+      clientID: (json['clientID'] as num?)?.toInt(),
+      foreName: json['foreName'] as String?,
+      surName: json['surName'] as String?,
+      email: json['email'] as String?,
+      password: json['password'] as String?,
+      referredBy: json['referredBy'] as String?,
+      invitedBy: json['invitedBy'] as String?,
+      voucherID: json['voucherID'] as String?,
+      parameters: (json['parameters'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, e as bool),
+      ),
+      captchaResponse: json['captchaResponse'] as String?,
+    );
+
+Map<String, dynamic> _$RegisterRequestToJson(RegisterRequest instance) =>
+    <String, dynamic>{
+      'languageID': instance.languageID,
+      'countryID': instance.countryID,
+      'clientType': instance.clientType,
+      'clientID': instance.clientID,
+      'foreName': instance.foreName,
+      'surName': instance.surName,
+      'email': instance.email,
+      'password': instance.password,
+      'referredBy': instance.referredBy,
+      'invitedBy': instance.invitedBy,
+      'voucherID': instance.voucherID,
+      'parameters': instance.parameters,
+      'captchaResponse': instance.captchaResponse,
+    };
+
 LoginResponse _$LoginResponseFromJson(Map<String, dynamic> json) =>
     LoginResponse(
       json['d'] == null
