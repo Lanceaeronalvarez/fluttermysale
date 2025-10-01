@@ -165,8 +165,12 @@ class CheckoutCart extends StatefulWidget {
   final List<CartProductWrapper> productList = CartProductWrapper.tempList();
 
   final CheckoutCartMode mode;
+  final VoidCallback? onContinueToContact;
 
-  CheckoutCart({this.mode = CheckoutCartMode.addToCart});
+  CheckoutCart({
+    this.mode = CheckoutCartMode.addToCart,
+    this.onContinueToContact,
+  });
 
   @override
   State<StatefulWidget> createState() {
@@ -427,6 +431,7 @@ class _CheckoutCart extends State<CheckoutCart> {
         title: 'CONTINUE TO CONTACT',
         onTap: () {
           print('continue to contact');
+          widget.onContinueToContact?.call();
         },
       ),
     );

@@ -148,7 +148,12 @@ class _CheckoutMain extends State<CheckoutMain> {
       builder: (_, value, _) {
         switch (value) {
           case CheckoutStep.cart:
-            return CheckoutCart(mode: CheckoutCartMode.cart);
+            return CheckoutCart(
+              mode: CheckoutCartMode.cart,
+              onContinueToContact: () {
+                _currentCheckoutStep.value = CheckoutStep.contact;
+              },
+            );
           case CheckoutStep.contact:
             return Consumer<CheckoutProvider>(
               builder:
@@ -160,6 +165,9 @@ class _CheckoutMain extends State<CheckoutMain> {
                     //TODO: JCA - determine mode based on value in provider
                     return CheckoutContact(
                       mode: CheckoutContactMode.guestCheckoutForm,
+                      onContinueToShipping: () {
+                        _currentCheckoutStep.value = CheckoutStep.shipping;
+                      },
                     );
                   },
             );

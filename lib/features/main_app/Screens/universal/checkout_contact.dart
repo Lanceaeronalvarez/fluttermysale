@@ -5,8 +5,9 @@ enum CheckoutContactMode { loggedIn, guestCheckoutForm, loginForm, signupForm }
 
 class CheckoutContact extends StatefulWidget {
   final CheckoutContactMode mode;
+  final VoidCallback? onContinueToShipping;
 
-  CheckoutContact({required this.mode});
+  CheckoutContact({required this.mode, required this.onContinueToShipping});
 
   @override
   State<StatefulWidget> createState() {
@@ -55,6 +56,7 @@ class _CheckoutContact extends State<CheckoutContact> {
         contactInfo: null,
         onContinueShipping: (email) {
           print('continue to shipping $email');
+          widget.onContinueToShipping?.call();
         },
         onLogin: () {
           print('login');
