@@ -66,7 +66,7 @@ class _AuthenthicationState extends State<Authenthication> {
         });
   }
 
-  void _registrater(String token, AuthenthicationProvider provider) {
+  void _register(String token, AuthenthicationProvider provider) {
     provider
         .callRegistration(
           firstNameTextField.value.text,
@@ -424,7 +424,7 @@ class _AuthenthicationState extends State<Authenthication> {
       'Captcha',
       onMessageReceived: (data) {
         if (isSignUpValue) {
-          _registrater(data.message, provider);
+          _register(data.message, provider);
         } else {
           _login(data.message, provider);
         }
