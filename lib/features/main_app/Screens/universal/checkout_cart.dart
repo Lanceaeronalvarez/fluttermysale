@@ -4,9 +4,9 @@ import 'package:flutter_mysale/features/main_app/providers/checkout_provider.dar
 import 'package:flutter_mysale/features/main_app/widgets/cart_product_row.dart';
 import 'package:provider/provider.dart';
 
-enum CheckoutCartMode { 
-  addToCart, //add to cart 
-  cart, //checkout - cart left side 
+enum CheckoutCartMode {
+  addToCart, //add to cart
+  cart, //checkout - cart left side
   summary, //checkout - cart right side
   summaryFull, //checkout - other steps - right side
   cartModal, //cart modal inside checkout
@@ -452,14 +452,25 @@ class _CheckoutCart extends State<CheckoutCart> {
   Widget _createAddVoucherButton() {
     return Container(
       color: _style.sectionColor,
-      child: _createButton(
-        title: 'ADD NEW VOUCHER',
-        onTap: () {
-          print('continue to contact');
-        },
-        leftSpacing: 0,
-        topSpacing: 0,
-        rightSpacing: 0,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
+        child: ElevatedButton(
+          onPressed: () {},
+          style: appElevatedButtonStyle.copyWith(
+            backgroundColor: WidgetStatePropertyAll<Color>(Colors.white),
+            alignment: Alignment.center,
+            padding: WidgetStatePropertyAll(
+              EdgeInsetsDirectional.only(start: 16, end: 8),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('ADD NEW VOUCHER', textAlign: TextAlign.left),
+              Icon(Icons.chevron_right),
+            ],
+          ),
+        ),
       ),
     );
   }
