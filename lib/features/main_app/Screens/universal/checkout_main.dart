@@ -26,6 +26,12 @@ class _CheckoutMain extends State<CheckoutMain> {
   );
 
   @override
+  void dispose() {
+    _currentCheckoutStep.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
