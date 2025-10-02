@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 final ButtonStyle appElevatedButtonStyle = ElevatedButton.styleFrom(
-  backgroundColor: const Color(0xFF54ECFF), // bright cyan
+  backgroundColor: cyanColor, // bright cyan
   foregroundColor: Colors.black, // text/icon color
   elevation: 2,
   shadowColor: Colors.black54,
@@ -10,8 +10,8 @@ final ButtonStyle appElevatedButtonStyle = ElevatedButton.styleFrom(
   overlayColor: Colors.transparent,
 );
 
-final BoxDecoration appPrimaryButtonBoxDecoration = const BoxDecoration(
-  color: Color(0xFF54ECFF),
+final BoxDecoration appPrimaryButtonBoxDecoration = BoxDecoration(
+  color: cyanColor,
   boxShadow: [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
 );
 
@@ -24,6 +24,7 @@ final Color checkoutGrey = Color(0xFFEFEFEF);
 final Color checkoutDarkGrey = Color(0xFFD7D7D7);
 final Color beigeColor = Color(0xFFc9a184);
 final Color lightBeigeColor = Color(0xFFfaf2f3);
+final Color cyanColor = const Color(0xFF54ECFF);
 
 final TextStyle textfieldStyle = TextStyle(fontSize: 16);
 final InputDecoration textfieldInputDecoration = InputDecoration(
