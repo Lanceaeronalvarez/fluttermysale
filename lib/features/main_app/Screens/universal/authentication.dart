@@ -30,9 +30,6 @@ class _AuthenthicationState extends State<Authenthication> {
 
   final String _recaptchaHtml = 'assets/recaptcha.html';
 
-  final Color _beige = const Color(0xFFc9a184);
-  final Color _cyan = const Color(0xFF54ECFF);
-
   final ListTileThemeData _tileThemeData = const ListTileThemeData(
     titleAlignment: ListTileTitleAlignment.top,
     contentPadding: EdgeInsets.zero,
@@ -42,6 +39,15 @@ class _AuthenthicationState extends State<Authenthication> {
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    isSignUp.dispose();
+    isShowError.dispose();
+    isAgreeToTermsAndPrivacy.dispose();
+    isAgreeToReceivePromotions.dispose();
+    super.dispose();
   }
 
   void _login(String token, AuthenthicationProvider provider) {
@@ -113,8 +119,12 @@ class _AuthenthicationState extends State<Authenthication> {
       hintText: "Enter your $title",
       alignLabelWithHint: false,
       floatingLabelAlignment: FloatingLabelAlignment.start,
-      focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: _beige)),
-      enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: _beige)),
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: beigeColor),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: beigeColor),
+      ),
       fillColor: const Color(0xFFfaf2f3),
       filled: true,
     );
@@ -295,9 +305,9 @@ class _AuthenthicationState extends State<Authenthication> {
             child: Text(
               "Sign in",
               style: TextStyle(
-                color: _beige,
+                color: beigeColor,
                 decoration: TextDecoration.underline,
-                decorationColor: _beige,
+                decorationColor: beigeColor,
               ),
             ),
             onTap: () {
@@ -321,9 +331,9 @@ class _AuthenthicationState extends State<Authenthication> {
             child: Text(
               "Create one",
               style: TextStyle(
-                color: _beige,
+                color: beigeColor,
                 decoration: TextDecoration.underline,
-                decorationColor: _beige,
+                decorationColor: beigeColor,
               ),
             ),
             onTap: () {
@@ -346,7 +356,7 @@ class _AuthenthicationState extends State<Authenthication> {
             controlAffinity: ListTileControlAffinity.leading,
             visualDensity: VisualDensity.standard,
             dense: true,
-            activeColor: _cyan,
+            activeColor: cyanColor,
             checkColor: Colors.black,
             value: value,
             onChanged: (cbValue) {
@@ -359,9 +369,9 @@ class _AuthenthicationState extends State<Authenthication> {
                   child: Text(
                     "Terms and Conditions",
                     style: TextStyle(
-                      color: _beige,
+                      color: beigeColor,
                       decoration: TextDecoration.underline,
-                      decorationColor: _beige,
+                      decorationColor: beigeColor,
                     ),
                   ),
                   onTap: () {
@@ -373,9 +383,9 @@ class _AuthenthicationState extends State<Authenthication> {
                   child: Text(
                     "Privacy Policy",
                     style: TextStyle(
-                      color: _beige,
+                      color: beigeColor,
                       decoration: TextDecoration.underline,
-                      decorationColor: _beige,
+                      decorationColor: beigeColor,
                     ),
                   ),
                   onTap: () {
@@ -400,7 +410,7 @@ class _AuthenthicationState extends State<Authenthication> {
             visualDensity: VisualDensity.standard,
             dense: true,
             controlAffinity: ListTileControlAffinity.leading,
-            activeColor: _cyan,
+            activeColor: cyanColor,
             checkColor: Colors.black,
             value: value,
             onChanged: (cbValue) {

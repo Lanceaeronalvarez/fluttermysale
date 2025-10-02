@@ -29,6 +29,14 @@ class CartProductWrapper extends CartProductItem {
   String getTotalPrice() =>
       '${product.price?.currency ?? ''}${product.price?.value ?? 0}';
 
+  bool isFreeShipping() {
+    return ((product.id ?? '') == '1');
+  }
+
+  double shippingFee() {
+    return ((product.id ?? '') == '1') ? 0.0 : 9.99;
+  }
+
   static Sku tempSku() {
     return Sku(
       '1',

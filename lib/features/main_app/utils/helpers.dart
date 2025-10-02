@@ -58,6 +58,16 @@ extension RangeParsing on String {
   }
 }
 
+extension StringValidator on String {
+  bool get isValidEmail {
+    final RegExp emailRegex = RegExp(
+      r'^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$',
+      caseSensitive: false,
+    );
+    return emailRegex.hasMatch(this.trim());
+  }
+}
+
 extension StringServerApostropheS on String {
   String fixServerApostropheS() {
     bool foundWhiteSpace = false;

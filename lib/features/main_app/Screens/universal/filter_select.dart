@@ -43,6 +43,11 @@ class _FilterSelectState extends State<FilterSelect> {
   final String _pathCheckboxChecked = 'assets/images/filterCheckboxChecked.png';
   final String _pathCheckboxPartial = 'assets/images/filterCheckboxPartial.png';
 
+  @override void dispose() {
+    sortNotifier.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();

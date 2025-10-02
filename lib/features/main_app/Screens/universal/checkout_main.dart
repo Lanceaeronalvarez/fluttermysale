@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/architect.dart';
-import 'package:flutter_mysale/features/main_app/Screens/universal/checkoutcart.dart';
+import 'package:flutter_mysale/core/helpers/style_helper.dart';
+import 'package:flutter_mysale/features/main_app/Screens/universal/checkout_cart.dart';
+import 'package:flutter_mysale/features/main_app/Screens/universal/checkout_contact.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
+import 'package:flutter_mysale/features/main_app/providers/checkout_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:flutter_mysale/features/main_app/widgets/checkout_stepper.dart';
 import 'package:flutter_mysale/features/main_app/widgets/promo_banner.dart';
+import 'package:provider/provider.dart';
 
 class CheckoutMain extends StatefulWidget {
   @override
@@ -20,6 +24,12 @@ class _CheckoutMain extends State<CheckoutMain> {
   ValueNotifier<CheckoutStep> _currentCheckoutStep = ValueNotifier(
     CheckoutStep.cart,
   );
+
+  @override
+  void dispose() {
+    _currentCheckoutStep.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,14 +53,13 @@ class _CheckoutMain extends State<CheckoutMain> {
               print('promo banner tap');
             },
           ),
-
           (isTablet)
               ? Expanded(
                   child: Row(
                     children: [
                       Expanded(child: _createSubpage()),
                       Expanded(
-                        child: CheckoutCart(mode: CheckoutCartMode.summaryOnly),
+                        child: CheckoutCart(mode: CheckoutCartMode.summary),
                       ),
                     ],
                   ),
@@ -77,12 +86,21 @@ class _CheckoutMain extends State<CheckoutMain> {
   }
 
   Widget _createSecureCheckoutRow(bool isTablet) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        _createSecureCheckoutTitle(),
-        if (!isTablet) _createOrderSummaryButton(),
-      ],
+    return ValueListenableBuilder(
+      valueListenable: _currentCheckoutStep,
+      builder: (_, value, _) {
+        return SizedBox(
+          height: 40,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _createSecureCheckoutTitle(),
+              if (!isTablet && value != CheckoutStep.cart)
+                _createOrderSummaryButton(),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -136,11 +154,28 @@ class _CheckoutMain extends State<CheckoutMain> {
       builder: (_, value, _) {
         switch (value) {
           case CheckoutStep.cart:
-            return CheckoutCart(mode: CheckoutCartMode.checkoutCart);
+            return CheckoutCart(
+              mode: CheckoutCartMode.cart,
+              onContinueToContact: () {
+                _currentCheckoutStep.value = CheckoutStep.contact;
+              },
+            );
           case CheckoutStep.contact:
-            return Container(
-              child: Center(child: Text('Contact')),
-              color: Colors.grey,
+            return Consumer<CheckoutProvider>(
+              builder:
+                  (
+                    BuildContext context,
+                    CheckoutProvider value,
+                    Widget? child,
+                  ) {
+                    //TODO: JCA - determine mode based on value in provider
+                    return CheckoutContact(
+                      mode: CheckoutContactMode.guestCheckoutForm,
+                      onContinueToShipping: () {
+                        _currentCheckoutStep.value = CheckoutStep.shipping;
+                      },
+                    );
+                  },
             );
           case CheckoutStep.shipping:
             return Container(
@@ -168,7 +203,7 @@ class _CheckoutMain extends State<CheckoutMain> {
       valueListenable: _currentCheckoutStep,
       builder: (_, value, _) {
         return Container(
-          color: Color(0xFFEFEFEF),
+          color: checkoutGrey,
           child: Column(
             children: [
               CheckoutStepper(
