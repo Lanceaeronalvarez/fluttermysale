@@ -37,40 +37,33 @@ class ShopController extends StatefulController {
 }
 
 class _ShopControllerState extends ControllerState<ShopController> {
-  final List<ChangeNotifier> _providers = [];
-  final List<ChangeNotifierProvider<ChangeNotifier>> _changeNotifierProviders =
-      [];
+  late final List<
+      ChangeNotifierProvider<ChangeNotifier>> _providers;
 
   @override
   void initState() {
     super.initState();
     String? category = widget.args.category;
-    _createProvider<ShopBannersProvider>(
-      ShopBannersProvider(context: context, category: category),
-    );
-    _createProvider<SlidingBannersProvider>(
-      SlidingBannersProvider(context: context),
-    );
-    _createProvider<SponsoredBannersProvider>(
-      SponsoredBannersProvider(context: context, category: category),
-    );
-    _createProvider<LeaderboardBannerProvider>(
-      LeaderboardBannerProvider(context: context, category: category),
-    );
-    _createProvider<TrendingBrandsProvider>(
-      TrendingBrandsProvider(context: context, category: category),
-    );
-    _createProvider<BestSellersProvider>(
-      BestSellersProvider(context: context, category: category),
-    );
-  }
-
-  @override
-  void dispose() {
-    _providers.forEach((p) {
-      p.dispose();
-    });
-    super.dispose();
+    _providers = [
+      ChangeNotifierProvider<ShopBannersProvider>(create: (context) =>
+          ShopBannersProvider(context: context, category: category),
+      ),
+      ChangeNotifierProvider<SlidingBannersProvider>(create: (context) =>
+          SlidingBannersProvider(context: context),
+      ),
+      ChangeNotifierProvider<SponsoredBannersProvider>(create: (context) =>
+          SponsoredBannersProvider(context: context, category: category),
+      ),
+      ChangeNotifierProvider<LeaderboardBannerProvider>(create: (context) =>
+          LeaderboardBannerProvider(context: context, category: category),
+      ),
+      ChangeNotifierProvider<TrendingBrandsProvider>(create: (context) =>
+          TrendingBrandsProvider(context: context, category: category),
+      ),
+      ChangeNotifierProvider<BestSellersProvider>(create: (context) =>
+          BestSellersProvider(context: context, category: category),
+      )
+    ];
   }
 
   @override
@@ -82,24 +75,17 @@ class _ShopControllerState extends ControllerState<ShopController> {
     return Display(
       title: widget._title,
       mobile: MultiProvider(
-        providers: _changeNotifierProviders,
+        providers: _providers,
         child: mobile.Shop(title: widget.args.title),
       ),
       tabletLandscape: MultiProvider(
-        providers: _changeNotifierProviders,
+        providers: _providers,
         child: tablet.Shop(title: widget.args.title), //TODO
       ),
       desktop: MultiProvider(
-        providers: _changeNotifierProviders,
+        providers: _providers,
         child: tablet.Shop(title: widget.args.title), //TODO?
       ),
-    );
-  }
-
-  void _createProvider<T extends ChangeNotifier>(T p) {
-    _providers.add(p);
-    _changeNotifierProviders.add(
-      ChangeNotifierProvider<T>(create: (context) => p),
     );
   }
 }

@@ -77,41 +77,33 @@ class ProductListController extends StatefulController {
 }
 
 class _ProductListState extends ControllerState<ProductListController> {
-  late final ProductListProvider _productListProvider;
+  late final List<ChangeNotifierProvider<ChangeNotifier>> _providers;
 
   @override
   void initState() {
     super.initState();
 
-    _productListProvider = ProductListProvider(
-      userAgentHelper: UserAgentHelper.shared,
-      searchQuery: widget.args.initialSearchQuery ?? "",
-      saleId: widget.args.saleId,
-      appliedCategories: widget.args.appliedCategories,
-      appliedCategoryKeys: widget.args.appliedCategoryKeys,
-      appliedFilters: widget.args.appliedFilters,
-      sort: widget.args.sort,
-      originCategory: widget.args.originCategory,
-    );
-  }
-
-  @override
-  void dispose() {
-    _productListProvider.dispose();
-    super.dispose();
+    _providers = [
+      ChangeNotifierProvider<ProductListProvider>(
+        create: (context) => ProductListProvider(
+          userAgentHelper: UserAgentHelper.shared,
+          searchQuery: widget.args.initialSearchQuery ?? "",
+          saleId: widget.args.saleId,
+          appliedCategories: widget.args.appliedCategories,
+          appliedCategoryKeys: widget.args.appliedCategoryKeys,
+          appliedFilters: widget.args.appliedFilters,
+          sort: widget.args.sort,
+          originCategory: widget.args.originCategory,
+        ),
+      ),
+    ];
   }
 
   @override
   Display view(BuildContext context) {
-    ProductList child = ProductList();
-
     MultiProvider multiProvider = MultiProvider(
-      providers: [
-        ChangeNotifierProvider<ProductListProvider>.value(
-          value: _productListProvider,
-        ),
-      ],
-      child: child,
+      providers: _providers,
+      child: ProductList(),
     );
 
     return Display(title: 'Product List', mobile: multiProvider);
