@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/features/main_app/Screens/universal/authentication.dart';
+import 'package:flutter_mysale/features/main_app/widgets/auth_form.dart';
 import 'package:flutter_mysale/features/main_app/widgets/checkout_contact_section.dart';
 
 enum CheckoutContactMode { loggedIn, guestCheckoutForm, loginForm, signupForm }
@@ -50,21 +52,73 @@ class _CheckoutContact extends State<CheckoutContact> {
   Widget _createCheckoutContactSection() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: CheckoutContactSection(
-        title: 'CONTACT INFORMATION',
-        //contactInfo: (true, 'user@gmail.com'),
-        contactInfo: null,
-        onContinueShipping: (email) {
-          print('continue to shipping $email');
-          widget.onContinueToShipping?.call();
-        },
-        onLogin: () {
-          print('login');
-        },
-        onSignup: () {
-          print('signup');
+
+      child: ValueListenableBuilder(
+        valueListenable: _mode,
+        builder: (_, value, _) {
+          switch (value) {
+            case CheckoutContactMode.guestCheckoutForm:
+              return _createGuestCheckoutForm(contactInfo: null);
+            case CheckoutContactMode.loginForm:
+              return _createAuthForm(false);
+            case CheckoutContactMode.signupForm:
+              return _createAuthForm(true);
+            case CheckoutContactMode.loggedIn:
+              return _createGuestCheckoutForm(
+                contactInfo: (true, 'user@gmail.com'),
+              );
+          }
         },
       ),
+
+    );
+  }
+
+  Widget _createGuestCheckoutForm({
+    required (bool isGuestCheckout, String info)? contactInfo,
+  }) {
+    return CheckoutContactSection(
+      title: 'CONTACT INFORMATION',
+      contactInfo: contactInfo,
+      onContinueShipping: (email) {
+        print('continue to shipping $email');
+        widget.onContinueToShipping?.call();
+      },
+      onLogin: () {
+        print('login');
+        _mode.value = CheckoutContactMode.loginForm;
+      },
+      onSignup: () {
+        print('signup');
+        _mode.value = CheckoutContactMode.signupForm;
+      },
+    );
+  }
+
+  Widget _createAuthForm(bool isSignup) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'CONTACT INFORMATION',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+          ),
+        ),
+        SizedBox(height: 8),
+        Container(
+          constraints: BoxConstraints(minWidth: double.infinity),
+          child: AuthForm(
+            inCheckout: true,
+            isSignUp: isSignup,
+            onGoToGuestCheckout: () {
+              _mode.value = CheckoutContactMode.guestCheckoutForm;
+            },
+          ),
+        ),
+      ],
     );
   }
 }

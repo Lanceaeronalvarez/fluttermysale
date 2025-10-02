@@ -48,16 +48,20 @@ class _CheckoutMain extends State<CheckoutMain> {
         children: [
           _createSecureCheckoutContainer(isTablet),
           _createStepperContainer(),
-          PromoBanner(
-            onTap: () {
-              print('promo banner tap');
-            },
+          Container(
+            constraints: BoxConstraints(minWidth: double.infinity),
+            child: PromoBanner(
+              onTap: () {
+                print('promo banner tap');
+              },
+            ),
           ),
           (isTablet)
               ? Expanded(
                   child: Row(
                     children: [
                       Expanded(child: _createSubpage()),
+                      SizedBox(width: 1),
                       Expanded(
                         child: CheckoutCart(mode: CheckoutCartMode.summary),
                       ),
