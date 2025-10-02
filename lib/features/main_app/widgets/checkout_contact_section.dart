@@ -3,9 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mysale/core/helpers/style_helper.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 
+class CheckoutContactSectionInfo {
+  bool isGuestCheckout;
+  String info;
+  bool showContinueToShippingButton;
+
+  CheckoutContactSectionInfo({
+    required this.isGuestCheckout,
+    required this.info,
+    required this.showContinueToShippingButton,
+  });
+}
+
 class CheckoutContactSection extends StatelessWidget {
   final String title;
-  final (bool isGuestCheckout, String info)? contactInfo;
+  final CheckoutContactSectionInfo? contactInfo;
   final Function(String)? onContinueShipping;
   final VoidCallback? onLogin;
   final VoidCallback? onSignup;
@@ -22,10 +34,7 @@ class CheckoutContactSection extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget content = (contactInfo == null)
         ? _createForm()
-        : _createInfoText(
-            isGuestCheckout: contactInfo!.$1,
-            info: contactInfo!.$2,
-          );
+        : _createInfoContainer(contactInfo: contactInfo!);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,12 +60,28 @@ class CheckoutContactSection extends StatelessWidget {
     );
   }
 
-  Widget _createInfoText({
-    required bool isGuestCheckout,
-    required String info,
+  Widget _createInfoContainer({
+    required CheckoutContactSectionInfo contactInfo,
   }) {
-    if (isGuestCheckout) {
-      return Text(info, style: TextStyle(fontWeight: FontWeight.bold));
+    return Column(
+      children: [
+        Container(
+          constraints: BoxConstraints(minWidth: double.infinity),
+          child: _createInfoText(contactInfo: contactInfo),
+        ),
+        if (contactInfo.showContinueToShippingButton)
+          const SizedBox(height: 16),
+        if (contactInfo.showContinueToShippingButton) _createInfoButton(),
+      ],
+    );
+  }
+
+  Widget _createInfoText({required CheckoutContactSectionInfo contactInfo}) {
+    if (contactInfo.isGuestCheckout) {
+      return Text(
+        contactInfo.info,
+        style: TextStyle(fontWeight: FontWeight.bold),
+      );
     } else {
       return RichText(
         text: TextSpan(
@@ -64,13 +89,23 @@ class CheckoutContactSection extends StatelessWidget {
           children: [
             TextSpan(text: 'Signed in as: '),
             TextSpan(
-              text: info,
+              text: contactInfo.info,
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ],
         ),
       );
     }
+  }
+
+  Widget _createInfoButton() {
+    return ElevatedButton(
+      onPressed: () {
+        onContinueShipping?.call('');
+      },
+      style: appElevatedButtonStyle,
+      child: Text('CONTINUE TO SHIPPING'),
+    );
   }
 
   Widget _createForm() {

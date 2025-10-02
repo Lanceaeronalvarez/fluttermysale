@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mysale/features/main_app/Screens/universal/authentication.dart';
 import 'package:flutter_mysale/features/main_app/widgets/auth_form.dart';
 import 'package:flutter_mysale/features/main_app/widgets/checkout_contact_section.dart';
 
@@ -65,17 +64,20 @@ class _CheckoutContact extends State<CheckoutContact> {
               return _createAuthForm(true);
             case CheckoutContactMode.loggedIn:
               return _createGuestCheckoutForm(
-                contactInfo: (true, 'user@gmail.com'),
+                contactInfo: CheckoutContactSectionInfo(
+                  isGuestCheckout: true,
+                  info: 'user@gmail.com',
+                  showContinueToShippingButton: true,
+                ),
               );
           }
         },
       ),
-
     );
   }
 
   Widget _createGuestCheckoutForm({
-    required (bool isGuestCheckout, String info)? contactInfo,
+    required CheckoutContactSectionInfo? contactInfo,
   }) {
     return CheckoutContactSection(
       title: 'CONTACT INFORMATION',
