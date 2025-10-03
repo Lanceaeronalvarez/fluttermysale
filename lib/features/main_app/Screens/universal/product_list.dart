@@ -84,8 +84,9 @@ class _SortMode extends FilterItem {
 
 class ProductList extends StatefulWidget {
   final String? _initialTitle;
+  final bool willShowSearchBoxOnOpen;
 
-  const ProductList({Key? key, String? title})
+  const ProductList({Key? key, String? title, required this.willShowSearchBoxOnOpen})
     : this._initialTitle = title,
       super(key: key);
 
@@ -101,7 +102,7 @@ class _ProductListState extends State<ProductList>
       TextEditingController(text: '');
   bool dayAndNight = false;
 
-  bool _showSearch = true;
+  bool _showSearch = false;
 
   late final ScrollController _scrollController;
   double _scrollPosition = 0.0;
@@ -140,12 +141,20 @@ class _ProductListState extends State<ProductList>
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    _searchBoxTween = Tween<double>(begin: 1.0, end: 0.0).animate(
+    _searchBoxTween = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _searchBoxAnimationController!,
         curve: Curves.linear,
       ),
     );
+    if (widget.willShowSearchBoxOnOpen) {
+      _showSearch = true;
+      _searchBoxAnimationController?.value = 1.0;
+    } else {
+      _showSearch = false;
+      _searchBoxAnimationController?.value = 0.0;
+    }
+
     _scrollController = ScrollController();
     _scrollController.addListener(() {
       if (_scrollSpeed > 0) {
@@ -202,9 +211,9 @@ class _ProductListState extends State<ProductList>
             onPressed: () {
               _showSearch = !_showSearch;
               if (_showSearch) {
-                _searchBoxAnimationController?.reverse();
-              } else {
                 _searchBoxAnimationController?.forward();
+              } else {
+                _searchBoxAnimationController?.reverse();
               }
             },
             icon: const Icon(Icons.search),
@@ -261,25 +270,45 @@ class _ProductListState extends State<ProductList>
   }
 
   SizedBox _searchBar(ProductListProvider provider) {
+    Color color = Color(0xFFEEEEEE);
     return SizedBox(
       width: double.infinity,
       child: SizeTransition(
         sizeFactor: _searchBoxTween!,
         axis: Axis.vertical,
-        child: TextField(
-          decoration: const InputDecoration(
-            prefixIcon: Icon(Icons.search),
-            hintText: 'Search',
+        child: Container(
+          margin: const EdgeInsets.only(
+            left: 10.0,
+            right: 10.0,
+            top: 4.0,
+            bottom: 4.0,
           ),
-          controller: _searchTextFieldController,
-          onChanged: (val) {
-            provider.resetProductList();
-            provider.updateSearchQuery(val);
-            provider.getProductList();
-            setState(() {
-              _title = val;
-            });
-          },
+          child: TextFormField(
+            decoration: InputDecoration(
+              fillColor: color,
+              filled: true,
+              contentPadding: const EdgeInsets.all(4.0),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.0),
+                borderSide: BorderSide(color: color, width: 0.0),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.0),
+                borderSide: BorderSide(color: color, width: 0.0),
+              ),
+              prefixIcon: const Icon(Icons.search),
+              hintText: 'Search',
+            ),
+            controller: _searchTextFieldController,
+            onChanged: (val) {
+              provider.resetProductList();
+              provider.updateSearchQuery(val);
+              provider.getProductList();
+              setState(() {
+                _title = val;
+              });
+            },
+          ),
         ),
       ),
     );
