@@ -267,7 +267,10 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
       );
     } else {
       print('Navigating to PLP - ${category.name}');
+      String? title = category.name;
+      debugPrint("Title: " + (title ?? "(none)"));
       args = ProductListArguments(
+        title: title,
         saleId: '',
         appliedCategories: [category],
         appliedFilters: [],

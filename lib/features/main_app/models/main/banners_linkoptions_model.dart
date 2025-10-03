@@ -18,7 +18,13 @@ class LinkOptions {
 
   LinkOptionType getLinkOptionType() {
     if (category != null) {
-      return LinkOptionType.category;
+      if (searchQuery != null &&
+          searchQuery!.isNotEmpty &&
+          (category!["id"] == null || category!["id"]!.isEmpty)) {
+        return LinkOptionType.searchQuery;
+      } else {
+        return LinkOptionType.category;
+      }
     } else if (facets != null) {
       if (facets?.saleId != null) {
         return LinkOptionType.sale;
@@ -66,4 +72,4 @@ class PriceLimit {
   Map<String, dynamic> toJson() => _$PriceLimitToJson(this);
 }
 
-enum LinkOptionType { category, sale, promo, unknown }
+enum LinkOptionType { searchQuery, category, sale, promo, unknown }

@@ -10,6 +10,7 @@ import '../../../../core/core.dart';
 import '../../providers/productlist_provider.dart';
 
 class ProductListArguments {
+  String? title;
   String? initialSearchQuery;
   String saleId;
   List<CategoryNodeModel> appliedCategories;
@@ -19,6 +20,7 @@ class ProductListArguments {
   CategoryNodeModel? originCategory;
 
   ProductListArguments._({
+    this.title,
     this.initialSearchQuery,
     required this.saleId,
     required this.appliedCategories,
@@ -29,6 +31,7 @@ class ProductListArguments {
   });
 
   factory ProductListArguments({
+    String? title,
     String? initialSearchQuery,
     required String saleId,
     required List<CategoryNodeModel> appliedCategories,
@@ -37,6 +40,7 @@ class ProductListArguments {
     required CategoryNodeModel? originCategory,
   }) {
     return ProductListArguments._(
+      title: title,
       initialSearchQuery: initialSearchQuery,
       saleId: saleId,
       appliedCategories: appliedCategories,
@@ -47,6 +51,7 @@ class ProductListArguments {
   }
 
   factory ProductListArguments.withAppliedCategoryKeys({
+    String? title,
     String? initialSearchQuery,
     required String saleId,
     required List<String> appliedCategoryKeys,
@@ -54,6 +59,7 @@ class ProductListArguments {
     required ProductSortModel? sort,
   }) {
     return ProductListArguments._(
+      title: title,
       initialSearchQuery: initialSearchQuery,
       saleId: saleId,
       appliedCategories: [],
@@ -103,9 +109,13 @@ class _ProductListState extends ControllerState<ProductListController> {
   Display view(BuildContext context) {
     MultiProvider multiProvider = MultiProvider(
       providers: _providers,
-      child: ProductList(),
+      child: ProductList(title: _cleanUpTitle(widget.args.title)),
     );
 
     return Display(title: 'Product List', mobile: multiProvider);
+  }
+
+  String? _cleanUpTitle(String? titleString) {
+    return titleString?.replaceAll(">>>", " • ");
   }
 }

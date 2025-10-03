@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:flutter_mysale/features/main_app/models/main/banners_linkoptions_model.dart';
 import 'package:flutter_mysale/features/main_app/providers/filter_provider.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -24,6 +27,54 @@ class FacetFilterModel {
       values.add(FacetFilterValueModel(s, null));
     });
     return FacetFilterModel("skus.brandName", values);
+  }
+
+  static List<FacetFilterModel> createFromLinkOptionsFacets(Facets facets) {
+    List<FacetFilterModel> facetModels = [];
+    if (facets.brandName != null) {
+      List<FacetFilterValueModel> values = [];
+      facets.brandName!.forEach((s) {
+        values.add(FacetFilterValueModel(s, 1));
+      });
+      facetModels.add(FacetFilterModel("skus.brandName", values));
+    }
+    if (facets.colors != null) {
+      List<FacetFilterValueModel> values = [];
+      facets.colors!.forEach((s) {
+        values.add(FacetFilterValueModel(s, 1));
+      });
+      facetModels.add(FacetFilterModel("color", values));
+    }
+    if (facets.sizes != null) {
+      List<FacetFilterValueModel> values = [];
+      facets.sizes!.forEach((s) {
+        values.add(FacetFilterValueModel(s, 1));
+      });
+      facetModels.add(FacetFilterModel("skus.attributes.size", values));
+    }
+    if (facets.newArrivals != null) {
+      List<FacetFilterValueModel> values = [];
+      facets.newArrivals!.forEach((s) {
+        values.add(FacetFilterValueModel(s, 1));
+      });
+      facetModels.add(FacetFilterModel("newArrivals", values));
+    }
+    if (facets.delivery != null) {
+      List<FacetFilterValueModel> values = [];
+      facets.delivery!.forEach((s) {
+        values.add(FacetFilterValueModel(s, 1));
+      });
+      facetModels.add(FacetFilterModel("delivery", values));
+    }
+    if (facets.priceLimit != null) {
+      facetModels.add(
+        FacetFilterModel("skus.attributesForFaceting.aud", [
+          FacetFilterValueModel(jsonEncode(facets.priceLimit!.toJson()), 1),
+        ]),
+      );
+    }
+
+    return facetModels;
   }
 
   factory FacetFilterModel.fromJson(Map<String, dynamic> json) =>
@@ -59,6 +110,12 @@ class FacetFilterModel {
         .nonNulls
         .toList();
   }
+
+  @override
+  String toString() {
+    var encoder = JsonEncoder.withIndent("   ");
+    return encoder.convert(toJson());
+  }
 }
 
 @JsonSerializable()
@@ -72,4 +129,10 @@ class FacetFilterValueModel {
       _$FacetFilterValueModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$FacetFilterValueModelToJson(this);
+
+  @override
+  String toString() {
+    var encoder = JsonEncoder.withIndent("   ");
+    return encoder.convert(toJson());
+  }
 }

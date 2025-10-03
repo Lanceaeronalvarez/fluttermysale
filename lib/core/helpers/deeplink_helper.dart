@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_mysale/architect.dart';
+import 'package:flutter_mysale/features/main_app/controllers/main/shop_controller.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 
 import '../../features/main_app/app.dart';
@@ -178,6 +179,7 @@ class DeepLinkHelper {
     FacetFilterModel supplier = FacetFilterModel.createSupplierFromLocationFilterHash(locationFilterHash);
 
     ProductListArguments arguments = ProductListArguments(
+      title: locationFilterHash,
       initialSearchQuery: locationFilterHash,
       saleId: "",
       appliedCategories: [],
@@ -195,6 +197,7 @@ class DeepLinkHelper {
     String bannerId,
   ) {
     ProductListArguments arguments = ProductListArguments(
+      title: bannerTitle,
       initialSearchQuery: null,
       saleId: saleId,
       appliedCategories: [],
@@ -222,7 +225,8 @@ class DeepLinkHelper {
     String categoryName,
     String categoryIdentifier,
   ) {
-    Nav.to(context, App.home, arguments: (category: categoryIdentifier));
+    ShopArguments args = ShopArguments(title: categoryName, category: categoryIdentifier);
+    Nav.to(context, App.home, arguments: args);
   }
 
   static void _deepLinkSaleCategoryItems(
@@ -232,6 +236,7 @@ class DeepLinkHelper {
   ) {
     ProductListArguments arguments =
         ProductListArguments.withAppliedCategoryKeys(
+          title: categoryName,
           initialSearchQuery: null,
           saleId: "",
           appliedCategoryKeys: [categoryIdentifier],
@@ -251,6 +256,7 @@ class DeepLinkHelper {
     String brandId,
   ) {
     ProductListArguments arguments = ProductListArguments(
+      title: brandName,
       initialSearchQuery: null,
       saleId: "",
       appliedCategories: [],

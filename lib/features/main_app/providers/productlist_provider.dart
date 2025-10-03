@@ -134,6 +134,8 @@ class ProductListProvider extends ChangeNotifier {
       sort?.key,
     );
 
+    debugPrint("Request: " + request.toString());
+
     Response res = await _http!.get(
       ApiEndpoint.getProducts(),
       params: request.toMap(),

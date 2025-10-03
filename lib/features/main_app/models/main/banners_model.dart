@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:json_annotation/json_annotation.dart';
 
 import 'banners_linkoptions_model.dart';
@@ -101,6 +103,12 @@ class BannerModel {
       _$BannerModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$BannerModelToJson(this);
+
+  @override
+  String toString() {
+    var encoder = JsonEncoder.withIndent("   ");
+    return encoder.convert(toJson());
+  }
 }
 
 @JsonSerializable()

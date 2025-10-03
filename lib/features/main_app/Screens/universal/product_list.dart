@@ -73,6 +73,7 @@ class _FilterItem extends FilterItem {
 
 class _SortMode extends FilterItem {
   ProductSortModel sort;
+
   _SortMode({required this.sort});
 
   @override
@@ -82,9 +83,11 @@ class _SortMode extends FilterItem {
 }
 
 class ProductList extends StatefulWidget {
-  final String? title;
+  final String? _initialTitle;
 
-  const ProductList({Key? key, this.title}) : super(key: key);
+  const ProductList({Key? key, String? title})
+    : this._initialTitle = title,
+      super(key: key);
 
   @override
   State<ProductList> createState() => _ProductListState();
@@ -109,11 +112,20 @@ class _ProductListState extends State<ProductList>
   Animation<double>? _searchAndFilterTween;
   Animation<double>? _searchBoxTween;
 
+  String? _title;
+
   @override
   void initState() {
     super.initState();
     var tm = context.read<ThemeProvider>();
     dayAndNight = tm.isDarkMode;
+    _searchTextFieldController.text =
+        (Provider.of<ProductListProvider>(
+          context,
+          listen: false,
+        )).searchQuery ??
+        '';
+    _title = _searchTextFieldController.text;
     _searchAndFilterAnimationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 200),
@@ -215,6 +227,39 @@ class _ProductListState extends State<ProductList>
     );
   }
 
+  SizedBox _titleBar() {
+    String title = "";
+    if (_title != null && _title!.isNotEmpty) {
+      title = _title!;
+    } else if (widget._initialTitle != null &&
+        widget._initialTitle!.isNotEmpty) {
+      title = widget._initialTitle!;
+    }
+    if (title.isEmpty) {
+      return SizedBox();
+    } else {
+      return SizedBox(
+        width: double.infinity,
+        child: Container(
+          margin: const EdgeInsets.only(
+            left: 10.0,
+            right: 10.0,
+            top: 4.0,
+            bottom: 4.0,
+          ),
+          child: Text(
+            title,
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
   SizedBox _searchBar(ProductListProvider provider) {
     return SizedBox(
       width: double.infinity,
@@ -231,6 +276,9 @@ class _ProductListState extends State<ProductList>
             provider.resetProductList();
             provider.updateSearchQuery(val);
             provider.getProductList();
+            setState(() {
+              _title = val;
+            });
           },
         ),
       ),
@@ -241,6 +289,7 @@ class _ProductListState extends State<ProductList>
     return Column(
       children: [
         _searchBar(provider),
+        _titleBar(),
         _createFilterSection(),
         _filterBubblesDisplay(),
       ],
@@ -283,7 +332,8 @@ class _ProductListState extends State<ProductList>
             saleId: '',
             searchQuery: '',
             productTotal: pl.productList?.total ?? 0,
-            currency: '\$', // TODO JCA get currency symbol somewhere
+            currency: '\$',
+            // TODO JCA get currency symbol somewhere
             maxPrice: pl.getInitialMaxPrice() ?? 1000,
             categories: [...pl.initialProductListResponse?.categories ?? []],
             selectedCategories: [...pl.appliedCategories],

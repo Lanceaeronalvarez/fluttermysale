@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:json_annotation/json_annotation.dart';
 
 part 'productsort_model.g.dart';
@@ -11,4 +13,10 @@ class ProductSortModel {
 
   factory ProductSortModel.fromJson(Map<String, dynamic> json) => _$ProductSortModelFromJson(json);
   Map<String, dynamic> toJson() => _$ProductSortModelToJson(this);
+
+  @override
+  String toString() {
+    var encoder = JsonEncoder.withIndent("   ");
+    return encoder.convert(toJson());
+  }
 }

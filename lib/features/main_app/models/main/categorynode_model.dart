@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_mysale/features/main_app/models/main/categorybrand_model.dart';
 
 enum NodeType {
@@ -113,5 +115,11 @@ class CategoryNodeModel {
 
   NodeType? getNodeType() {
     return NodeType.parse(nodeType ?? "");
+  }
+
+  @override
+  String toString() {
+    var encoder = JsonEncoder.withIndent("   ");
+    return encoder.convert(toJson());
   }
 }

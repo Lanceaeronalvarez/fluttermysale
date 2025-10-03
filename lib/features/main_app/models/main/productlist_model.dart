@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:core';
 
 import 'package:flutter_mysale/features/main_app/models/main/categorynode_model.dart';
@@ -35,6 +36,12 @@ class GetProductListRequest {
     };
     map.removeWhere((k, v) => (v == null));
     return map;
+  }
+
+  @override
+  String toString() {
+    var encoder = JsonEncoder.withIndent("   ");
+    return encoder.convert(toMap());
   }
 }
 
