@@ -1,14 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_mysale/core/helpers/login_helper.dart';
 import 'package:flutter_mysale/core/helpers/style_helper.dart';
-import 'package:flutter_mysale/core/widgets/toast_message.dart';
 import 'package:flutter_mysale/features/main_app/providers/authentication_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:provider/provider.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 class AuthForm extends StatefulWidget {
   final String _pathCheckbox = 'assets/images/filterCheckbox.png';
@@ -16,11 +11,23 @@ class AuthForm extends StatefulWidget {
 
   final bool inCheckout;
   final bool isSignUp;
+  final Function(String email, String password) onLogin;
+  final Function(
+    String email,
+    String password,
+    String firstname,
+    String lastname,
+    bool termsAgree,
+    bool promoAgree
+  )
+  onRegister;
   final VoidCallback? onGoToGuestCheckout;
 
   AuthForm({
     required this.inCheckout,
     required this.isSignUp,
+    required this.onLogin,
+    required this.onRegister,
     this.onGoToGuestCheckout,
   });
 
@@ -31,10 +38,6 @@ class AuthForm extends StatefulWidget {
 }
 
 class _AuthFormState extends State<AuthForm> {
-  //TODO: JCA move in a config file
-  final String _recaptchaHtml = 'assets/recaptcha.html';
-  WebViewController _webController = WebViewController();
-
   ValueNotifier<bool> _isSignUp = ValueNotifier<bool>(true);
   ValueNotifier<String?> _formError = ValueNotifier<String?>(null);
   ValueNotifier<bool> _isAgreeToTermsAndPrivacy = ValueNotifier<bool>(true);
@@ -45,6 +48,8 @@ class _AuthFormState extends State<AuthForm> {
   TextEditingController _lastNameController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
+  final _termsAgree = GlobalKey<FormFieldState<bool>>();
+  final _promoAgree = GlobalKey<FormFieldState<bool>>();
 
   late final TapGestureRecognizer _termsRecognizer;
   late final TapGestureRecognizer _privacyRecognizer;
@@ -190,10 +195,7 @@ class _AuthFormState extends State<AuthForm> {
                 obscureText: true,
                 textInputAction: TextInputAction.done,
                 onFieldSubmitted: (_) {
-                  _onButtonClick(
-                    isSignupForm: isSignupForm,
-                    provider: context.read<AuthenthicationProvider>(),
-                  );
+                  _onLoginButtonClick(isSignupForm: isSignupForm);
                 },
               ),
               if (isSignupForm) _createTermsAndConditionContainer(),
@@ -290,10 +292,7 @@ class _AuthFormState extends State<AuthForm> {
           onPressed: () {
             provider.isLoading
                 ? null
-                : _onButtonClick(
-                    isSignupForm: isSignupForm,
-                    provider: provider,
-                  );
+                : _onLoginButtonClick(isSignupForm: isSignupForm);
           },
           style: appElevatedButtonStyle,
           child: provider.isLoading
@@ -306,6 +305,7 @@ class _AuthFormState extends State<AuthForm> {
 
   Widget _createTermsAndConditionContainer() {
     return FormField<bool>(
+      key: _termsAgree,
       initialValue: false,
       validator: (v) {
         _formError.value = (v ?? false)
@@ -383,6 +383,7 @@ class _AuthFormState extends State<AuthForm> {
 
   Widget _createPromotionContainer() {
     return FormField<bool>(
+      key: _promoAgree,
       initialValue: false,
       builder: (state) {
         final isChecked = state.value ?? false;
@@ -472,128 +473,25 @@ class _AuthFormState extends State<AuthForm> {
 
   //----------------------------
 
-  void _onButtonClick({
-    required bool isSignupForm,
-    required AuthenthicationProvider provider,
-  }) {
+  void _onLoginButtonClick({required bool isSignupForm}) {
     final form = _formKey.currentState!;
     if (form.validate()) {
-      _createCaptcha(isSignupForm: isSignupForm, provider: provider);
-      provider.isLoading = true;
-    } else {
-      //isShowError.value = true;
-    }
-  }
-
-  Future<void> _createCaptcha({
-    required bool isSignupForm,
-    required AuthenthicationProvider provider,
-  }) async {
-    _webController.setJavaScriptMode(JavaScriptMode.unrestricted);
-    _webController.addJavaScriptChannel(
-      'Captcha',
-      onMessageReceived: (data) {
-        if (isSignupForm) {
-          _register(data.message, provider);
-        } else {
-          _login(data.message, provider);
-        }
-        Navigator.of(context).pop();
-      },
-    );
-
-    loadHtmlAsset().then((String value) {
-      _webController.loadHtmlString(
-        value,
-        baseUrl: dotenv.get("SETTINGS_ROOT"),
-      );
-    });
-
-    showModalBottomSheet(
-      isDismissible: false,
-      backgroundColor: Colors.white,
-      isScrollControlled: true,
-      context: context,
-      builder: (BuildContext context) {
-        return SizedBox(
-          height: 700,
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.topRight,
-                child: IconButton(
-                  icon: const Icon(Icons.close, weight: 20),
-                  onPressed: () {
-                    provider.isLoading = false;
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
-              SizedBox(
-                height: 600,
-                child: WebViewWidget(controller: _webController),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Future<String> loadHtmlAsset() async {
-    String captcha = await rootBundle.loadString(_recaptchaHtml);
-    captcha = captcha.replaceAll(
-      "CAPTCHA_SITE_KEY",
-      "'${dotenv.get("FLAVOR_RECAPTCHA_SITE_KEY")}'",
-    );
-    return captcha;
-  }
-
-  void _login(String token, AuthenthicationProvider provider) {
-    provider
-        .callLoginViaEmail(
+      if (isSignupForm) {
+        widget.onRegister.call(
           _emailController.value.text,
           _passwordController.value.text,
-          token,
-        )
-        .then((data) {
-          provider.isLoading = false;
-          doAuth(
-            context,
-            _emailController.value.text,
-            _passwordController.value.text,
-          );
-          showMessage(context, 'Login Successful');
-        })
-        .catchError((error) {
-          provider.isLoading = false;
-          showMessage(context, error);
-        });
-  }
-
-  void _register(String token, AuthenthicationProvider provider) {
-    provider
-        .callRegistration(
           _firstNameController.value.text,
           _lastNameController.value.text,
+          _termsAgree.currentState?.value ?? false,
+          _promoAgree.currentState?.value ?? false
+        );
+      } else {
+        widget.onLogin.call(
           _emailController.value.text,
           _passwordController.value.text,
-          token,
-          _isAgreeToTermsAndPrivacy.value,
-          _isAgreeToReceivePromotions.value,
-        )
-        .then((data) {
-          provider.isLoading = false;
-          doAuth(
-            context,
-            _emailController.value.text,
-            _passwordController.value.text,
-          );
-          showMessage(context, 'Login Successful');
-        })
-        .catchError((error) {
-          provider.isLoading = false;
-          showMessage(context, error);
-        });
+        );
+      }
+
+    }
   }
 }
