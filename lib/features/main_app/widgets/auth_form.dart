@@ -18,7 +18,7 @@ class AuthForm extends StatefulWidget {
     String firstname,
     String lastname,
     bool termsAgree,
-    bool promoAgree
+    bool promoAgree,
   )
   onRegister;
   final VoidCallback? onGoToGuestCheckout;
@@ -296,7 +296,7 @@ class _AuthFormState extends State<AuthForm> {
           },
           style: appElevatedButtonStyle,
           child: provider.isLoading
-              ? const CircularProgressIndicator(color: Colors.black)
+              ? const CircularProgressIndicator()
               : Text((isSignupForm) ? 'Signup' : 'Sign in'),
         );
       },
@@ -483,7 +483,7 @@ class _AuthFormState extends State<AuthForm> {
           _firstNameController.value.text,
           _lastNameController.value.text,
           _termsAgree.currentState?.value ?? false,
-          _promoAgree.currentState?.value ?? false
+          _promoAgree.currentState?.value ?? false,
         );
       } else {
         widget.onLogin.call(
@@ -491,7 +491,6 @@ class _AuthFormState extends State<AuthForm> {
           _passwordController.value.text,
         );
       }
-
     }
   }
 }

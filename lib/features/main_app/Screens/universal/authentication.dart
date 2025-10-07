@@ -56,7 +56,7 @@ class _AuthenthicationState extends State<Authenthication> {
               p.isLoading = false;
             })
             .catchError((error) {
-              showMessage(context, error);
+              showMessage(context, error.toString());
               p.isLoading = false;
             });
       },
@@ -97,7 +97,7 @@ class _AuthenthicationState extends State<Authenthication> {
               p.isLoading = false;
             })
             .catchError((error) {
-              showMessage(context, error);
+              showMessage(context, error.toString());
               p.isLoading = false;
             });
       },

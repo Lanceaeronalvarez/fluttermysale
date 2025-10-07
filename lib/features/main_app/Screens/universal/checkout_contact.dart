@@ -123,9 +123,17 @@ class _CheckoutContact extends State<CheckoutContact> {
             onLogin: (email, password) {
               _login(email: email, password: password);
             },
-            onRegister: (email, password, firstname, lastname, termsAgree, promoAgree) {
-              _register(email: email, password: password, firstname: firstname, lastname: lastname, termsAgree: termsAgree, promoAgree: promoAgree);
-            },
+            onRegister:
+                (email, password, firstname, lastname, termsAgree, promoAgree) {
+                  _register(
+                    email: email,
+                    password: password,
+                    firstname: firstname,
+                    lastname: lastname,
+                    termsAgree: termsAgree,
+                    promoAgree: promoAgree,
+                  );
+                },
             onGoToGuestCheckout: () {
               _mode.value = CheckoutContactMode.guestCheckoutForm;
             },
@@ -150,7 +158,7 @@ class _CheckoutContact extends State<CheckoutContact> {
               p.isLoading = false;
             })
             .catchError((error) {
-              showMessage(context, error);
+              showMessage(context, error.toString());
               p.isLoading = false;
             });
       },
@@ -191,7 +199,7 @@ class _CheckoutContact extends State<CheckoutContact> {
               p.isLoading = false;
             })
             .catchError((error) {
-              showMessage(context, error);
+              showMessage(context, error.toString());
               p.isLoading = false;
             });
       },
