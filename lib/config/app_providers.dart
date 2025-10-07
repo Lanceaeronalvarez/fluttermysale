@@ -30,7 +30,7 @@ List<SingleChildWidget> appProviders = [
     create: (context) => CheckoutProvider(),
   ),
   ChangeNotifierProvider<AddressProvider>(
-    create: (context) => AddressProvider(),
+    create: (context) => AddressProvider(context: context),
   ),
   ChangeNotifierProvider<AuthenthicationProvider>(
     create: (context) => AuthenthicationProvider(context: context),

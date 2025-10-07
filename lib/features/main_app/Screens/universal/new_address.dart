@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mysale/architect.dart';
+import 'package:flutter_mysale/core/widgets/bottom_bar.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:provider/provider.dart';
 
@@ -8,9 +8,14 @@ import '../../models/model.dart';
 import '../../providers/address_provider.dart';
 
 class AddNewAddress extends StatefulWidget {
-  const AddNewAddress({super.key, required this.decorations});
+  const AddNewAddress({
+    super.key,
+    required this.decorations,
+    this.isWidgetOnly,
+  });
 
   final List<AddressDecoration> decorations;
+  final bool? isWidgetOnly;
 
   @override
   State<AddNewAddress> createState() => _AddNewAddressState();
@@ -24,6 +29,8 @@ class _AddNewAddressState extends State<AddNewAddress> {
   static const _surnameKey = "surname";
   static const _selectType = "select";
 
+  bool isWidgetOnly = false;
+
   @override
   void initState() {
     super.initState();
@@ -32,6 +39,10 @@ class _AddNewAddressState extends State<AddNewAddress> {
       if (key != null && key.isNotEmpty) {
         _controllers[key] = TextEditingController(text: d.value ?? "");
       }
+    }
+
+    if (widget.isWidgetOnly != null) {
+      isWidgetOnly = widget.isWidgetOnly!;
     }
   }
 
@@ -45,23 +56,25 @@ class _AddNewAddressState extends State<AddNewAddress> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _createAppBar(),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: _createForm(),
+    return isWidgetOnly
+        ? Column(children: [_createForm(), _createBottomActionBar()])
+        : Scaffold(
+            appBar: _createAppBar(),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: _createForm(),
+                    ),
+                  ),
+                  _createBottomActionBar(),
+                ],
               ),
             ),
-            _createBottomActionBar(),
-          ],
-        ),
-      ),
-      bottomNavigationBar: BottomBar(),
-    );
+            bottomNavigationBar: BottomBar(),
+          );
   }
 
   PreferredSizeWidget _createAppBar() {
@@ -93,7 +106,13 @@ class _AddNewAddressState extends State<AddNewAddress> {
   Widget _createForm() {
     return Form(
       key: _formKey,
-      child: ListView(children: _createFormFields()),
+      child: ListView(
+        shrinkWrap: isWidgetOnly ? true : false,
+        physics: isWidgetOnly
+            ? const NeverScrollableScrollPhysics()
+            : const AlwaysScrollableScrollPhysics(),
+        children: _createFormFields(),
+      ),
     );
   }
 
