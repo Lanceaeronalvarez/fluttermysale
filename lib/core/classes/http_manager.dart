@@ -63,6 +63,8 @@ class HttpManager {
     debugPrint("Start GET Request");
     Response? response;
     try {
+      cookieJar = await _initializePersistentCookieJar();
+      _dio.interceptors.add(CookieManager(cookieJar));
       debugPrint("Try GET Request");
       response = await _dio.get(
         url,
@@ -121,6 +123,8 @@ class HttpManager {
   }) async {
     Response? response;
     try {
+      cookieJar = await _initializePersistentCookieJar();
+      _dio.interceptors.add(CookieManager(cookieJar));
       response = await _dio.put(
         url,
         data: data,
@@ -148,6 +152,8 @@ class HttpManager {
   }) async {
     Response? response;
     try {
+      cookieJar = await _initializePersistentCookieJar();
+      _dio.interceptors.add(CookieManager(cookieJar));
       response = await _dio.patch(
         url,
         data: data,
@@ -173,6 +179,8 @@ class HttpManager {
   }) async {
     Response? response;
     try {
+      cookieJar = await _initializePersistentCookieJar();
+      _dio.interceptors.add(CookieManager(cookieJar));
       response = await _dio.delete(
         url,
         data: data,
