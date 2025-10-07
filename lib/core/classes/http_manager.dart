@@ -17,7 +17,7 @@ class HttpManager {
   final Dio _dio = Dio();
   var cookieJar = CookieJar();
 
-  Future<PersistCookieJar> initializePersistentCookieJar() async {
+  Future<PersistCookieJar> _initializePersistentCookieJar() async {
     final appDocDir = await getApplicationDocumentsDirectory();
     final appDocPath = appDocDir.path;
     return PersistCookieJar(storage: FileStorage('$appDocPath/.cookies/'));
@@ -92,7 +92,7 @@ class HttpManager {
   }) async {
     Response? response;
     try {
-      cookieJar = await initializePersistentCookieJar();
+      cookieJar = await _initializePersistentCookieJar();
       _dio.interceptors.add(CookieManager(cookieJar));
       response = await _dio.post(
         url,
