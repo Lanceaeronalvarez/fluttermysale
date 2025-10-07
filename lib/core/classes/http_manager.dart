@@ -1,19 +1,38 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 
 class Http extends HttpManager {
   Http({String? baseUrl, Map<String, dynamic>? headers})
-      : super(baseUrl!, headers!);
+    : super(baseUrl!, headers!);
 }
 
 class HttpManager {
   final Dio _dio = Dio();
+  var cookieJar = CookieJar();
+
+  Future<PersistCookieJar> initializePersistentCookieJar() async {
+    final appDocDir = await getApplicationDocumentsDirectory();
+    final appDocPath = appDocDir.path;
+    return PersistCookieJar(storage: FileStorage('$appDocPath/.cookies/'));
+  }
 
   HttpManager([String baseUrl = '', Map<String, dynamic>? headers]) {
+    _dio.interceptors.add(
+      LogInterceptor(
+        request: true,
+        requestBody: true,
+        requestHeader: true,
+        responseHeader: true,
+        responseBody: true,
+      ),
+    );
     _dio.options.baseUrl = baseUrl;
     _dio.options.headers = headers;
 
@@ -27,10 +46,10 @@ class HttpManager {
     if (!kIsWeb) {
       (_dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
           (HttpClient client) {
-        client.badCertificateCallback =
-            (X509Certificate cert, String host, int port) => true;
-        return client;
-      };      
+            client.badCertificateCallback =
+                (X509Certificate cert, String host, int port) => true;
+            return client;
+          };
     }
   }
 
@@ -73,6 +92,8 @@ class HttpManager {
   }) async {
     Response? response;
     try {
+      cookieJar = await initializePersistentCookieJar();
+      _dio.interceptors.add(CookieManager(cookieJar));
       response = await _dio.post(
         url,
         data: data,
@@ -83,8 +104,8 @@ class HttpManager {
         onSendProgress: sendProgress,
       );
       return response;
-    } catch (e) {
-      log(e.toString());
+    } on DioException catch (e) {
+      log(e.response!.data.toString());
     }
     return response!;
   }
@@ -362,13 +383,16 @@ class HttpManager {
     return response!;
   }
 
-  Future<Response> downloadUri(Uri uri, dynamic savePath,
-      {dynamic data,
-      Options? options,
-      CancelToken? cancelToken,
-      void Function(int progress, int total)? receiveProgress,
-      bool deleteOnError = true,
-      String lengthHeader = Headers.contentLengthHeader}) async {
+  Future<Response> downloadUri(
+    Uri uri,
+    dynamic savePath, {
+    dynamic data,
+    Options? options,
+    CancelToken? cancelToken,
+    void Function(int progress, int total)? receiveProgress,
+    bool deleteOnError = true,
+    String lengthHeader = Headers.contentLengthHeader,
+  }) async {
     Response? response;
     try {
       response = await _dio.downloadUri(
