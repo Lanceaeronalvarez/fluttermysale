@@ -92,3 +92,23 @@ class AddressDecoration {
 
   Map<String, dynamic> toJson() => _$AddressDecorationToJson(this);
 }
+
+@JsonSerializable()
+class ApplyAddressRequest {
+  final String? countryID;
+  final String? languageID;
+  final String? imageSize;
+  final String? deliveryAddressID;
+
+  ApplyAddressRequest({
+    this.countryID,
+    this.languageID,
+    this.imageSize,
+    this.deliveryAddressID,
+  });
+
+  factory ApplyAddressRequest.fromJson(Map<String, dynamic> json) =>
+      _$ApplyAddressRequestFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ApplyAddressRequestToJson(this);
+}

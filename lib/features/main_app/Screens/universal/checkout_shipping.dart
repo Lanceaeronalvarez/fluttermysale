@@ -22,6 +22,8 @@ class _CheckoutShipping extends State<CheckoutShipping> {
 
   bool isLoggedIn = false;
 
+  AddressItem? selectedAddress;
+
   BoxDecoration _tileBackground = BoxDecoration(
     borderRadius: BorderRadius.circular(20),
     color: Colors.white,
@@ -68,26 +70,27 @@ class _CheckoutShipping extends State<CheckoutShipping> {
 
   Widget _createDisplayAddress(AddressProvider provider) {
     //Currently using first address. Will change once get cart details is implemented
-    AddressItem address = provider.addresses[0];
+    selectedAddress ??= provider.addresses[0];
     return Stack(
       children: [
-        _createAddressTile(address, null),
-        _createChangeAddressButton(),
+        _createAddressTile(selectedAddress!, null),
+        _createChangeAddressButton(provider),
       ],
     );
   }
 
   Widget _createAddressTile(AddressItem address, VoidCallback? ontap) {
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      padding: const EdgeInsets.all(10),
-      margin: EdgeInsets.only(bottom: 10),
-      decoration: _tileBackground,
-      child: GestureDetector(
-        onTap: () {
-          ontap != null ? ontap() : null;
-        },
+    return GestureDetector(
+      onTap: () {
+        ontap != null ? ontap() : null;
+      },
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        padding: const EdgeInsets.all(10),
+        margin: EdgeInsets.only(bottom: 10),
+        decoration: _tileBackground,
         child: Column(
+          mainAxisSize: MainAxisSize.max,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -108,11 +111,13 @@ class _CheckoutShipping extends State<CheckoutShipping> {
     );
   }
 
-  Widget _createChangeAddressButton() {
+  Widget _createChangeAddressButton(AddressProvider provider) {
     return Padding(
       padding: EdgeInsetsGeometry.all(10),
       child: GestureDetector(
-        onTap: () {},
+        onTap: () {
+          provider.mode.value = CheckoutShippingMode.list;
+        },
         child: Align(
           alignment: Alignment.topRight,
           child: Text(
@@ -144,7 +149,9 @@ class _CheckoutShipping extends State<CheckoutShipping> {
               ),
             ),
             GestureDetector(
-              onTap: () {},
+              onTap: () {
+                provider.mode.value = CheckoutShippingMode.add;
+              },
               child: Text(
                 "Add New Address",
                 style: TextStyle(
@@ -164,7 +171,10 @@ class _CheckoutShipping extends State<CheckoutShipping> {
           physics: NeverScrollableScrollPhysics(),
           itemCount: provider.addresses.length,
           itemBuilder: (context, index) =>
-              _createAddressTile(provider.addresses[index], () {}),
+              _createAddressTile(provider.addresses[index], () {
+                provider.mode.value = CheckoutShippingMode.view;
+                selectedAddress = provider.addresses[index];
+              }),
         ),
       ],
     );
@@ -236,6 +246,25 @@ class _CheckoutShipping extends State<CheckoutShipping> {
     );
   }
 
+  Widget _createCheckoutContactSection(AddressProvider provider) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: ValueListenableBuilder(
+        valueListenable: provider.mode,
+        builder: (_, value, _) {
+          switch (value) {
+            case CheckoutShippingMode.add:
+              return _createAddAddress(provider);
+            case CheckoutShippingMode.view:
+              return _createDisplayAddress(provider);
+            case CheckoutShippingMode.list:
+              return _createAddressList(provider);
+          }
+        },
+      ),
+    );
+  }
+
   Widget _createCheckoutShippingSection() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -254,9 +283,7 @@ class _CheckoutShipping extends State<CheckoutShipping> {
                 ),
               ),
               SizedBox(height: 20),
-              provider.addresses.isNotEmpty
-                  ? _createDisplayAddress(provider)
-                  : _createAddAddress(provider),
+              _createCheckoutContactSection(provider),
             ],
           );
         },

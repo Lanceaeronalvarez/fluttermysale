@@ -7,14 +7,21 @@ import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
 
 import '../models/model.dart';
 
+enum CheckoutShippingMode { add, view, list }
+
 class AddressProvider extends ChangeNotifier {
   List<AddressItem> addresses = [];
   List<AddressDecoration> decorations = [];
+  String addressId = "";
   bool isLoading = false;
   AddressItem? selectedAddress;
   BuildContext context;
   late UserAgentHelper _userAgentHelper;
   AppHttp? _http;
+
+  ValueNotifier<CheckoutShippingMode> mode = ValueNotifier(
+    CheckoutShippingMode.add,
+  );
 
   AddressProvider({required this.context}) {
     _userAgentHelper = UserAgentHelper.shared;
@@ -42,7 +49,9 @@ class AddressProvider extends ChangeNotifier {
 
       addresses = parsed.addresses ?? [];
       decorations = parsed.addressDecorations ?? [];
-
+      if (addresses.isNotEmpty) {
+        mode.value = CheckoutShippingMode.view;
+      }
       isLoading = false;
       notifyListeners();
     }
@@ -189,15 +198,47 @@ class AddressProvider extends ChangeNotifier {
     // notifyListeners();
   }
 
-  Future<void> postAddress(AddressItem newAddress) async {
+  Future<void> postAddress(String jsonEncode) async {
     isLoading = true;
     notifyListeners();
 
-    await Future.delayed(const Duration(seconds: 1));
-    addresses.add(newAddress);
+    final userAgent = await _userAgentHelper.userAgent;
+    _http ??= AppHttp(
+      baseUrl: dotenv.get("SETTINGS_ROOT"),
+      headers: {'User-Agent': userAgent},
+    );
 
-    isLoading = false;
+    Response res = await _http!.put(
+      ApiEndpoint.setUserDeliveryAddress(),
+      data: jsonEncode,
+    );
+
+    if (res.statusCode == 200 && res.statusCode != 429) {
+      addressId = "$res";
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> applyAddress(ApplyAddressRequest request) async {
+    isLoading = true;
     notifyListeners();
+
+    final userAgent = await _userAgentHelper.userAgent;
+    _http ??= AppHttp(
+      baseUrl: dotenv.get("SETTINGS_ROOT"),
+      headers: {'User-Agent': userAgent},
+    );
+
+    Response res = await _http!.post(
+      ApiEndpoint.applyDeliveryAddress(),
+      data: request,
+    );
+
+    if (res.statusCode == 200 && res.statusCode != 429) {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
   void selectAddress(AddressItem addr) {

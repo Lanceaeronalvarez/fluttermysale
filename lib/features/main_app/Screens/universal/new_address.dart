@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_mysale/core/widgets/bottom_bar.dart';
+import 'package:flutter_mysale/core/widgets/toast_message.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:provider/provider.dart';
 
@@ -30,6 +34,10 @@ class _AddNewAddressState extends State<AddNewAddress> {
   static const _selectType = "select";
 
   bool isWidgetOnly = false;
+
+  AddressItem newAddress = new AddressItem();
+  Map<String, dynamic> myAddress = {};
+  String dropdownValue = "";
 
   @override
   void initState() {
@@ -134,7 +142,11 @@ class _AddNewAddressState extends State<AddNewAddress> {
         items: decoration.options!
             .map((opt) => DropdownMenuItem(value: opt, child: Text(opt)))
             .toList(),
-        onChanged: decoration.readOnly == true ? null : (val) {},
+        onChanged: decoration.readOnly == true
+            ? null
+            : (val) {
+                dropdownValue = val!;
+              },
         validator: (value) => _validate(value, decoration),
       ),
     );
@@ -181,13 +193,18 @@ class _AddNewAddressState extends State<AddNewAddress> {
         return _createActionButton(
           label: provider.isLoading ? "SAVING..." : "SAVE",
           onTap: () {
-            if (!provider.isLoading) {
-              if (_formKey.currentState!.validate()) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Saving address...")),
-                );
-                // TODO: call your provider or API to save the address
+            for (final d in widget.decorations) {
+              final key = d.name?.toLowerCase();
+              if (key != null) {
+                if (key == "addresslines") {
+                  myAddress["address_lines"] = _controllers[key]?.text;
+                } else if (key == "state") {
+                  myAddress[key] = dropdownValue;
+                } else {
+                  myAddress[key] = _controllers[key]?.text;
+                }
               }
+              _saveAddress(provider);
             }
           },
           decoration: appPrimaryButtonBoxDecoration,
@@ -212,6 +229,45 @@ class _AddNewAddressState extends State<AddNewAddress> {
         fontWeight: FontWeight.bold,
       ),
     );
+  }
+
+  void _saveAddress(AddressProvider provider) {
+    if (!provider.isLoading) {
+      if (_formKey.currentState!.validate()) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Saving address...")));
+        provider
+            .postAddress(jsonEncode(myAddress))
+            .then((data) {
+              provider.isLoading = false;
+              ApplyAddressRequest request = ApplyAddressRequest(
+                countryID: dotenv.get("SETTINGS_COUNTRY_ID"),
+                languageID: dotenv.get("SETTINGS_LANGUAGE_ID"),
+                imageSize: "100",
+                deliveryAddressID: provider.addressId,
+              );
+              _applyAddress(provider, request);
+            })
+            .catchError((error) {
+              provider.isLoading = false;
+              showMessage(context, error);
+            });
+      }
+    }
+  }
+
+  void _applyAddress(AddressProvider provider, ApplyAddressRequest request) {
+    provider
+        .applyAddress(request)
+        .then((data) {
+          provider.isLoading = false;
+          showMessage(context, 'Address Added Successfully');
+        })
+        .catchError((error) {
+          provider.isLoading = false;
+          showMessage(context, error);
+        });
   }
 
   String? _validate(String? value, AddressDecoration d) {
