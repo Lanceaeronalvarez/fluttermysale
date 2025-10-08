@@ -15,12 +15,17 @@ class Http extends HttpManager {
 
 class HttpManager {
   final Dio _dio = Dio();
-  var cookieJar = CookieJar();
 
-  Future<PersistCookieJar> _initializePersistentCookieJar() async {
-    final appDocDir = await getApplicationDocumentsDirectory();
-    final appDocPath = appDocDir.path;
-    return PersistCookieJar(storage: FileStorage('$appDocPath/.cookies/'));
+  PersistCookieJar? cookieJar;
+  Future<void> _initializePersistentCookieJar() async {
+    if (cookieJar == null) {
+      final appDocDir = await getApplicationDocumentsDirectory();
+      final appDocPath = appDocDir.path;
+      cookieJar = PersistCookieJar(
+        storage: FileStorage('$appDocPath/.cookies/'),
+      );
+      _dio.interceptors.add(CookieManager(cookieJar!));
+    }
   }
 
   HttpManager([String baseUrl = '', Map<String, dynamic>? headers]) {
@@ -63,8 +68,7 @@ class HttpManager {
     debugPrint("Start GET Request");
     Response? response;
     try {
-      cookieJar = await _initializePersistentCookieJar();
-      _dio.interceptors.add(CookieManager(cookieJar));
+      await _initializePersistentCookieJar();
       debugPrint("Try GET Request");
       response = await _dio.get(
         url,
@@ -94,8 +98,7 @@ class HttpManager {
   }) async {
     Response? response;
     try {
-      cookieJar = await _initializePersistentCookieJar();
-      _dio.interceptors.add(CookieManager(cookieJar));
+      await _initializePersistentCookieJar();
       response = await _dio.post(
         url,
         data: data,
@@ -123,8 +126,7 @@ class HttpManager {
   }) async {
     Response? response;
     try {
-      cookieJar = await _initializePersistentCookieJar();
-      _dio.interceptors.add(CookieManager(cookieJar));
+      await _initializePersistentCookieJar();
       response = await _dio.put(
         url,
         data: data,
@@ -152,8 +154,7 @@ class HttpManager {
   }) async {
     Response? response;
     try {
-      cookieJar = await _initializePersistentCookieJar();
-      _dio.interceptors.add(CookieManager(cookieJar));
+      await _initializePersistentCookieJar();
       response = await _dio.patch(
         url,
         data: data,
@@ -179,8 +180,7 @@ class HttpManager {
   }) async {
     Response? response;
     try {
-      cookieJar = await _initializePersistentCookieJar();
-      _dio.interceptors.add(CookieManager(cookieJar));
+      await _initializePersistentCookieJar();
       response = await _dio.delete(
         url,
         data: data,
