@@ -40,11 +40,23 @@ class _ShopState extends State<Shop> {
     super.initState();
     var tm = context.read<ThemeProvider>();
     dayAndNight = tm.isDarkMode;
-    (Provider.of<SlidingBannersProvider>(context, listen: false)).getSlidingBanners();
+    (Provider.of<SlidingBannersProvider>(
+      context,
+      listen: false,
+    )).getSlidingBanners();
     (Provider.of<ShopBannersProvider>(context, listen: false)).getShopBanners();
-    (Provider.of<SponsoredBannersProvider>(context, listen: false)).getSponsoredBanners();
-    (Provider.of<LeaderboardBannerProvider>(context, listen: false)).getleaderboardBanners("MobileBrowser");
-    (Provider.of<TrendingBrandsProvider>(context, listen: false)).getTrendingBrands();
+    (Provider.of<SponsoredBannersProvider>(
+      context,
+      listen: false,
+    )).getSponsoredBanners();
+    (Provider.of<LeaderboardBannerProvider>(
+      context,
+      listen: false,
+    )).getleaderboardBanners("MobileBrowser");
+    (Provider.of<TrendingBrandsProvider>(
+      context,
+      listen: false,
+    )).getTrendingBrands();
     (Provider.of<BestSellersProvider>(context, listen: false)).getBestSellers();
   }
 
@@ -88,14 +100,11 @@ class _ShopState extends State<Shop> {
         actions: [
           IconButton(
             onPressed: () {
-              ProductListArguments args = ProductListArguments(
-                saleId: '',
-                appliedCategories: [],
-                appliedFilters: [],
-                sort: null,
-                originCategory: null,
+              Nav.toNamed(
+                context,
+                App.productList,
+                arguments: ProductListArguments.willOnlyShowSearchBox(),
               );
-              Nav.toNamed(context, App.productList, arguments: args);
             },
             icon: const Icon(Icons.search),
           ),

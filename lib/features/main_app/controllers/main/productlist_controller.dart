@@ -10,6 +10,8 @@ import '../../../../core/core.dart';
 import '../../providers/productlist_provider.dart';
 
 class ProductListArguments {
+  bool willShowSearchBox;
+  String? title;
   String? initialSearchQuery;
   String saleId;
   List<CategoryNodeModel> appliedCategories;
@@ -19,6 +21,8 @@ class ProductListArguments {
   CategoryNodeModel? originCategory;
 
   ProductListArguments._({
+    required this.willShowSearchBox,
+    this.title,
     this.initialSearchQuery,
     required this.saleId,
     required this.appliedCategories,
@@ -29,6 +33,7 @@ class ProductListArguments {
   });
 
   factory ProductListArguments({
+    String? title,
     String? initialSearchQuery,
     required String saleId,
     required List<CategoryNodeModel> appliedCategories,
@@ -37,6 +42,9 @@ class ProductListArguments {
     required CategoryNodeModel? originCategory,
   }) {
     return ProductListArguments._(
+      willShowSearchBox:
+          initialSearchQuery != null && initialSearchQuery.isNotEmpty,
+      title: title,
       initialSearchQuery: initialSearchQuery,
       saleId: saleId,
       appliedCategories: appliedCategories,
@@ -47,6 +55,7 @@ class ProductListArguments {
   }
 
   factory ProductListArguments.withAppliedCategoryKeys({
+    String? title,
     String? initialSearchQuery,
     required String saleId,
     required List<String> appliedCategoryKeys,
@@ -54,12 +63,29 @@ class ProductListArguments {
     required ProductSortModel? sort,
   }) {
     return ProductListArguments._(
+      willShowSearchBox:
+          initialSearchQuery != null && initialSearchQuery.isNotEmpty,
+      title: title,
       initialSearchQuery: initialSearchQuery,
       saleId: saleId,
       appliedCategories: [],
       appliedCategoryKeys: appliedCategoryKeys,
       appliedFilters: appliedFilters,
       sort: sort,
+      originCategory: null,
+    );
+  }
+
+  factory ProductListArguments.willOnlyShowSearchBox({
+    String? initialSearchQuery,
+  }) {
+    return ProductListArguments._(
+      willShowSearchBox: true,
+      initialSearchQuery: initialSearchQuery,
+      saleId: '',
+      appliedCategories: [],
+      appliedFilters: [],
+      sort: null,
       originCategory: null,
     );
   }
@@ -103,9 +129,16 @@ class _ProductListState extends ControllerState<ProductListController> {
   Display view(BuildContext context) {
     MultiProvider multiProvider = MultiProvider(
       providers: _providers,
-      child: ProductList(),
+      child: ProductList(
+        title: _cleanUpTitle(widget.args.title),
+        willShowSearchBoxOnOpen: widget.args.willShowSearchBox,
+      ),
     );
 
     return Display(title: 'Product List', mobile: multiProvider);
+  }
+
+  String? _cleanUpTitle(String? titleString) {
+    return titleString?.replaceAll(">>>", " • ");
   }
 }
