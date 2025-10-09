@@ -15,7 +15,12 @@ class AuthenthicationProvider extends ChangeNotifier {
   late UserAgentHelper _userAgentHelper;
   AppHttp? _http;
 
-  bool isLoading = false;
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+  set isLoading(bool isLoading) {
+    _isLoading = isLoading;
+    notifyListeners();
+  }
   bool? isSuccess;
 
   AuthenthicationProvider({required this.context}) {
