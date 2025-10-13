@@ -27,12 +27,14 @@ List<SingleChildWidget> appProviders = [
     create: (context) => CategoryTreeProvider(context: context),
   ),
   ChangeNotifierProvider<CheckoutProvider>(
+    lazy: false,
     create: (context) => CheckoutProvider(),
   ),
   ChangeNotifierProvider<AddressProvider>(
     create: (context) => AddressProvider(),
   ),
   ChangeNotifierProvider<AuthenthicationProvider>(
-    create: (context) => AuthenthicationProvider(context: context),
+    lazy: false,
+    create: (context) => AuthenthicationProvider(),
   ),
 ];

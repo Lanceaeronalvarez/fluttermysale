@@ -27,6 +27,7 @@ class App extends RouteManager {
   static const String checkout = '${App.name}/checkout)';
   static const String address = '${App.name}/address';
   static const String newAddress = '${App.name}/newaddress';
+  static const String accountMenu = '${App.name}/accountmenu';
 
   //not added on routes, navigation handled in MaterialApp onGenerateRoute since this have a custom transition
   static const String addToCart = '${App.name}/addToCart';
@@ -63,6 +64,9 @@ class App extends RouteManager {
       AddressArguments args =
           (ModalRoute.of(context)?.settings.arguments as AddressArguments);
       return NewAddressController(args: args);
+    });
+    addRoute(App.accountMenu, (context) {
+      return AccountMenuController();
     });
   }
 }

@@ -63,29 +63,61 @@ Map<String, dynamic> _$RegisterRequestToJson(RegisterRequest instance) =>
     };
 
 LoginResponse _$LoginResponseFromJson(Map<String, dynamic> json) =>
-    LoginResponse(
-      json['d'] == null
-          ? null
-          : LoginResponseValue.fromJson(json['d'] as Map<String, dynamic>),
-    );
+    $checkedCreate('LoginResponse', json, ($checkedConvert) {
+      final val = LoginResponse(
+        $checkedConvert(
+          'd',
+          (v) => v == null
+              ? null
+              : LoginResponseValue.fromJson(v as Map<String, dynamic>),
+        ),
+      );
+      return val;
+    });
 
 Map<String, dynamic> _$LoginResponseToJson(LoginResponse instance) =>
     <String, dynamic>{'d': instance.d};
 
 LoginResponseValue _$LoginResponseValueFromJson(Map<String, dynamic> json) =>
-    LoginResponseValue(
-      json['Value'] == null
-          ? null
-          : Value.fromJson(json['Value'] as Map<String, dynamic>),
+    $checkedCreate(
+      'LoginResponseValue',
+      json,
+      ($checkedConvert) {
+        final val = LoginResponseValue(
+          isAuthenticated: $checkedConvert('IsAuthenticated', (v) => v as bool),
+          result: $checkedConvert('Result', (v) => v as bool),
+          message: $checkedConvert('Message', (v) => v as String?),
+          value: $checkedConvert(
+            'Value',
+            (v) => v == null ? null : Value.fromJson(v as Map<String, dynamic>),
+          ),
+        );
+        return val;
+      },
+      fieldKeyMap: const {
+        'isAuthenticated': 'IsAuthenticated',
+        'result': 'Result',
+        'message': 'Message',
+        'value': 'Value',
+      },
     );
 
 Map<String, dynamic> _$LoginResponseValueToJson(LoginResponseValue instance) =>
-    <String, dynamic>{'Value': instance.value};
+    <String, dynamic>{
+      'IsAuthenticated': instance.isAuthenticated,
+      'Result': instance.result,
+      'Message': instance.message,
+      'Value': instance.value,
+    };
 
-Value _$ValueFromJson(Map<String, dynamic> json) => Value(
-  Ticket: json['Ticket'] as String?,
-  ReadTerms: json['ReadTerms'] as bool?,
-);
+Value _$ValueFromJson(Map<String, dynamic> json) =>
+    $checkedCreate('Value', json, ($checkedConvert) {
+      final val = Value(
+        Ticket: $checkedConvert('Ticket', (v) => v as String?),
+        ReadTerms: $checkedConvert('ReadTerms', (v) => v as bool?),
+      );
+      return val;
+    });
 
 Map<String, dynamic> _$ValueToJson(Value instance) => <String, dynamic>{
   'Ticket': instance.Ticket,

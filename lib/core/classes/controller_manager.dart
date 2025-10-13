@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter_mysale/features/main_app/providers/authentication_provider.dart';
+import 'package:provider/provider.dart';
 
 import '../../config/config.dart';
 import '../core.dart';
@@ -7,7 +10,7 @@ import '../core.dart';
 abstract class StatelessController extends StatelessWidget {
   const StatelessController({Key? key}) : super(key: key);
 
-  bool get auth => false;
+  bool get shouldCheckAuthentication => false;
 
   String get loginUrl => ApiEndpoint.appLoginUrl;
 
@@ -15,7 +18,7 @@ abstract class StatelessController extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    checkLogin(context, auth: auth, loginUrl: loginUrl);
+    shouldNavigateToLogin(context, shouldCheckAuthentication);
     return view(context);
   }
 }
@@ -26,7 +29,7 @@ abstract class StatefulController extends StatefulWidget {
 }
 
 abstract class ControllerState<T extends StatefulController> extends State<T> {
-  bool get auth => false;
+  bool get shouldCheckAuthentication => false;
 
   String get loginUrl => ApiEndpoint.appLoginUrl;
 
@@ -34,7 +37,7 @@ abstract class ControllerState<T extends StatefulController> extends State<T> {
 
   @override
   Widget build(BuildContext context) {
-    checkLogin(context, auth: auth, loginUrl: loginUrl);
+    shouldNavigateToLogin(context, shouldCheckAuthentication);
     return view(context);
   }
 }

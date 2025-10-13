@@ -7,13 +7,12 @@ import 'package:flutter_mysale/config/api_endpoints.dart';
 import 'package:flutter_mysale/config/app_cache.dart';
 import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
 import 'package:flutter_mysale/features/main_app/models/main/authentication_model.dart';
+import 'package:flutter_mysale/features/main_app/models/main/user_model.dart';
 
 import '../../../config/app_http.dart';
 
 class AuthenthicationProvider extends ChangeNotifier {
-  BuildContext context;
-  late UserAgentHelper _userAgentHelper;
-  AppHttp? _http;
+  Future<AppHttp> _http;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -21,24 +20,107 @@ class AuthenthicationProvider extends ChangeNotifier {
     _isLoading = isLoading;
     notifyListeners();
   }
-  bool? isSuccess;
 
-  AuthenthicationProvider({required this.context}) {
-    _userAgentHelper = UserAgentHelper.shared;
+  AuthenthicationProvider._(this._http);
+  factory AuthenthicationProvider() {
+    Future<AppHttp> _createHttp() async {
+      String userAgent = await UserAgentHelper.shared.userAgent;
+      return AppHttp(
+        baseUrl: dotenv.get("SETTINGS_ROOT"),
+        headers: {'User-Agent': userAgent},
+      );
+    }
+
+    final p = AuthenthicationProvider._(_createHttp());
+
+    AppCache().loginTicket.then((loginTicket) {
+      if (loginTicket != null && loginTicket.isNotEmpty) {
+        p.callLoginTicket();
+      } else {
+        debugPrint('no login ticket');
+      }
+    });
+
+    return p;
   }
 
-  Future<String?> callLoginViaEmail(
+  Future<void> _saveLoginTicket(AppCache ac, String? loginTicket) async {
+    await ac.setLoginTicket(loginTicket);
+  }
+
+  Future<void> _saveUser(AppCache ac, User? user) async {
+    await ac.setUser(user);
+  }
+
+  Future<void> callUserDetails() async {
+    isLoading = true;
+
+    AppHttp http = await _http;
+    Response res = await http.post(ApiEndpoint.loadUserDetails(), data: {});
+
+    if (res.statusCode == 200) {
+      User user = User.fromJson(jsonDecode(res.toString()));
+      await _saveUser(AppCache(), user);
+    }
+
+    isLoading = false;
+  }
+
+  Future<void> callLogout() async {
+    isLoading = true;
+
+    AppHttp http = await _http;
+    Response res = await http.post(ApiEndpoint.logout(), data: {});
+
+    if (res.statusCode == 200) {
+      final ac = AppCache();
+      await _saveLoginTicket(ac, null);
+      await _saveUser(ac, null);
+    }
+
+    isLoading = false;
+  }
+
+  Future<String?> callLoginTicket() async {
+    isLoading = true;
+
+    AppCache ac = AppCache();
+    String loginTicket = await ac.loginTicket ?? '';
+
+    AppHttp http = await _http;
+
+    Map<String, String> request = {
+      'ticket': loginTicket,
+      'countryID': dotenv.get("SETTINGS_COUNTRY_ID"),
+    };
+
+    Response res = await http.post(ApiEndpoint.loginTicket(), data: request);
+
+    if (res.statusCode == 200) {
+      LoginResponse response = LoginResponse.fromJson(
+        jsonDecode(res.toString()),
+      );
+
+      String? loginTicket = response.d?.value?.Ticket;
+      await _saveLoginTicket(ac, loginTicket);
+
+      await _postLogin();
+    }
+
+    isLoading = false;
+    return ac.loginTicket;
+  }
+
+  Future<(bool, String)> callLoginViaEmail(
     String email,
     String password,
     String token,
   ) async {
     isLoading = true;
 
-    final userAgent = await _userAgentHelper.userAgent;
-    _http ??= AppHttp(
-      baseUrl: dotenv.get("SETTINGS_ROOT"),
-      headers: {'User-Agent': userAgent},
-    );
+    AppCache ac = AppCache();
+    String message = '';
+    bool isSuccessful = false;
 
     LoginEmailRequest request = LoginEmailRequest(
       countryID: dotenv.get("SETTINGS_COUNTRY_ID"),
@@ -49,29 +131,36 @@ class AuthenthicationProvider extends ChangeNotifier {
       clientID: 1,
     );
 
-    Response res = await _http!.post(
+    AppHttp http = await _http;
+    Response res = await http.post(
       ApiEndpoint.loginEmail(),
       data: request.toJson(),
     );
 
-    if (res.statusCode == 200 && res.statusCode != 429) {
+    if (res.statusCode == 200) {
       isLoading = false;
 
       LoginResponse response = LoginResponse.fromJson(
         jsonDecode(res.toString()),
       );
 
-      String _loginTicket = response.d!.value!.Ticket!;
+      bool isAuthenticated = response.d?.isAuthenticated ?? false;
+      bool result = response.d?.result ?? false;
+      message = response.d?.message ?? '';
+      if (isAuthenticated && result) {
+        String? loginTicket = response.d?.value?.Ticket;
+        await _saveLoginTicket(ac, loginTicket);
+        isSuccessful = true;
 
-      AppCache ac = AppCache();
-      ac.saveLoginTicket(_loginTicket);
-
-      notifyListeners();
-      return _loginTicket;
+        await _postLogin();
+      }
     }
+
+    isLoading = false;
+    return (isSuccessful, message);
   }
 
-  Future<String?> callRegistration(
+  Future<(bool, String)> callRegistration(
     String firstname,
     String lastname,
     String email,
@@ -81,12 +170,10 @@ class AuthenthicationProvider extends ChangeNotifier {
     bool emailsAccepted,
   ) async {
     isLoading = true;
+    bool isSuccessful = true;
+    String message = '';
 
-    final userAgent = await _userAgentHelper.userAgent;
-    _http ??= AppHttp(
-      baseUrl: dotenv.get("SETTINGS_ROOT"),
-      headers: {'User-Agent': userAgent},
-    );
+    AppCache ac = AppCache();
 
     Map<String, bool> parameters = {
       "tcAccepted": tcAccepted,
@@ -109,25 +196,47 @@ class AuthenthicationProvider extends ChangeNotifier {
       voucherID: "00000000-0000-0000-0000-000000000000",
     );
 
-    Response res = await _http!.post(
+    AppHttp http = await _http;
+    Response res = await http.post(
       ApiEndpoint.registration(),
       data: request.toJson(),
     );
 
-    if (res.statusCode == 200 && res.statusCode != 429) {
-      isLoading = false;
-
+    if (res.statusCode == 200) {
       LoginResponse response = LoginResponse.fromJson(
         jsonDecode(res.toString()),
       );
 
-      String _loginTicket = response.d!.value!.Ticket!;
+      bool isAuthenticated = response.d?.isAuthenticated ?? false;
+      bool result = response.d?.result ?? false;
+      message = response.d?.message ?? '';
+      if (isAuthenticated && result) {
+        String? loginTicket = response.d?.value?.Ticket;
+        await _saveLoginTicket(ac, loginTicket);
+        isSuccessful = true;
 
-      AppCache ac = AppCache();
-      ac.saveLoginTicket(_loginTicket);
-
-      notifyListeners();
-      return _loginTicket;
+        await _postLogin();
+      }
     }
+
+    isLoading = false;
+    return (isSuccessful, message);
+  }
+
+  Future<void> _postLogin() async {
+    final u = await AppCache().user;
+    if (u == null) {
+      await callUserDetails();
+    }
+  }
+
+  Future<bool> isLoggedIn() async {
+    final ac = AppCache();
+    final loginTicket = await ac.loginTicket;
+    final user = await ac.user;
+    return (loginTicket != null &&
+        loginTicket.isNotEmpty &&
+        user != null &&
+        user.id.isNotEmpty);
   }
 }

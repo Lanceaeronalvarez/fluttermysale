@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mysale/core/helpers/login_helper.dart';
+import 'package:flutter_mysale/config/app_cache.dart';
 import 'package:flutter_mysale/core/widgets/toast_message.dart';
+import 'package:flutter_mysale/features/main_app/models/main/user_model.dart';
 import 'package:flutter_mysale/features/main_app/providers/authentication_provider.dart';
 import 'package:flutter_mysale/features/main_app/widgets/app_captcha.dart';
 import 'package:flutter_mysale/features/main_app/widgets/auth_form.dart';
@@ -68,12 +69,24 @@ class _CheckoutContact extends State<CheckoutContact> {
             case CheckoutContactMode.signupForm:
               return _createAuthForm(true);
             case CheckoutContactMode.loggedIn:
-              return _createGuestCheckoutForm(
-                contactInfo: CheckoutContactSectionInfo(
-                  isGuestCheckout: true,
-                  info: 'user@gmail.com',
-                  showContinueToShippingButton: true,
-                ),
+              return FutureBuilder<User?>(
+                future: AppCache().user,
+                builder: (_, snap) {
+                  if (snap.connectionState == ConnectionState.done) {
+                    User? u = snap.data;
+                    String info = '${u?.firstName ?? ''} ${u?.lastName ?? ''}'
+                        .trim();
+                    return _createGuestCheckoutForm(
+                      contactInfo: CheckoutContactSectionInfo(
+                        isGuestCheckout: false,
+                        info: info,
+                        showContinueToShippingButton: true,
+                      ),
+                    );
+                  } else {
+                    return SizedBox.shrink();
+                  }
+                },
               );
           }
         },
@@ -153,9 +166,12 @@ class _CheckoutContact extends State<CheckoutContact> {
         p
             .callLoginViaEmail(email, password, captchaToken)
             .then((data) {
-              doAuth(context, email, password);
-              showMessage(context, 'Login Successful');
-              p.isLoading = false;
+              if (data.$1) {
+                showMessage(context, 'Login Successful');
+                _mode.value = CheckoutContactMode.loggedIn;
+              } else {
+                showMessage(context, data.$2);
+              }
             })
             .catchError((error) {
               showMessage(context, error.toString());
@@ -194,8 +210,12 @@ class _CheckoutContact extends State<CheckoutContact> {
               promoAgree,
             )
             .then((data) {
-              doAuth(context, email, password);
-              showMessage(context, 'Registration Successful');
+              if (data.$1) {
+                showMessage(context, 'Registration Successful');
+                _mode.value = CheckoutContactMode.loggedIn;
+              } else {
+                showMessage(context, data.$2);
+              }
               p.isLoading = false;
             })
             .catchError((error) {

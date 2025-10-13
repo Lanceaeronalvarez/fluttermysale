@@ -9,7 +9,7 @@ class NewsController extends StatelessController {
   const NewsController({Key? key}) : super(key: key);
 
   @override
-  bool get auth => true;
+  bool get shouldCheckAuthentication => true;
 
   @override
   Display view(BuildContext context) {

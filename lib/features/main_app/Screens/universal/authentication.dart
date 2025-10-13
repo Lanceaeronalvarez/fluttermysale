@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mysale/core/helpers/login_helper.dart';
 import 'package:flutter_mysale/core/widgets/toast_message.dart';
 import 'package:flutter_mysale/features/main_app/providers/authentication_provider.dart';
 import 'package:flutter_mysale/features/main_app/widgets/app_captcha.dart';
@@ -51,9 +50,11 @@ class _AuthenthicationState extends State<Authenthication> {
         p
             .callLoginViaEmail(email, password, captchaToken)
             .then((data) {
-              doAuth(context, email, password);
-              showMessage(context, 'Login Successful');
-              p.isLoading = false;
+              if (data.$1) {
+                showMessage(context, 'Login Successful');
+              } else {
+                showMessage(context, data.$2);
+              }
             })
             .catchError((error) {
               showMessage(context, error.toString());
@@ -92,8 +93,11 @@ class _AuthenthicationState extends State<Authenthication> {
               promoAgree,
             )
             .then((data) {
-              doAuth(context, email, password);
-              showMessage(context, 'Registration Successful');
+              if (data.$1) {
+                showMessage(context, 'Registration Successful');
+              } else {
+                showMessage(context, data.$2);
+              }
               p.isLoading = false;
             })
             .catchError((error) {
