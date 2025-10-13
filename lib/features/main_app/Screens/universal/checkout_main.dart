@@ -184,7 +184,7 @@ class _CheckoutMain extends State<CheckoutMain> {
             );
           case CheckoutStep.shipping:
             return CheckoutShipping(
-              onContinueToShipping: () {
+              onContinueToPayment: () {
                 _currentCheckoutStep.value = CheckoutStep.payment;
               },
             );

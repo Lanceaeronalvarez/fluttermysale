@@ -9,9 +9,9 @@ import 'package:flutter_mysale/features/main_app/providers/address_provider.dart
 import 'package:provider/provider.dart';
 
 class CheckoutShipping extends StatefulWidget {
-  final VoidCallback? onContinueToShipping;
+  final VoidCallback? onContinueToPayment;
 
-  CheckoutShipping({required this.onContinueToShipping});
+  CheckoutShipping({required this.onContinueToPayment});
 
   @override
   State<StatefulWidget> createState() {
@@ -74,10 +74,16 @@ class _CheckoutShipping extends State<CheckoutShipping> {
     //Currently using first address.
     // Will change once get cart details is implemented
     selectedAddress ??= provider.addresses[0];
-    return Stack(
+    return Column(
       children: [
-        _createAddressTile(selectedAddress!, null),
-        _createChangeAddressButton(provider),
+        Stack(
+          children: [
+            _createAddressTile(selectedAddress!, null),
+            _createChangeAddressButton(provider),
+          ],
+        ),
+        SizedBox(height: 20),
+        _createInfoButton(),
       ],
     );
   }
@@ -295,6 +301,16 @@ class _CheckoutShipping extends State<CheckoutShipping> {
           }
         },
       ),
+    );
+  }
+
+  Widget _createInfoButton() {
+    return ElevatedButton(
+      onPressed: () {
+        widget.onContinueToPayment!();
+      },
+      style: appElevatedButtonStyle,
+      child: Text('CONTINUE TO PAYMENT'),
     );
   }
 
