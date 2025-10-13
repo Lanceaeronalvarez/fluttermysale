@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_mysale/core/widgets/bottom_bar.dart';
@@ -197,19 +195,16 @@ class _AddNewAddressState extends State<AddNewAddress> {
         return _createActionButton(
           label: provider.isLoading ? "SAVING..." : "SAVE",
           onTap: () {
-            for (final d in widget.decorations) {
-              final key = d.name?.toLowerCase();
-              if (key != null) {
-                if (key == "addresslines") {
-                  myAddress["address_lines"] = _controllers[key]?.text;
-                } else if (key == "state") {
-                  myAddress[key] = dropdownValue;
-                } else {
-                  myAddress[key] = _controllers[key]?.text;
-                }
-              }
-            }
-            _saveAddress(provider);
+            AddressItem newAddress = AddressItem(
+              addressLines: _controllers["addresslines"]?.text,
+              forename: _controllers["forename"]?.text,
+              surname: _controllers["surname"]?.text,
+              suburb: _controllers["suburb"]?.text,
+              state: dropdownValue,
+              postcode: _controllers["postcode"]?.text,
+              phone: _controllers["phone"]?.text,
+            );
+            _saveAddress(provider, newAddress);
           },
           decoration: appPrimaryButtonBoxDecoration,
           textStyle: const TextStyle(
@@ -241,14 +236,14 @@ class _AddNewAddressState extends State<AddNewAddress> {
     );
   }
 
-  void _saveAddress(AddressProvider provider) {
+  void _saveAddress(AddressProvider provider, AddressItem newAddress) {
     if (!provider.isLoading) {
       if (_formKey.currentState!.validate()) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text("Saving address...")));
         provider
-            .postAddress(jsonEncode(myAddress))
+            .postAddress(newAddress)
             .then((data) {
               provider.isLoading = false;
               ApplyAddressRequest request = ApplyAddressRequest(
