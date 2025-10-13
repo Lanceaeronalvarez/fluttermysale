@@ -7,7 +7,7 @@ import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
 
 import '../models/model.dart';
 
-enum CheckoutShippingMode { add, view, list }
+enum CheckoutShippingMode { add, view, list, loading }
 
 class AddressProvider extends ChangeNotifier {
   List<AddressItem> addresses = [];
@@ -41,6 +41,8 @@ class AddressProvider extends ChangeNotifier {
       ApiEndpoint.getUserAddresses(),
       data: {'languageID': dotenv.get("SETTINGS_LANGUAGE_ID")},
     );
+
+    mode.value = CheckoutShippingMode.loading;
 
     if (res.statusCode == 200 && res.statusCode != 429) {
       isLoading = false;
@@ -232,8 +234,10 @@ class AddressProvider extends ChangeNotifier {
 
     Response res = await _http!.post(
       ApiEndpoint.applyDeliveryAddress(),
-      data: request,
+      data: request.toJson(),
     );
+
+    mode.value = CheckoutShippingMode.loading;
 
     if (res.statusCode == 200 && res.statusCode != 429) {
       isLoading = false;

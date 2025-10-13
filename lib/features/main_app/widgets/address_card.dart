@@ -74,7 +74,7 @@ class AddressCard extends StatelessWidget {
 
   Widget _createSuburbCityPostcode() {
     final suburb = address?.suburb ?? "";
-    final city = address?.city ?? "";
+    final city = address?.state ?? "";
     final postcode = address?.postcode ?? "";
     if ([suburb, city, postcode].every((e) => e.isEmpty)) {
       return const SizedBox.shrink();

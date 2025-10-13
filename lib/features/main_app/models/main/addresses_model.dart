@@ -25,7 +25,7 @@ class AddressItem {
   @JsonKey(name: 'address_lines')
   final String? addressLines;
   final String? suburb;
-  final String? city;
+  final String? state;
   final String? postcode;
   final String? phone;
 
@@ -36,7 +36,7 @@ class AddressItem {
     this.surname,
     this.addressLines,
     this.suburb,
-    this.city,
+    this.state,
     this.postcode,
     this.phone,
   });

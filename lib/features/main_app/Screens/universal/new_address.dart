@@ -16,10 +16,14 @@ class AddNewAddress extends StatefulWidget {
     super.key,
     required this.decorations,
     this.isWidgetOnly,
+    this.onCancelTap,
+    this.onSavedAddress,
   });
 
   final List<AddressDecoration> decorations;
   final bool? isWidgetOnly;
+  final VoidCallback? onCancelTap;
+  final VoidCallback? onSavedAddress;
 
   @override
   State<AddNewAddress> createState() => _AddNewAddressState();
@@ -204,8 +208,8 @@ class _AddNewAddressState extends State<AddNewAddress> {
                   myAddress[key] = _controllers[key]?.text;
                 }
               }
-              _saveAddress(provider);
             }
+            _saveAddress(provider);
           },
           decoration: appPrimaryButtonBoxDecoration,
           textStyle: const TextStyle(
@@ -221,7 +225,13 @@ class _AddNewAddressState extends State<AddNewAddress> {
   Widget _createCancelButton() {
     return _createActionButton(
       label: "CANCEL",
-      onTap: () => Navigator.pop(context),
+      onTap: () {
+        if (isWidgetOnly) {
+          widget.onCancelTap;
+        } else {
+          Navigator.pop(context);
+        }
+      },
       decoration: appSecondaryButtonBoxDecoration,
       textStyle: const TextStyle(
         color: Color(0xFF54ECFF),
@@ -262,10 +272,14 @@ class _AddNewAddressState extends State<AddNewAddress> {
         .applyAddress(request)
         .then((data) {
           provider.isLoading = false;
+          widget.onSavedAddress;
+          provider.mode.value = CheckoutShippingMode.view;
+          provider.getAddresses();
           showMessage(context, 'Address Added Successfully');
         })
         .catchError((error) {
           provider.isLoading = false;
+          provider.mode.value = CheckoutShippingMode.add;
           showMessage(context, error);
         });
   }

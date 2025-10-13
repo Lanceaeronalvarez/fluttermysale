@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_mysale/config/app_cache.dart';
 import 'package:flutter_mysale/core/helpers/style_helper.dart';
+import 'package:flutter_mysale/core/widgets/toast_message.dart';
 import 'package:flutter_mysale/features/main_app/Screens/universal/new_address.dart';
 import 'package:flutter_mysale/features/main_app/models/main/addresses_model.dart';
 import 'package:flutter_mysale/features/main_app/providers/address_provider.dart';
@@ -24,7 +26,7 @@ class _CheckoutShipping extends State<CheckoutShipping> {
 
   AddressItem? selectedAddress;
 
-  BoxDecoration _tileBackground = BoxDecoration(
+  final BoxDecoration _tileBackground = BoxDecoration(
     borderRadius: BorderRadius.circular(20),
     color: Colors.white,
     boxShadow: const <BoxShadow>[
@@ -69,7 +71,8 @@ class _CheckoutShipping extends State<CheckoutShipping> {
   }
 
   Widget _createDisplayAddress(AddressProvider provider) {
-    //Currently using first address. Will change once get cart details is implemented
+    //Currently using first address.
+    // Will change once get cart details is implemented
     selectedAddress ??= provider.addresses[0];
     return Stack(
       children: [
@@ -102,7 +105,7 @@ class _CheckoutShipping extends State<CheckoutShipping> {
               ),
             ),
             Text(
-              "${address.addressLines} \n${address.suburb} \n${address.city} \n${address.postcode} \n${address.phone}",
+              "${address.addressLines} \n${address.suburb} \n${address.state} \n${address.postcode} \n${address.phone}",
               style: const TextStyle(color: Colors.black, fontSize: 14),
             ),
           ],
@@ -140,7 +143,7 @@ class _CheckoutShipping extends State<CheckoutShipping> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
+            const Text(
               "Select Address",
               style: TextStyle(
                 color: Colors.black,
@@ -172,8 +175,16 @@ class _CheckoutShipping extends State<CheckoutShipping> {
           itemCount: provider.addresses.length,
           itemBuilder: (context, index) =>
               _createAddressTile(provider.addresses[index], () {
-                provider.mode.value = CheckoutShippingMode.view;
                 selectedAddress = provider.addresses[index];
+                if (selectedAddress != null) {
+                  ApplyAddressRequest request = ApplyAddressRequest(
+                    countryID: dotenv.get("SETTINGS_COUNTRY_ID"),
+                    languageID: dotenv.get("SETTINGS_LANGUAGE_ID"),
+                    imageSize: "100",
+                    deliveryAddressID: selectedAddress!.id,
+                  );
+                  _applyAddress(provider, request, selectedAddress!);
+                }
               }),
         ),
       ],
@@ -202,7 +213,18 @@ class _CheckoutShipping extends State<CheckoutShipping> {
             ),
           ),
           const SizedBox(height: 20),
-          AddNewAddress(decorations: provider.decorations, isWidgetOnly: true),
+          AddNewAddress(
+            decorations: provider.decorations,
+            isWidgetOnly: true,
+            onCancelTap: () {
+              if (provider.addresses.isNotEmpty) {
+                provider.mode.value = CheckoutShippingMode.list;
+              }
+            },
+            onSavedAddress: () {
+              provider.mode.value = CheckoutShippingMode.view;
+            },
+          ),
         ],
       ),
     );
@@ -241,8 +263,17 @@ class _CheckoutShipping extends State<CheckoutShipping> {
             ),
           ),
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
       ],
+    );
+  }
+
+  Widget _createLoadingUi(AddressProvider provider) {
+    return const Padding(
+      padding: EdgeInsetsGeometry.all(30),
+      child: SizedBox(
+        child: Row(children: [Text("Loading"), CircularProgressIndicator()]),
+      ),
     );
   }
 
@@ -259,6 +290,8 @@ class _CheckoutShipping extends State<CheckoutShipping> {
               return _createDisplayAddress(provider);
             case CheckoutShippingMode.list:
               return _createAddressList(provider);
+            case CheckoutShippingMode.loading:
+              return _createLoadingUi(provider);
           }
         },
       ),
@@ -274,9 +307,9 @@ class _CheckoutShipping extends State<CheckoutShipping> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _createDisplayName(provider),
-              Text(
+              const Text(
                 "SHIPPING INFORMATION",
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
@@ -289,5 +322,23 @@ class _CheckoutShipping extends State<CheckoutShipping> {
         },
       ),
     );
+  }
+
+  void _applyAddress(
+    AddressProvider provider,
+    ApplyAddressRequest request,
+    AddressItem selectedAddress,
+  ) {
+    provider
+        .applyAddress(request)
+        .then((data) {
+          provider.isLoading = false;
+          provider.mode.value = CheckoutShippingMode.view;
+        })
+        .catchError((error) {
+          provider.isLoading = false;
+          provider.mode.value = CheckoutShippingMode.view;
+          showMessage(context, error);
+        });
   }
 }
