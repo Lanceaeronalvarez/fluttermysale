@@ -63,17 +63,11 @@ Map<String, dynamic> _$RegisterRequestToJson(RegisterRequest instance) =>
     };
 
 LoginResponse _$LoginResponseFromJson(Map<String, dynamic> json) =>
-    $checkedCreate('LoginResponse', json, ($checkedConvert) {
-      final val = LoginResponse(
-        $checkedConvert(
-          'd',
-          (v) => v == null
-              ? null
-              : LoginResponseValue.fromJson(v as Map<String, dynamic>),
-        ),
-      );
-      return val;
-    });
+    LoginResponse(
+      json['d'] == null
+          ? null
+          : LoginResponseValue.fromJson(json['d'] as Map<String, dynamic>),
+    );
 
 Map<String, dynamic> _$LoginResponseToJson(LoginResponse instance) =>
     <String, dynamic>{'d': instance.d};
@@ -110,14 +104,10 @@ Map<String, dynamic> _$LoginResponseValueToJson(LoginResponseValue instance) =>
       'Value': instance.value,
     };
 
-Value _$ValueFromJson(Map<String, dynamic> json) =>
-    $checkedCreate('Value', json, ($checkedConvert) {
-      final val = Value(
-        Ticket: $checkedConvert('Ticket', (v) => v as String?),
-        ReadTerms: $checkedConvert('ReadTerms', (v) => v as bool?),
-      );
-      return val;
-    });
+Value _$ValueFromJson(Map<String, dynamic> json) => Value(
+  Ticket: json['Ticket'] as String?,
+  ReadTerms: json['ReadTerms'] as bool?,
+);
 
 Map<String, dynamic> _$ValueToJson(Value instance) => <String, dynamic>{
   'Ticket': instance.Ticket,

@@ -25,8 +25,8 @@ ResponseD<T> _$ResponseDFromJson<T>(
   Map<String, dynamic> json,
   T Function(Object? json) fromJsonT,
 ) => ResponseD<T>(
-  isAuthenticated: json['isAuthenticated'] as bool,
-  result: json['Result'] as bool,
+  isAuthenticated: json['IsAuthenticated'] as bool? ?? false,
+  result: json['Result'] as bool? ?? false,
   message: json['Message'] as String?,
   value: _$nullableGenericFromJson(json['Value'], fromJsonT),
 );
@@ -35,7 +35,7 @@ Map<String, dynamic> _$ResponseDToJson<T>(
   ResponseD<T> instance,
   Object? Function(T value) toJsonT,
 ) => <String, dynamic>{
-  'isAuthenticated': instance.isAuthenticated,
+  'IsAuthenticated': instance.isAuthenticated,
   'Result': instance.result,
   'Message': instance.message,
   'Value': _$nullableGenericToJson(instance.value, toJsonT),

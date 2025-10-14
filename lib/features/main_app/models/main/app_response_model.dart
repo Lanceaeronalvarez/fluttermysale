@@ -2,7 +2,6 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'app_response_model.g.dart';
 
-/// Top-level envelope: { "d": { ... } }
 @JsonSerializable(genericArgumentFactories: true)
 class AppResponse<T> {
   final ResponseD<T> d;
@@ -20,9 +19,10 @@ class AppResponse<T> {
 
 @JsonSerializable(genericArgumentFactories: true)
 class ResponseD<T> {
+  @JsonKey(name: 'IsAuthenticated', defaultValue: false)
   final bool isAuthenticated;
 
-  @JsonKey(name: 'Result')
+  @JsonKey(name: 'Result', defaultValue: false)
   final bool result;
 
   @JsonKey(name: 'Message')
