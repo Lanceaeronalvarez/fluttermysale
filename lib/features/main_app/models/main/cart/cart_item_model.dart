@@ -182,6 +182,12 @@ class CartItem {
   List<String> getCategoryComponents() {
     return (category ?? '').split(_kCategorySeparator);
   }
+
+  String getImageUrl() {
+    //TODO: JCA imageServerUrl should be retrieved from GET /papi/public/v3.31/api.ashx/GetServerSettings?countryID=as
+    String imageServerUrl = 'https://c1.mysalec.com/';
+    return "$imageServerUrl/brands/$brandId/$imageId/${Uri.encodeComponent(fileName)}";
+  }
 }
 
 @JsonSerializable()
