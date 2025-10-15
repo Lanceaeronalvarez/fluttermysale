@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_mysale/core/classes/route_manager.dart';
 import 'package:flutter_mysale/core/widgets/bottom_bar.dart';
 import 'package:flutter_mysale/core/widgets/toast_message.dart';
+import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:provider/provider.dart';
 
@@ -10,18 +12,9 @@ import '../../models/model.dart';
 import '../../providers/address_provider.dart';
 
 class AddNewAddress extends StatefulWidget {
-  const AddNewAddress({
-    super.key,
-    required this.decorations,
-    this.isWidgetOnly,
-    this.onCancelTap,
-    this.onSavedAddress,
-  });
+  const AddNewAddress({super.key, required this.decorations});
 
   final List<AddressDecoration> decorations;
-  final bool? isWidgetOnly;
-  final VoidCallback? onCancelTap;
-  final VoidCallback? onSavedAddress;
 
   @override
   State<AddNewAddress> createState() => _AddNewAddressState();
@@ -49,10 +42,6 @@ class _AddNewAddressState extends State<AddNewAddress> {
       if (key != null && key.isNotEmpty) {
         _controllers[key] = TextEditingController(text: d.value ?? "");
       }
-    }
-
-    if (widget.isWidgetOnly != null) {
-      isWidgetOnly = widget.isWidgetOnly!;
     }
   }
 
@@ -221,11 +210,7 @@ class _AddNewAddressState extends State<AddNewAddress> {
     return _createActionButton(
       label: "CANCEL",
       onTap: () {
-        if (isWidgetOnly) {
-          widget.onCancelTap;
-        } else {
-          Navigator.pop(context);
-        }
+        Navigator.pop(context);
       },
       decoration: appSecondaryButtonBoxDecoration,
       textStyle: const TextStyle(
@@ -267,14 +252,12 @@ class _AddNewAddressState extends State<AddNewAddress> {
         .applyAddress(request)
         .then((data) {
           provider.isLoading = false;
-          widget.onSavedAddress;
-          provider.mode.value = CheckoutShippingMode.view;
+          provider.addressId = request.deliveryAddressID!;
           provider.getAddresses();
-          showMessage(context, 'Address Added Successfully');
+          Nav.closeUntil(context, App.checkout);
         })
         .catchError((error) {
           provider.isLoading = false;
-          provider.mode.value = CheckoutShippingMode.add;
           showMessage(context, error);
         });
   }

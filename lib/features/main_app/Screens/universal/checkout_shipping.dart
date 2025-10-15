@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_mysale/config/app_cache.dart';
+import 'package:flutter_mysale/core/classes/route_manager.dart';
 import 'package:flutter_mysale/core/helpers/style_helper.dart';
-import 'package:flutter_mysale/core/widgets/toast_message.dart';
-import 'package:flutter_mysale/features/main_app/Screens/universal/new_address.dart';
+import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/models/main/addresses_model.dart';
 import 'package:flutter_mysale/features/main_app/providers/address_provider.dart';
+import 'package:flutter_mysale/features/main_app/widgets/address_card.dart';
 import 'package:provider/provider.dart';
 
 class CheckoutShipping extends StatefulWidget {
@@ -73,14 +73,22 @@ class _CheckoutShipping extends State<CheckoutShipping> {
   Widget _createDisplayAddress(AddressProvider provider) {
     //Currently using first address.
     // Will change once get cart details is implemented
-    selectedAddress ??= provider.addresses[0];
+    if (provider.addressId != "") {
+      selectedAddress = provider.addresses.firstWhere(
+        (address) => address.id == provider.addressId,
+      );
+    } else {
+      selectedAddress ??= provider.addresses[0];
+    }
+
     return Column(
       children: [
-        Stack(
-          children: [
-            _createAddressTile(selectedAddress!, null),
-            _createChangeAddressButton(provider),
-          ],
+        AddressCard(
+          address: selectedAddress,
+          showChevron: true,
+          onTap: () {
+            Nav.toNamed(context, App.address);
+          },
         ),
         SizedBox(height: 20),
         _createInfoButton(),
@@ -88,150 +96,31 @@ class _CheckoutShipping extends State<CheckoutShipping> {
     );
   }
 
-  Widget _createAddressTile(AddressItem address, VoidCallback? ontap) {
+  Widget _createAddAddress(AddressProvider provider) {
     return GestureDetector(
       onTap: () {
-        ontap != null ? ontap() : null;
+        Nav.toNamed(context, App.newAddress);
       },
       child: Container(
         width: MediaQuery.of(context).size.width,
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(20),
         margin: EdgeInsets.only(bottom: 10),
         decoration: _tileBackground,
-        child: Column(
+        child: Row(
           mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              "${address.name}",
+              "Add New Address",
               style: const TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
               ),
             ),
-            Text(
-              "${address.addressLines} \n${address.suburb} \n${address.state} \n${address.postcode} \n${address.phone}",
-              style: const TextStyle(color: Colors.black, fontSize: 14),
-            ),
+            const Icon(Icons.chevron_right),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _createChangeAddressButton(AddressProvider provider) {
-    return Padding(
-      padding: EdgeInsetsGeometry.all(10),
-      child: GestureDetector(
-        onTap: () {
-          provider.mode.value = CheckoutShippingMode.list;
-        },
-        child: Align(
-          alignment: Alignment.topRight,
-          child: Text(
-            "Change",
-            style: TextStyle(
-              color: beigeColor,
-              decoration: TextDecoration.underline,
-              decorationThickness: 1.5,
-              decorationColor: beigeColor,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _createAddressList(AddressProvider provider) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              "Select Address",
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                provider.mode.value = CheckoutShippingMode.add;
-              },
-              child: Text(
-                "Add New Address",
-                style: TextStyle(
-                  color: beigeColor,
-                  decoration: TextDecoration.underline,
-                  fontWeight: FontWeight.bold,
-                  decorationThickness: 1.5,
-                  decorationColor: beigeColor,
-                ),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 20),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          itemCount: provider.addresses.length,
-          itemBuilder: (context, index) =>
-              _createAddressTile(provider.addresses[index], () {
-                selectedAddress = provider.addresses[index];
-                if (selectedAddress != null) {
-                  ApplyAddressRequest request = ApplyAddressRequest(
-                    countryID: dotenv.get("SETTINGS_COUNTRY_ID"),
-                    languageID: dotenv.get("SETTINGS_LANGUAGE_ID"),
-                    imageSize: "100",
-                    deliveryAddressID: selectedAddress!.id,
-                  );
-                  _applyAddress(provider, request, selectedAddress!);
-                }
-              }),
-        ),
-      ],
-    );
-  }
-
-  Widget _createAddAddress(AddressProvider provider) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: Colors.white,
-        boxShadow: const <BoxShadow>[
-          BoxShadow(color: Colors.grey, spreadRadius: 1),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "ADD NEW ADDRESS",
-            style: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-              fontSize: 15,
-            ),
-          ),
-          const SizedBox(height: 20),
-          AddNewAddress(
-            decorations: provider.decorations,
-            isWidgetOnly: true,
-            onCancelTap: () {
-              if (provider.addresses.isNotEmpty) {
-                provider.mode.value = CheckoutShippingMode.list;
-              }
-            },
-            onSavedAddress: () {
-              provider.mode.value = CheckoutShippingMode.view;
-            },
-          ),
-        ],
       ),
     );
   }
@@ -275,33 +164,7 @@ class _CheckoutShipping extends State<CheckoutShipping> {
   }
 
   Widget _createLoadingUi(AddressProvider provider) {
-    return const Padding(
-      padding: EdgeInsetsGeometry.all(30),
-      child: SizedBox(
-        child: Row(children: [Text("Loading"), CircularProgressIndicator()]),
-      ),
-    );
-  }
-
-  Widget _createCheckoutContactSection(AddressProvider provider) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: ValueListenableBuilder(
-        valueListenable: provider.mode,
-        builder: (_, value, _) {
-          switch (value) {
-            case CheckoutShippingMode.add:
-              return _createAddAddress(provider);
-            case CheckoutShippingMode.view:
-              return _createDisplayAddress(provider);
-            case CheckoutShippingMode.list:
-              return _createAddressList(provider);
-            case CheckoutShippingMode.loading:
-              return _createLoadingUi(provider);
-          }
-        },
-      ),
-    );
+    return Center(child: CircularProgressIndicator());
   }
 
   Widget _createInfoButton() {
@@ -312,6 +175,12 @@ class _CheckoutShipping extends State<CheckoutShipping> {
       style: appElevatedButtonStyle,
       child: Text('CONTINUE TO PAYMENT'),
     );
+  }
+
+  Widget _createAddOrViewAddress(AddressProvider provider) {
+    return provider.addresses.isEmpty
+        ? _createAddAddress(provider)
+        : _createDisplayAddress(provider);
   }
 
   Widget _createCheckoutShippingSection() {
@@ -332,29 +201,14 @@ class _CheckoutShipping extends State<CheckoutShipping> {
                 ),
               ),
               SizedBox(height: 20),
-              _createCheckoutContactSection(provider),
+              _createAddAddress(provider),
+              // provider.isLoading
+              //     ? _createLoadingUi(provider)
+              //     : _createAddOrViewAddress(provider),
             ],
           );
         },
       ),
     );
-  }
-
-  void _applyAddress(
-    AddressProvider provider,
-    ApplyAddressRequest request,
-    AddressItem selectedAddress,
-  ) {
-    provider
-        .applyAddress(request)
-        .then((data) {
-          provider.isLoading = false;
-          provider.mode.value = CheckoutShippingMode.view;
-        })
-        .catchError((error) {
-          provider.isLoading = false;
-          provider.mode.value = CheckoutShippingMode.view;
-          showMessage(context, error);
-        });
   }
 }

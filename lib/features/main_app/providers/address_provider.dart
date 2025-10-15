@@ -7,21 +7,17 @@ import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
 
 import '../models/model.dart';
 
-enum CheckoutShippingMode { add, view, list, loading }
+enum CheckoutShippingMode { view, loading }
 
 class AddressProvider extends ChangeNotifier {
   List<AddressItem> addresses = [];
   List<AddressDecoration> decorations = [];
   String addressId = "";
-  bool isLoading = false;
+  bool isLoading = true;
   AddressItem? selectedAddress;
   BuildContext context;
   late UserAgentHelper _userAgentHelper;
   AppHttp? _http;
-
-  ValueNotifier<CheckoutShippingMode> mode = ValueNotifier(
-    CheckoutShippingMode.add,
-  );
 
   AddressProvider({required this.context}) {
     _userAgentHelper = UserAgentHelper.shared;
@@ -42,8 +38,6 @@ class AddressProvider extends ChangeNotifier {
       data: {'languageID': dotenv.get("SETTINGS_LANGUAGE_ID")},
     );
 
-    mode.value = CheckoutShippingMode.loading;
-
     if (res.statusCode == 200 && res.statusCode != 429) {
       isLoading = false;
 
@@ -51,9 +45,6 @@ class AddressProvider extends ChangeNotifier {
 
       addresses = parsed.addresses ?? [];
       decorations = parsed.addressDecorations ?? [];
-      if (addresses.isNotEmpty) {
-        mode.value = CheckoutShippingMode.view;
-      }
       isLoading = false;
       notifyListeners();
     }
@@ -95,8 +86,6 @@ class AddressProvider extends ChangeNotifier {
       ApiEndpoint.applyDeliveryAddress(),
       data: request.toJson(),
     );
-
-    mode.value = CheckoutShippingMode.loading;
 
     if (res.statusCode == 200 && res.statusCode != 429) {
       isLoading = false;
