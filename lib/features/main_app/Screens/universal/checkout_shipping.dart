@@ -201,10 +201,9 @@ class _CheckoutShipping extends State<CheckoutShipping> {
                 ),
               ),
               SizedBox(height: 20),
-              _createAddAddress(provider),
-              // provider.isLoading
-              //     ? _createLoadingUi(provider)
-              //     : _createAddOrViewAddress(provider),
+              provider.isLoading
+                  ? _createLoadingUi(provider)
+                  : _createAddOrViewAddress(provider),
             ],
           );
         },
