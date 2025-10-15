@@ -11,3 +11,4 @@ export 'main/getappsettings_controller.dart';
 export 'main/home_controller.dart';
 export 'main/new_address_controller.dart';
 export 'main/news_controller.dart';
+export 'main/account_menu_controller.dart';

@@ -2,6 +2,7 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_color/flutter_color.dart';
+import 'package:money2/money2.dart';
 
 /**
  * Here We will be writing here All features related Helper Functions
@@ -111,4 +112,17 @@ extension StringServerApostropheS on String {
 
 extension MediaQuerySizeExt on MediaQueryData {
   bool get isTablet => size.shortestSide >= 600;
+}
+
+extension MoneyFormat on num {
+  
+  String toMoneyString({
+    String? symbol = '\$',
+    int decimalDigits = 2,
+    String? pattern,
+  }) {
+    final usePattern = pattern ?? (symbol == null ? '#,##0.00' : 'S#,##0.00');
+    final c = Currency.create('TMP', decimalDigits, symbol: symbol ?? '');
+    return Money.fromNumWithCurrency(this, c, decimalDigits: decimalDigits).format(usePattern);
+  }
 }

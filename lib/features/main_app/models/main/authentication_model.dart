@@ -76,12 +76,26 @@ class LoginResponse {
   Map<String, dynamic> toJson() => _$LoginResponseToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(checked: true)
 class LoginResponseValue {
-  @JsonKey(name: "Value")
-  Value? value;
+  @JsonKey(name: 'IsAuthenticated')
+  final bool isAuthenticated;
 
-  LoginResponseValue(this.value);
+  @JsonKey(name: 'Result')
+  final bool result;
+
+  @JsonKey(name: 'Message')
+  final String? message;
+
+  @JsonKey(name: 'Value')
+  final Value? value;
+
+  LoginResponseValue({
+    required this.isAuthenticated,
+    required this.result,
+    this.message,
+    this.value,
+  });
 
   factory LoginResponseValue.fromJson(Map<String, dynamic> json) =>
       _$LoginResponseValueFromJson(json);

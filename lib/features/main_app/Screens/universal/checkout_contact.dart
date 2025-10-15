@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/config/app_cache.dart';
+import 'package:flutter_mysale/core/widgets/toast_message.dart';
+import 'package:flutter_mysale/features/main_app/models/main/user_model.dart';
+import 'package:flutter_mysale/features/main_app/providers/authentication_provider.dart';
+import 'package:flutter_mysale/features/main_app/widgets/app_captcha.dart';
 import 'package:flutter_mysale/features/main_app/widgets/auth_form.dart';
 import 'package:flutter_mysale/features/main_app/widgets/checkout_contact_section.dart';
+import 'package:provider/provider.dart';
 
 enum CheckoutContactMode { loggedIn, guestCheckoutForm, loginForm, signupForm }
 
@@ -63,12 +69,24 @@ class _CheckoutContact extends State<CheckoutContact> {
             case CheckoutContactMode.signupForm:
               return _createAuthForm(true);
             case CheckoutContactMode.loggedIn:
-              return _createGuestCheckoutForm(
-                contactInfo: CheckoutContactSectionInfo(
-                  isGuestCheckout: true,
-                  info: 'user@gmail.com',
-                  showContinueToShippingButton: true,
-                ),
+              return FutureBuilder<User?>(
+                future: AppCache().user,
+                builder: (_, snap) {
+                  if (snap.connectionState == ConnectionState.done) {
+                    User? u = snap.data;
+                    String info = '${u?.firstName ?? ''} ${u?.lastName ?? ''}'
+                        .trim();
+                    return _createGuestCheckoutForm(
+                      contactInfo: CheckoutContactSectionInfo(
+                        isGuestCheckout: false,
+                        info: info,
+                        showContinueToShippingButton: true,
+                      ),
+                    );
+                  } else {
+                    return SizedBox.shrink();
+                  }
+                },
               );
           }
         },
@@ -115,12 +133,100 @@ class _CheckoutContact extends State<CheckoutContact> {
           child: AuthForm(
             inCheckout: true,
             isSignUp: isSignup,
+            onLogin: (email, password) {
+              _login(email: email, password: password);
+            },
+            onRegister:
+                (email, password, firstname, lastname, termsAgree, promoAgree) {
+                  _register(
+                    email: email,
+                    password: password,
+                    firstname: firstname,
+                    lastname: lastname,
+                    termsAgree: termsAgree,
+                    promoAgree: promoAgree,
+                  );
+                },
             onGoToGuestCheckout: () {
               _mode.value = CheckoutContactMode.guestCheckoutForm;
             },
           ),
         ),
       ],
+    );
+  }
+
+  void _login({required String email, required String password}) {
+    AuthenthicationProvider p = context.read<AuthenthicationProvider>();
+    p.isLoading = true;
+    AppCaptcha.showCaptcha(
+      parentContext: context,
+      onMessageReceived: (captchaToken) {
+        Navigator.of(context).pop();
+        p
+            .callLoginViaEmail(email, password, captchaToken)
+            .then((data) {
+              if (data.$1) {
+                showMessage(context, 'Login Successful');
+                _mode.value = CheckoutContactMode.loggedIn;
+              } else {
+                showMessage(context, data.$2);
+              }
+            })
+            .catchError((error) {
+              showMessage(context, error.toString());
+              p.isLoading = false;
+            });
+      },
+      onClose: () {
+        Navigator.of(context).pop();
+        p.isLoading = false;
+      },
+    );
+  }
+
+  void _register({
+    required String email,
+    required String password,
+    required String firstname,
+    required String lastname,
+    required bool termsAgree,
+    required bool promoAgree,
+  }) {
+    AuthenthicationProvider p = context.read<AuthenthicationProvider>();
+    p.isLoading = true;
+    AppCaptcha.showCaptcha(
+      parentContext: context,
+      onMessageReceived: (captchaToken) {
+        Navigator.of(context).pop();
+        p
+            .callRegistration(
+              firstname,
+              lastname,
+              email,
+              password,
+              captchaToken,
+              termsAgree,
+              promoAgree,
+            )
+            .then((data) {
+              if (data.$1) {
+                showMessage(context, 'Registration Successful');
+                _mode.value = CheckoutContactMode.loggedIn;
+              } else {
+                showMessage(context, data.$2);
+              }
+              p.isLoading = false;
+            })
+            .catchError((error) {
+              showMessage(context, error.toString());
+              p.isLoading = false;
+            });
+      },
+      onClose: () {
+        Navigator.of(context).pop();
+        p.isLoading = false;
+      },
     );
   }
 }

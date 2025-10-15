@@ -12,7 +12,7 @@ class HomeController extends StatelessController {
   const HomeController({Key? key}) : super(key: key);
 
   @override
-  bool get auth => true;
+  bool get shouldCheckAuthentication => true;
 
   @override
   Display view(BuildContext context) {

@@ -73,14 +73,36 @@ Map<String, dynamic> _$LoginResponseToJson(LoginResponse instance) =>
     <String, dynamic>{'d': instance.d};
 
 LoginResponseValue _$LoginResponseValueFromJson(Map<String, dynamic> json) =>
-    LoginResponseValue(
-      json['Value'] == null
-          ? null
-          : Value.fromJson(json['Value'] as Map<String, dynamic>),
+    $checkedCreate(
+      'LoginResponseValue',
+      json,
+      ($checkedConvert) {
+        final val = LoginResponseValue(
+          isAuthenticated: $checkedConvert('IsAuthenticated', (v) => v as bool),
+          result: $checkedConvert('Result', (v) => v as bool),
+          message: $checkedConvert('Message', (v) => v as String?),
+          value: $checkedConvert(
+            'Value',
+            (v) => v == null ? null : Value.fromJson(v as Map<String, dynamic>),
+          ),
+        );
+        return val;
+      },
+      fieldKeyMap: const {
+        'isAuthenticated': 'IsAuthenticated',
+        'result': 'Result',
+        'message': 'Message',
+        'value': 'Value',
+      },
     );
 
 Map<String, dynamic> _$LoginResponseValueToJson(LoginResponseValue instance) =>
-    <String, dynamic>{'Value': instance.value};
+    <String, dynamic>{
+      'IsAuthenticated': instance.isAuthenticated,
+      'Result': instance.result,
+      'Message': instance.message,
+      'Value': instance.value,
+    };
 
 Value _$ValueFromJson(Map<String, dynamic> json) => Value(
   Ticket: json['Ticket'] as String?,

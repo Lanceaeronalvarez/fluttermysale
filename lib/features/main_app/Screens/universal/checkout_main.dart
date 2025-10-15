@@ -5,7 +5,7 @@ import 'package:flutter_mysale/features/main_app/Screens/universal/checkout_cart
 import 'package:flutter_mysale/features/main_app/Screens/universal/checkout_contact.dart';
 import 'package:flutter_mysale/features/main_app/Screens/universal/checkout_shipping.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
-import 'package:flutter_mysale/features/main_app/providers/checkout_provider.dart';
+import 'package:flutter_mysale/features/main_app/providers/authentication_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:flutter_mysale/features/main_app/widgets/checkout_stepper.dart';
 import 'package:flutter_mysale/features/main_app/widgets/promo_banner.dart';
@@ -166,21 +166,24 @@ class _CheckoutMain extends State<CheckoutMain> {
               },
             );
           case CheckoutStep.contact:
-            return Consumer<CheckoutProvider>(
-              builder:
-                  (
-                    BuildContext context,
-                    CheckoutProvider value,
-                    Widget? child,
-                  ) {
-                    //TODO: JCA - determine mode based on value in provider
-                    return CheckoutContact(
-                      mode: CheckoutContactMode.guestCheckoutForm,
-                      onContinueToShipping: () {
-                        _currentCheckoutStep.value = CheckoutStep.shipping;
-                      },
-                    );
-                  },
+            final ap = context.read<AuthenthicationProvider>();
+            return FutureBuilder(
+              future: ap.isLoggedIn(),
+              builder: (_, snap) {
+                if (snap.connectionState == ConnectionState.done) {
+                  bool isLoggedIn = snap.data ?? false;
+                  return CheckoutContact(
+                    mode: isLoggedIn
+                        ? CheckoutContactMode.loggedIn
+                        : CheckoutContactMode.guestCheckoutForm,
+                    onContinueToShipping: () {
+                      _currentCheckoutStep.value = CheckoutStep.shipping;
+                    },
+                  );
+                } else {
+                  return SizedBox.shrink();
+                }
+              },
             );
           case CheckoutStep.shipping:
             return CheckoutShipping(

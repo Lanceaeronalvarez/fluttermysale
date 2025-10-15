@@ -10,15 +10,13 @@ class ContactController extends StatelessController {
   const ContactController({Key? key}) : super(key: key);
 
   @override
-  bool get auth => false;
+  bool get shouldCheckAuthentication => false;
 
   @override
   Display view(BuildContext context) {
     return Display(
       title: _title,
-      mobile: mobile.Contact(
-        title: _title,
-      ),
+      mobile: mobile.Contact(title: _title),
       tabletLandscape: tablet.Contact(title: _title),
       desktop: desktop.Contact(title: _title),
     );

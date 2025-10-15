@@ -29,7 +29,11 @@ class BottomBar extends StatelessWidget {
             label: 'Wishlist',
             link: '/',
           ),
-          ButtonData(icon: Icons.account_circle, label: 'Account', link: '/'),
+          ButtonData(
+            icon: Icons.account_circle,
+            label: 'Account',
+            link: App.accountMenu,
+          ),
         ];
   }
 

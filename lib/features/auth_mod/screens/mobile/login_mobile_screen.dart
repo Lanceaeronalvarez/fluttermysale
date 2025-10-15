@@ -6,6 +6,7 @@ import '../../../../core/core.dart';
 import '../../widgets/auth_button.dart';
 import '../../widgets/widget_functions.dart';
 
+/*
 class LoginMobileScreen extends StatefulWidget {
   const LoginMobileScreen({
     Key? key,
@@ -125,3 +126,4 @@ class _LoginMobileScreenState extends State<LoginMobileScreen> {
     );
   }
 }
+*/

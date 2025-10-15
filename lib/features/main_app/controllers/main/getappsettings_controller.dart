@@ -12,7 +12,7 @@ class GetAppSettingsController extends StatelessController {
   const GetAppSettingsController({Key? key}) : super(key: key);
 
   @override
-  bool get auth => true;
+  bool get shouldCheckAuthentication => true;
 
   @override
   Display view(BuildContext context) {

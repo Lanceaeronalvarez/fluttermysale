@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/core/helpers/style_helper.dart';
+import 'package:flutter_mysale/features/main_app/models/main/cart/cart_item_model.dart';
+import 'package:flutter_mysale/features/main_app/models/main/cart/cart_shipment_model.dart';
 import 'package:flutter_mysale/features/main_app/providers/checkout_provider.dart';
-import 'package:flutter_mysale/features/main_app/widgets/cart_product_row.dart';
+import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
+import 'package:flutter_mysale/features/main_app/widgets/cart_item_row.dart';
+import 'package:flutter_mysale/features/main_app/widgets/cart_shipping_row.dart';
 import 'package:provider/provider.dart';
 
 enum CheckoutCartMode {
@@ -162,8 +166,6 @@ class _CheckoutCartStyle {
 }
 
 class CheckoutCart extends StatefulWidget {
-  final List<CartProductWrapper> productList = CartProductWrapper.tempList();
-
   final CheckoutCartMode mode;
   final VoidCallback? onContinueToContact;
 
@@ -272,13 +274,13 @@ class _CheckoutCart extends State<CheckoutCart> {
             slivers: [
               if (_style.showProductListHeader)
                 SliverToBoxAdapter(child: _createHeader('Order Summary')),
-              if (_style.showProductList) _createProductList(),
+              if (_style.showProductList) _createProductList(provider),
               if (_style.showContinueToContact)
                 SliverToBoxAdapter(child: _createContactButtonSection()),
               if (_style.addDividerBetweenProductAndSummary)
                 SliverToBoxAdapter(child: SizedBox(height: 16)),
               if (_style.showOrderSummarySection)
-                SliverToBoxAdapter(child: _createSummarySection()),
+                SliverToBoxAdapter(child: _createSummarySection(provider)),
             ],
           ),
         );
@@ -324,66 +326,64 @@ class _CheckoutCart extends State<CheckoutCart> {
     );
   }
 
-  Widget _createProductList() {
+  Widget _createProductList(CheckoutProvider provider) {
+    List<(int, int, dynamic)> list = [];
+    List<CartShipment> shipments = provider.cart?.shipments ?? [];
+    for (final (int shipmentIndex, CartShipment shipment)
+        in shipments.indexed) {
+      List<CartItem> items = shipments[shipmentIndex].items ?? [];
+      for (final (int itemIndex, CartItem item) in items.indexed) {
+        list.add((shipmentIndex, itemIndex, item));
+      }
+      list.add((shipmentIndex, 0, shipment));
+    }
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
-          final p = widget.productList[index];
-          final productRow = CartProductRow(
-            item: p,
-            sectionColor: _style.sectionColor,
-            showPriceAtBottom: _style.productRowPriceAtBottom,
-            showDivider: _style.productRowShowDivider,
-            onTap: (_) {},
-            onPlus: (_) {},
-            onMinus: (_) {},
-            onRemove: (_) {},
-          );
-          final shippingRow = _createShippingRow(p.shippingFee());
-          return Column(children: [productRow, shippingRow]);
+          final obj = list[index];
+          if (obj.$3 is CartItem) {
+            final productRow = CartItemRow(
+              item: obj.$3,
+              section: obj.$1,
+              row: obj.$2,
+              sectionColor: _style.sectionColor,
+              showPriceAtBottom: _style.productRowPriceAtBottom,
+              showDivider: _style.productRowShowDivider,
+              onTap: (_) {},
+              onPlus: (_) {},
+              onMinus: (_) {},
+              onRemove: (_) {},
+            );
+            return productRow;
+          } else if (obj.$3 is CartShipment) {
+            return CartShippingRow(
+              shipment: obj.$3,
+              section: obj.$1,
+              row: obj.$2,
+              sectionColor: checkoutDarkGrey,
+              showDivider: false,
+            );
+          } else {
+            return SizedBox.shrink();
+          }
         },
-        childCount: widget.productList.length,
-
+        childCount: list.length,
         addAutomaticKeepAlives: true,
         addRepaintBoundaries: true,
       ),
     );
   }
 
-  Widget _createShippingRow(double shippingFee) {
-    return SizedBox(
-      height: 25,
-      child: Container(
-        color: checkoutGrey,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: (shippingFee == 0)
-                ? _createFreeShipping()
-                : _createShippingText(shippingFee),
-          ),
-        ),
-      ),
-    );
-  }
-
-  //TODO: JCA zip code is bold
-  Widget _createShippingText(double shippingFee) {
-    return Text(
-      'Shipping to Postcode 2150: \$9.99',
-      style: TextStyle(fontSize: 11),
-    );
-  }
-
-  //TODO: JCA change to image
-  Widget _createFreeShipping() {
-    return Text('Free Shipping', style: TextStyle(fontSize: 11));
-  }
-
-  Widget _createSummarySection() {
+  Widget _createSummarySection(CheckoutProvider provider) {
     double hSpacing = _style.hSpacing;
     double vSpacing = _style.vSpacing;
+
+    int itemCount = provider.cart?.itemsCount ?? 0;
+    double subtotal = provider.cart?.summary?.subtotal ?? 0;
+    String postCode = provider.cart?.summary?.estimateShipmentPostcode ?? '';
+    double delivery = provider.cart?.summary?.delivery ?? 0;
+    double total = provider.cart?.summary?.total ?? 0;
+
     return Container(
       color: _style.sectionColor,
       child: Padding(
@@ -392,32 +392,71 @@ class _CheckoutCart extends State<CheckoutCart> {
           children: [
             if (_style.showAddVoucher) _createAddVoucherButton(),
             if (_style.showOrderSummarySectionTitle)
-              _createSummaryRow('Order Summary', '', _style.textBold, 8),
+              _createSummaryRow(
+                title: 'Order Summary',
+                value: '',
+                style: _style.textBold,
+                bottomPadding: 8,
+              ),
             _createSummaryRow(
-              'Subtotal (2 items)',
-              '\$196.00',
-              _style.textRegular,
-              16,
+              title:
+                  'Subtotal ($itemCount ${itemCount == 1 ? 'items' : 'item'})',
+              value: subtotal.toMoneyString(),
+              style: _style.textRegular,
+              bottomPadding: 8,
             ),
-            _createSummaryRow('Total', '\$196.00', _style.textBold, 4),
-            _createSummaryRow('', 'Including GST', _style.textRegular, 0),
+            _createSummaryRow(
+              title: 'Shipping to Postcode ',
+              boldTitle: postCode,
+              value: delivery.toMoneyString(),
+              style: _style.textRegular,
+              bottomPadding: 16,
+            ),
+            _createSummaryRow(
+              title: '',
+              boldTitle: 'Total',
+              value: total.toMoneyString(),
+              style: _style.textBold,
+              bottomPadding: 4,
+            ),
+            _createSummaryRow(
+              title: '',
+              value: 'Including GST',
+              style: _style.textRegular,
+              bottomPadding: 0,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _createSummaryRow(
-    String title,
-    String value,
-    TextStyle style,
-    double bottomPadding,
-  ) {
+  Widget _createSummaryRow({
+    required String title,
+    String? boldTitle,
+    required String value,
+    required TextStyle style,
+    required double bottomPadding,
+  }) {
+    RichText titleText = RichText(
+      text: TextSpan(
+        style: TextStyle(color: Colors.black),
+        children: [
+          TextSpan(text: title),
+          if (boldTitle != null && boldTitle.isNotEmpty)
+            TextSpan(
+              text: boldTitle,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+        ],
+      ),
+    );
+
     return Padding(
       padding: EdgeInsets.fromLTRB(0, 0, 0, bottomPadding),
       child: Row(
         children: [
-          Expanded(child: Text(title, style: style)),
+          Expanded(child: titleText),
           Text(value, style: style),
         ],
       ),
