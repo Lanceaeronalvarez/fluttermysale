@@ -173,7 +173,6 @@ class _AddressListState extends State<AddressList> {
         .applyAddress(addressId)
         .then((data) {
           if (data.$1) {
-            cartProvider.callCart();
             Nav.close(context);
           } else {
             showMessage(context, data.$2);

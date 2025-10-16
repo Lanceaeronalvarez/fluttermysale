@@ -27,6 +27,8 @@ class _AddNewAddressState extends State<AddNewAddress> {
   static const _forenameKey = "forename";
   static const _surnameKey = "surname";
   static const _selectType = "select";
+  static const _keyboardTypeNumber = "number";
+  static const _keyboardTypePhone = "phone";
   String dropdownValue = "";
 
   @override
@@ -233,7 +235,6 @@ class _AddNewAddressState extends State<AddNewAddress> {
         .applyAddress(addressId)
         .then((data) {
           if (data.$1) {
-            cartProvider.callCart();
             Nav.closeUntil(context, App.checkout);
           } else {
             showMessage(context, data.$2);
@@ -279,9 +280,9 @@ class _AddNewAddressState extends State<AddNewAddress> {
 
   TextInputType _mapKeyboardType(String? dataType) {
     switch (dataType) {
-      case "number":
+      case _keyboardTypeNumber:
         return TextInputType.number;
-      case "phone":
+      case _keyboardTypePhone:
         return TextInputType.phone;
       default:
         return TextInputType.text;

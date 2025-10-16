@@ -4,6 +4,7 @@ import 'package:flutter_mysale/core/classes/route_manager.dart';
 import 'package:flutter_mysale/core/helpers/style_helper.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/models/main/user_model.dart';
+import 'package:flutter_mysale/features/main_app/models/model.dart';
 import 'package:flutter_mysale/features/main_app/providers/checkout_provider.dart';
 import 'package:flutter_mysale/features/main_app/widgets/address_card.dart';
 import 'package:flutter_mysale/features/main_app/widgets/checkout_contact_section.dart';
@@ -67,7 +68,20 @@ class _CheckoutShipping extends State<CheckoutShipping> {
         return Column(
           children: [
             AddressCard(
-              address: provider.selectedAddress,
+              address: provider.cart?.deliveryAddress != null
+                  ? AddressItem(
+                      id: provider.cart!.deliveryAddress!.id,
+                      name: provider.cart!.deliveryAddress!.name,
+                      surname: provider.cart!.deliveryAddress!.surname,
+                      forename: provider.cart!.deliveryAddress!.forename,
+                      state: provider.cart!.deliveryAddress!.state,
+                      addressLines:
+                          provider.cart!.deliveryAddress!.addressLines,
+                      suburb: provider.cart!.deliveryAddress!.suburb,
+                      postcode: provider.cart!.deliveryAddress!.postcode,
+                      phone: provider.cart!.deliveryAddress!.phone,
+                    )
+                  : null,
               showChevron: true,
               onTap: () {
                 Nav.toNamed(context, App.address);

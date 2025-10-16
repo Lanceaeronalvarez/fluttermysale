@@ -61,16 +61,18 @@ class AddressProvider extends ChangeNotifier {
     isLoading = true;
     String message = '';
     bool isSuccessful = false;
-    notifyListeners();
+    final String _addressLinesKey = "addresslines";
+    final String _stateKey = "state";
+    final String _addressLinesParam = "address_lines";
 
     Map<String, dynamic> myAddress = {};
 
     for (final decor in decorations) {
       final key = decor.name?.toLowerCase();
       if (key != null && key.isNotEmpty) {
-        if (key == "addresslines") {
-          myAddress["address_lines"] = controllers[key]?.text;
-        } else if (key == "state") {
+        if (key == _addressLinesKey) {
+          myAddress[_addressLinesParam] = controllers[key]?.text;
+        } else if (key == _stateKey) {
           myAddress[key] = dropdownValue;
         } else {
           myAddress[key] = controllers[key]?.text;
