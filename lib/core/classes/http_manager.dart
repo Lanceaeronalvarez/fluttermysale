@@ -79,6 +79,9 @@ class HttpManager {
       );
       debugPrint("Success GET Request");
       return response;
+    } on DioException catch (e) {
+      log(e.response!.data.toString());
+      return e.response!;
     } catch (e) {
       debugPrint("Error GET Request");
       debugPrint(e.toString());
@@ -111,6 +114,10 @@ class HttpManager {
       return response;
     } on DioException catch (e) {
       log(e.response!.data.toString());
+      return e.response!;
+    } catch (e) {
+      debugPrint("Error GET Request");
+      debugPrint(e.toString());
     }
     return response!;
   }
@@ -137,8 +144,12 @@ class HttpManager {
         onSendProgress: sendProgress,
       );
       return response;
+    } on DioException catch (e) {
+      log(e.response!.data.toString());
+      return e.response!;
     } catch (e) {
-      log(e.toString());
+      debugPrint("Error GET Request");
+      debugPrint(e.toString());
     }
     return response!;
   }
@@ -165,6 +176,9 @@ class HttpManager {
         onSendProgress: sendProgress,
       );
       return response;
+    } on DioException catch (e) {
+      log(e.response!.data.toString());
+      return e.response!;
     } catch (e) {
       log(e.toString());
     }
@@ -189,6 +203,9 @@ class HttpManager {
         cancelToken: token,
       );
       return response;
+    } on DioException catch (e) {
+      log(e.response!.data.toString());
+      return e.response!;
     } catch (e) {
       log(e.toString());
     }

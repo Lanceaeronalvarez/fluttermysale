@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mysale/architect.dart';
+import 'package:flutter_mysale/core/classes/route_manager.dart';
+import 'package:flutter_mysale/core/widgets/bottom_bar.dart';
+import 'package:flutter_mysale/core/widgets/toast_message.dart';
+import 'package:flutter_mysale/features/main_app/app.dart';
+import 'package:flutter_mysale/features/main_app/providers/checkout_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:provider/provider.dart';
 
@@ -23,6 +27,9 @@ class _AddNewAddressState extends State<AddNewAddress> {
   static const _forenameKey = "forename";
   static const _surnameKey = "surname";
   static const _selectType = "select";
+  static const _keyboardTypeNumber = "number";
+  static const _keyboardTypePhone = "phone";
+  String dropdownValue = "";
 
   @override
   void initState() {
@@ -93,7 +100,11 @@ class _AddNewAddressState extends State<AddNewAddress> {
   Widget _createForm() {
     return Form(
       key: _formKey,
-      child: ListView(children: _createFormFields()),
+      child: ListView(
+        shrinkWrap: false,
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: _createFormFields(),
+      ),
     );
   }
 
@@ -115,7 +126,11 @@ class _AddNewAddressState extends State<AddNewAddress> {
         items: decoration.options!
             .map((opt) => DropdownMenuItem(value: opt, child: Text(opt)))
             .toList(),
-        onChanged: decoration.readOnly == true ? null : (val) {},
+        onChanged: decoration.readOnly == true
+            ? null
+            : (val) {
+                dropdownValue = val!;
+              },
         validator: (value) => _validate(value, decoration),
       ),
     );
@@ -162,14 +177,7 @@ class _AddNewAddressState extends State<AddNewAddress> {
         return _createActionButton(
           label: provider.isLoading ? "SAVING..." : "SAVE",
           onTap: () {
-            if (!provider.isLoading) {
-              if (_formKey.currentState!.validate()) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Saving address...")),
-                );
-                // TODO: call your provider or API to save the address
-              }
-            }
+            _saveAddress(provider);
           },
           decoration: appPrimaryButtonBoxDecoration,
           textStyle: const TextStyle(
@@ -185,7 +193,9 @@ class _AddNewAddressState extends State<AddNewAddress> {
   Widget _createCancelButton() {
     return _createActionButton(
       label: "CANCEL",
-      onTap: () => Navigator.pop(context),
+      onTap: () {
+        Navigator.pop(context);
+      },
       decoration: appSecondaryButtonBoxDecoration,
       textStyle: const TextStyle(
         color: Color(0xFF54ECFF),
@@ -193,6 +203,47 @@ class _AddNewAddressState extends State<AddNewAddress> {
         fontWeight: FontWeight.bold,
       ),
     );
+  }
+
+  void _saveAddress(AddressProvider provider) {
+    if (!provider.isLoading) {
+      if (_formKey.currentState!.validate()) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Saving address...")));
+
+        provider
+            .postAddress(_controllers, dropdownValue)
+            .then((data) {
+              if (data.$1) {
+                _applyAddress(provider.addressId);
+              } else {
+                showMessage(context, data.$2);
+              }
+            })
+            .catchError((error) {
+              provider.isLoading = false;
+              showMessage(context, error.toString());
+            });
+      }
+    }
+  }
+
+  void _applyAddress(String addressId) {
+    CheckoutProvider cartProvider = context.read<CheckoutProvider>();
+    cartProvider
+        .applyAddress(addressId)
+        .then((data) {
+          if (data.$1) {
+            Nav.closeUntil(context, App.checkout);
+          } else {
+            showMessage(context, data.$2);
+          }
+        })
+        .catchError((error) {
+          cartProvider.isLoading = false;
+          showMessage(context, error.toString());
+        });
   }
 
   String? _validate(String? value, AddressDecoration d) {
@@ -229,9 +280,9 @@ class _AddNewAddressState extends State<AddNewAddress> {
 
   TextInputType _mapKeyboardType(String? dataType) {
     switch (dataType) {
-      case "number":
+      case _keyboardTypeNumber:
         return TextInputType.number;
-      case "phone":
+      case _keyboardTypePhone:
         return TextInputType.phone;
       default:
         return TextInputType.text;

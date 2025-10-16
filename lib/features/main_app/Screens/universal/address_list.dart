@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mysale/architect.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/providers/address_provider.dart';
+import 'package:flutter_mysale/features/main_app/providers/checkout_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:provider/provider.dart';
 
@@ -110,7 +111,8 @@ class _AddressListState extends State<AddressList> {
                 showChevron: widget.showChevron,
                 onTap: () {
                   provider.selectAddress(addr);
-                  Navigator.pop(context, addr);
+
+                  _applyAddress(addr.id!);
                 },
               ),
             );
@@ -163,5 +165,22 @@ class _AddressListState extends State<AddressList> {
         );
       },
     );
+  }
+
+  void _applyAddress(String addressId) {
+    CheckoutProvider cartProvider = context.read<CheckoutProvider>();
+    cartProvider
+        .applyAddress(addressId)
+        .then((data) {
+          if (data.$1) {
+            Nav.close(context);
+          } else {
+            showMessage(context, data.$2);
+          }
+        })
+        .catchError((error) {
+          cartProvider.isLoading = false;
+          showMessage(context, error.toString());
+        });
   }
 }

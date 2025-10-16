@@ -3,6 +3,7 @@ import 'package:flutter_mysale/architect.dart';
 import 'package:flutter_mysale/core/helpers/style_helper.dart';
 import 'package:flutter_mysale/features/main_app/Screens/universal/checkout_cart.dart';
 import 'package:flutter_mysale/features/main_app/Screens/universal/checkout_contact.dart';
+import 'package:flutter_mysale/features/main_app/Screens/universal/checkout_shipping.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/providers/authentication_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
@@ -185,9 +186,10 @@ class _CheckoutMain extends State<CheckoutMain> {
               },
             );
           case CheckoutStep.shipping:
-            return Container(
-              child: Center(child: Text('Shipping')),
-              color: Colors.grey,
+            return CheckoutShipping(
+              onContinueToPayment: () {
+                _currentCheckoutStep.value = CheckoutStep.payment;
+              },
             );
           case CheckoutStep.payment:
             return Container(
