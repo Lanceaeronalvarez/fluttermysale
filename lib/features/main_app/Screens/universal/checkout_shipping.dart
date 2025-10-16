@@ -3,9 +3,10 @@ import 'package:flutter_mysale/config/app_cache.dart';
 import 'package:flutter_mysale/core/classes/route_manager.dart';
 import 'package:flutter_mysale/core/helpers/style_helper.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
-import 'package:flutter_mysale/features/main_app/models/main/addresses_model.dart';
-import 'package:flutter_mysale/features/main_app/providers/address_provider.dart';
+import 'package:flutter_mysale/features/main_app/models/main/user_model.dart';
+import 'package:flutter_mysale/features/main_app/providers/checkout_provider.dart';
 import 'package:flutter_mysale/features/main_app/widgets/address_card.dart';
+import 'package:flutter_mysale/features/main_app/widgets/checkout_contact_section.dart';
 import 'package:provider/provider.dart';
 
 class CheckoutShipping extends StatefulWidget {
@@ -22,10 +23,6 @@ class CheckoutShipping extends StatefulWidget {
 class _CheckoutShipping extends State<CheckoutShipping> {
   AppCache ac = AppCache();
 
-  bool isLoggedIn = false;
-
-  AddressItem? selectedAddress;
-
   final BoxDecoration _tileBackground = BoxDecoration(
     borderRadius: BorderRadius.circular(20),
     color: Colors.white,
@@ -39,19 +36,13 @@ class _CheckoutShipping extends State<CheckoutShipping> {
     super.initState();
 
     Future.microtask(() {
-      (Provider.of<AddressProvider>(context, listen: false)).getAddresses();
+      context.read<CheckoutProvider>().callCart();
     });
-
-    checkIfLoggedIn();
   }
 
   @override
   void dispose() {
     super.dispose();
-  }
-
-  void checkIfLoggedIn() async {
-    isLoggedIn = await ac.isLogin();
   }
 
   @override
@@ -70,101 +61,24 @@ class _CheckoutShipping extends State<CheckoutShipping> {
     );
   }
 
-  Widget _createDisplayAddress(AddressProvider provider) {
-    //Currently using first address.
-    // Will change once get cart details is implemented
-    if (provider.addressId != "") {
-      selectedAddress = provider.addresses.firstWhere(
-        (address) => address.id == provider.addressId,
-      );
-    } else {
-      selectedAddress ??= provider.addresses[0];
-    }
-
-    return Column(
-      children: [
-        AddressCard(
-          address: selectedAddress,
-          showChevron: true,
-          onTap: () {
-            Nav.toNamed(context, App.address);
-          },
-        ),
-        SizedBox(height: 20),
-        _createInfoButton(),
-      ],
-    );
-  }
-
-  Widget _createAddAddress(AddressProvider provider) {
-    return GestureDetector(
-      onTap: () {
-        Nav.toNamed(context, App.newAddress);
-      },
-      child: Container(
-        width: MediaQuery.of(context).size.width,
-        padding: const EdgeInsets.all(20),
-        margin: EdgeInsets.only(bottom: 10),
-        decoration: _tileBackground,
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _createDisplayAddress() {
+    return Consumer<CheckoutProvider>(
+      builder: (_, provider, __) {
+        return Column(
           children: [
-            Text(
-              "Add New Address",
-              style: const TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
+            AddressCard(
+              address: provider.selectedAddress,
+              showChevron: true,
+              onTap: () {
+                Nav.toNamed(context, App.address);
+              },
             ),
-            const Icon(Icons.chevron_right),
+            SizedBox(height: 20),
+            _createInfoButton(),
           ],
-        ),
-      ),
+        );
+      },
     );
-  }
-
-  Widget _createDisplayName(AddressProvider provider) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        isLoggedIn
-            ? const Text(
-                "Contact Information",
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                ),
-              )
-            : SizedBox(),
-        SizedBox(height: 20),
-        Container(
-          width: MediaQuery.of(context).size.width,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: checkoutGrey,
-          ),
-          child: Text(
-            provider.decorations.isNotEmpty
-                ? "${provider.decorations.firstWhere((decor) => decor.name == 'Forename').value} ${provider.decorations.firstWhere((decor) => decor.name == 'Surname').value}"
-                : "",
-            style: const TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-              fontSize: 15,
-            ),
-          ),
-        ),
-        const SizedBox(height: 20),
-      ],
-    );
-  }
-
-  Widget _createLoadingUi(AddressProvider provider) {
-    return Center(child: CircularProgressIndicator());
   }
 
   Widget _createInfoButton() {
@@ -173,40 +87,62 @@ class _CheckoutShipping extends State<CheckoutShipping> {
         widget.onContinueToPayment!();
       },
       style: appElevatedButtonStyle,
-      child: Text('CONTINUE TO PAYMENT'),
+      child: const Text('CONTINUE TO PAYMENT'),
     );
   }
 
-  Widget _createAddOrViewAddress(AddressProvider provider) {
-    return provider.addresses.isEmpty
-        ? _createAddAddress(provider)
-        : _createDisplayAddress(provider);
+  Widget _createContactInfo() {
+    return FutureBuilder<User?>(
+      future: AppCache().user,
+      builder: (_, snap) {
+        if (snap.connectionState == ConnectionState.done) {
+          User? u = snap.data;
+          String info = '${u?.firstName ?? ''} ${u?.lastName ?? ''}'.trim();
+          return _createGuestCheckoutForm(
+            contactInfo: CheckoutContactSectionInfo(
+              isGuestCheckout: false,
+              info: info,
+              showContinueToShippingButton: false,
+            ),
+          );
+        } else {
+          return SizedBox.shrink();
+        }
+      },
+    );
+  }
+
+  Widget _createGuestCheckoutForm({
+    required CheckoutContactSectionInfo? contactInfo,
+  }) {
+    return CheckoutContactSection(
+      title: 'CONTACT INFORMATION',
+      contactInfo: contactInfo,
+      onContinueShipping: (email) {},
+      onLogin: () {},
+      onSignup: () {},
+    );
   }
 
   Widget _createCheckoutShippingSection() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Consumer<AddressProvider>(
-        builder: (_, provider, __) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _createDisplayName(provider),
-              const Text(
-                "SHIPPING INFORMATION",
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                ),
-              ),
-              SizedBox(height: 20),
-              provider.isLoading
-                  ? _createLoadingUi(provider)
-                  : _createAddOrViewAddress(provider),
-            ],
-          );
-        },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _createContactInfo(),
+          const SizedBox(height: 20),
+          const Text(
+            "SHIPPING INFORMATION",
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+            ),
+          ),
+          const SizedBox(height: 20),
+          _createDisplayAddress(),
+        ],
       ),
     );
   }

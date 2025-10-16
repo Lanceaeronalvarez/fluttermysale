@@ -4,6 +4,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_mysale/architect.dart';
 import 'package:flutter_mysale/core/helpers/app_response_extension.dart';
 import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
+import 'package:flutter_mysale/features/main_app/models/main/addresses_model.dart';
+import 'package:flutter_mysale/features/main_app/models/main/cart/cart_delivery_address_model.dart';
 import 'package:flutter_mysale/features/main_app/models/main/cart/cart_model.dart';
 
 class CheckoutProvider extends ChangeNotifier {
@@ -17,6 +19,9 @@ class CheckoutProvider extends ChangeNotifier {
   }
 
   CartValue? cart;
+
+  AddressItem? selectedAddress;
+  CartDeliveryAddress? deliveryAddress;
 
   CheckoutProvider._(this._http);
   factory CheckoutProvider() {
@@ -55,10 +60,56 @@ class CheckoutProvider extends ChangeNotifier {
       });
 
       cart = obj.d.value;
+
+      deliveryAddress = cart?.deliveryAddress;
+      if (deliveryAddress != null) {
+        selectedAddress = AddressItem(
+          id: deliveryAddress!.id,
+          name: deliveryAddress!.name,
+          forename: deliveryAddress!.forename,
+          surname: deliveryAddress!.surname,
+          addressLines: deliveryAddress!.addressLines,
+          suburb: deliveryAddress!.suburb,
+          state: deliveryAddress!.state,
+          postcode: deliveryAddress!.postcode,
+          phone: deliveryAddress!.phone,
+        );
+      }
     }
 
     isLoading = false;
     return cart;
+  }
+
+  Future<(bool, String)> applyAddress(String addressId) async {
+    isLoading = true;
+    String message = 'Something went wrong!';
+    bool isSuccessful = false;
+    notifyListeners();
+
+    AppHttp http = await _http;
+
+    ApplyAddressRequest _request = ApplyAddressRequest(
+      countryID: dotenv.get("SETTINGS_COUNTRY_ID"),
+      languageID: dotenv.get("SETTINGS_LANGUAGE_ID"),
+      imageSize: "100",
+      deliveryAddressID: addressId,
+    );
+
+    Response res = await http.post(
+      ApiEndpoint.applyDeliveryAddress(),
+      data: _request.toJson(),
+    );
+
+    if (res.statusCode == 200) {
+      isSuccessful = true;
+    } else {
+      final map = Map<String, dynamic>.from(res.data);
+      message = (map['Message'] as String?) ?? "";
+    }
+    isLoading = false;
+    notifyListeners();
+    return (isSuccessful, message);
   }
 
   //TODO: JCA should be called on logout

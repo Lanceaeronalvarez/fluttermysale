@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -7,13 +9,11 @@ import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
 
 import '../models/model.dart';
 
-enum CheckoutShippingMode { view, loading }
-
 class AddressProvider extends ChangeNotifier {
   List<AddressItem> addresses = [];
   List<AddressDecoration> decorations = [];
   String addressId = "";
-  bool isLoading = true;
+  bool isLoading = false;
   AddressItem? selectedAddress;
   BuildContext context;
   late UserAgentHelper _userAgentHelper;
@@ -23,8 +23,10 @@ class AddressProvider extends ChangeNotifier {
     _userAgentHelper = UserAgentHelper.shared;
   }
 
-  Future<void> getAddresses() async {
+  Future<(bool, String)> getAddresses() async {
     isLoading = true;
+    String message = '';
+    bool isSuccessful = false;
     notifyListeners();
 
     final userAgent = await _userAgentHelper.userAgent;
@@ -38,7 +40,7 @@ class AddressProvider extends ChangeNotifier {
       data: {'languageID': dotenv.get("SETTINGS_LANGUAGE_ID")},
     );
 
-    if (res.statusCode == 200 && res.statusCode != 429) {
+    if (res.statusCode == 200) {
       isLoading = false;
 
       final parsed = GetAddressesResponse.fromJson(res.data);
@@ -46,13 +48,35 @@ class AddressProvider extends ChangeNotifier {
       addresses = parsed.addresses ?? [];
       decorations = parsed.addressDecorations ?? [];
       isLoading = false;
+      isSuccessful = true;
       notifyListeners();
     }
+    return (isSuccessful, message);
   }
 
-  Future<void> postAddress(AddressItem newAddress) async {
+  Future<(bool, String)> postAddress(
+    Map<String, TextEditingController> controllers,
+    String dropdownValue,
+  ) async {
     isLoading = true;
+    String message = '';
+    bool isSuccessful = false;
     notifyListeners();
+
+    Map<String, dynamic> myAddress = {};
+
+    for (final decor in decorations) {
+      final key = decor.name?.toLowerCase();
+      if (key != null && key.isNotEmpty) {
+        if (key == "addresslines") {
+          myAddress["address_lines"] = controllers[key]?.text;
+        } else if (key == "state") {
+          myAddress[key] = dropdownValue;
+        } else {
+          myAddress[key] = controllers[key]?.text;
+        }
+      }
+    }
 
     final userAgent = await _userAgentHelper.userAgent;
     _http ??= AppHttp(
@@ -62,35 +86,20 @@ class AddressProvider extends ChangeNotifier {
 
     Response res = await _http!.put(
       ApiEndpoint.setUserDeliveryAddress(),
-      data: newAddress.toJson(),
+      data: jsonEncode(myAddress),
     );
 
-    if (res.statusCode == 200 && res.statusCode != 429) {
+    if (res.statusCode == 200) {
       addressId = "$res";
       isLoading = false;
-      notifyListeners();
+      isSuccessful = true;
+    } else {
+      final map = Map<String, dynamic>.from(res.data);
+      message = (map['detail'] as String?) ?? "";
     }
-  }
-
-  Future<void> applyAddress(ApplyAddressRequest request) async {
-    isLoading = true;
+    isLoading = false;
     notifyListeners();
-
-    final userAgent = await _userAgentHelper.userAgent;
-    _http ??= AppHttp(
-      baseUrl: dotenv.get("SETTINGS_ROOT"),
-      headers: {'User-Agent': userAgent},
-    );
-
-    Response res = await _http!.post(
-      ApiEndpoint.applyDeliveryAddress(),
-      data: request.toJson(),
-    );
-
-    if (res.statusCode == 200 && res.statusCode != 429) {
-      isLoading = false;
-      notifyListeners();
-    }
+    return (isSuccessful, message);
   }
 
   void selectAddress(AddressItem addr) {

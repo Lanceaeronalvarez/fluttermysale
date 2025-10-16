@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_mysale/architect.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
-import 'package:flutter_mysale/features/main_app/models/main/addresses_model.dart';
 import 'package:flutter_mysale/features/main_app/providers/address_provider.dart';
+import 'package:flutter_mysale/features/main_app/providers/checkout_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:provider/provider.dart';
 
@@ -112,13 +111,8 @@ class _AddressListState extends State<AddressList> {
                 showChevron: widget.showChevron,
                 onTap: () {
                   provider.selectAddress(addr);
-                  ApplyAddressRequest _request = ApplyAddressRequest(
-                    countryID: dotenv.get("SETTINGS_COUNTRY_ID"),
-                    languageID: dotenv.get("SETTINGS_LANGUAGE_ID"),
-                    imageSize: "100",
-                    deliveryAddressID: addr.id,
-                  );
-                  _applyAddress(provider, _request);
+
+                  _applyAddress(addr.id!);
                 },
               ),
             );
@@ -173,17 +167,21 @@ class _AddressListState extends State<AddressList> {
     );
   }
 
-  void _applyAddress(AddressProvider provider, ApplyAddressRequest request) {
-    provider
-        .applyAddress(request)
+  void _applyAddress(String addressId) {
+    CheckoutProvider cartProvider = context.read<CheckoutProvider>();
+    cartProvider
+        .applyAddress(addressId)
         .then((data) {
-          provider.isLoading = false;
-          provider.addressId = request.deliveryAddressID!;
-          Nav.close(context);
+          if (data.$1) {
+            cartProvider.callCart();
+            Nav.close(context);
+          } else {
+            showMessage(context, data.$2);
+          }
         })
         .catchError((error) {
-          provider.isLoading = false;
-          showMessage(context, error);
+          cartProvider.isLoading = false;
+          showMessage(context, error.toString());
         });
   }
 }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_mysale/core/classes/route_manager.dart';
 import 'package:flutter_mysale/core/widgets/bottom_bar.dart';
 import 'package:flutter_mysale/core/widgets/toast_message.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
+import 'package:flutter_mysale/features/main_app/providers/checkout_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:provider/provider.dart';
 
@@ -27,11 +27,6 @@ class _AddNewAddressState extends State<AddNewAddress> {
   static const _forenameKey = "forename";
   static const _surnameKey = "surname";
   static const _selectType = "select";
-
-  bool isWidgetOnly = false;
-
-  AddressItem newAddress = new AddressItem();
-  Map<String, dynamic> myAddress = {};
   String dropdownValue = "";
 
   @override
@@ -55,25 +50,23 @@ class _AddNewAddressState extends State<AddNewAddress> {
 
   @override
   Widget build(BuildContext context) {
-    return isWidgetOnly
-        ? Column(children: [_createForm(), _createBottomActionBar()])
-        : Scaffold(
-            appBar: _createAppBar(),
-            body: SafeArea(
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: _createForm(),
-                    ),
-                  ),
-                  _createBottomActionBar(),
-                ],
+    return Scaffold(
+      appBar: _createAppBar(),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: _createForm(),
               ),
             ),
-            bottomNavigationBar: BottomBar(),
-          );
+            _createBottomActionBar(),
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomBar(),
+    );
   }
 
   PreferredSizeWidget _createAppBar() {
@@ -106,10 +99,8 @@ class _AddNewAddressState extends State<AddNewAddress> {
     return Form(
       key: _formKey,
       child: ListView(
-        shrinkWrap: isWidgetOnly ? true : false,
-        physics: isWidgetOnly
-            ? const NeverScrollableScrollPhysics()
-            : const AlwaysScrollableScrollPhysics(),
+        shrinkWrap: false,
+        physics: const AlwaysScrollableScrollPhysics(),
         children: _createFormFields(),
       ),
     );
@@ -184,16 +175,7 @@ class _AddNewAddressState extends State<AddNewAddress> {
         return _createActionButton(
           label: provider.isLoading ? "SAVING..." : "SAVE",
           onTap: () {
-            AddressItem newAddress = AddressItem(
-              addressLines: _controllers["addresslines"]?.text,
-              forename: _controllers["forename"]?.text,
-              surname: _controllers["surname"]?.text,
-              suburb: _controllers["suburb"]?.text,
-              state: dropdownValue,
-              postcode: _controllers["postcode"]?.text,
-              phone: _controllers["phone"]?.text,
-            );
-            _saveAddress(provider, newAddress);
+            _saveAddress(provider);
           },
           decoration: appPrimaryButtonBoxDecoration,
           textStyle: const TextStyle(
@@ -221,44 +203,45 @@ class _AddNewAddressState extends State<AddNewAddress> {
     );
   }
 
-  void _saveAddress(AddressProvider provider, AddressItem newAddress) {
+  void _saveAddress(AddressProvider provider) {
     if (!provider.isLoading) {
       if (_formKey.currentState!.validate()) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text("Saving address...")));
+
         provider
-            .postAddress(newAddress)
+            .postAddress(_controllers, dropdownValue)
             .then((data) {
-              provider.isLoading = false;
-              ApplyAddressRequest request = ApplyAddressRequest(
-                countryID: dotenv.get("SETTINGS_COUNTRY_ID"),
-                languageID: dotenv.get("SETTINGS_LANGUAGE_ID"),
-                imageSize: "100",
-                deliveryAddressID: provider.addressId,
-              );
-              _applyAddress(provider, request);
+              if (data.$1) {
+                _applyAddress(provider.addressId);
+              } else {
+                showMessage(context, data.$2);
+              }
             })
             .catchError((error) {
               provider.isLoading = false;
-              showMessage(context, error);
+              showMessage(context, error.toString());
             });
       }
     }
   }
 
-  void _applyAddress(AddressProvider provider, ApplyAddressRequest request) {
-    provider
-        .applyAddress(request)
+  void _applyAddress(String addressId) {
+    CheckoutProvider cartProvider = context.read<CheckoutProvider>();
+    cartProvider
+        .applyAddress(addressId)
         .then((data) {
-          provider.isLoading = false;
-          provider.addressId = request.deliveryAddressID!;
-          provider.getAddresses();
-          Nav.closeUntil(context, App.checkout);
+          if (data.$1) {
+            cartProvider.callCart();
+            Nav.closeUntil(context, App.checkout);
+          } else {
+            showMessage(context, data.$2);
+          }
         })
         .catchError((error) {
-          provider.isLoading = false;
-          showMessage(context, error);
+          cartProvider.isLoading = false;
+          showMessage(context, error.toString());
         });
   }
 
