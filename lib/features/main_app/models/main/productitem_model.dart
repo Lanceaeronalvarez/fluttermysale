@@ -146,9 +146,9 @@ class Sku {
 @JsonSerializable()
 class Attributes {
   String? size;
-  double? weight;
-  double? height;
-  double? width;
+  String? weight;
+  String? height;
+  String? width;
   String? brandDescription;
   String? productId;
 

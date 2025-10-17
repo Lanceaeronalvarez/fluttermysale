@@ -146,9 +146,9 @@ Map<String, dynamic> _$SkuToJson(Sku instance) => <String, dynamic>{
 
 Attributes _$AttributesFromJson(Map<String, dynamic> json) => Attributes(
   json['size'] as String?,
-  (json['weight'] as num?)?.toDouble(),
-  (json['height'] as num?)?.toDouble(),
-  (json['width'] as num?)?.toDouble(),
+  json['weight'] as String?,
+  json['height'] as String?,
+  json['width'] as String?,
   json['brandDescription'] as String?,
   json['productId'] as String?,
 );

@@ -86,9 +86,12 @@ class ProductList extends StatefulWidget {
   final String? _initialTitle;
   final bool willShowSearchBoxOnOpen;
 
-  const ProductList({Key? key, String? title, required this.willShowSearchBoxOnOpen})
-    : this._initialTitle = title,
-      super(key: key);
+  const ProductList({
+    Key? key,
+    String? title,
+    required this.willShowSearchBoxOnOpen,
+  }) : this._initialTitle = title,
+       super(key: key);
 
   @override
   State<ProductList> createState() => _ProductListState();
@@ -484,8 +487,24 @@ class _ProductListState extends State<ProductList>
   }
 
   Widget _productCard(ProductItem product) {
-    return ProductCard(product: product);
-    // TODO: onTap
+    ProductListProvider pl = context.read<ProductListProvider>();
+    return GestureDetector(
+      child: ProductCard(product: product),
+      onTap: () => {
+        Nav.toNamed(
+          context,
+          App.productDetail,
+          arguments: ProductDetailArguments(
+            productId: product.id ?? '',
+            masterSkuId: product.skus?.first.id ?? '',
+            brandName: product.brandName ?? '',
+            seo: product.seoIdentifier,
+            saleId: pl.saleId,
+            product: product,
+          ),
+        ),
+      },
+    );
   }
 
   void _calculateScrollSpeed(ScrollController scrollController) {

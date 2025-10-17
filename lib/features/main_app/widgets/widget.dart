@@ -1,2 +1,12 @@
 export 'day_night_switch.dart';
+export 'floating_button.dart';
+export 'image_gallery.dart';
 export 'menu_buttons.dart';
+export 'pdp_returns.dart';
+export 'product_carousel.dart';
+export 'product_description.dart';
+export 'product_info_section.dart';
+export 'product_payment.dart';
+export 'shipping_and_delivery.dart';
+export 'size_selection.dart';
+export 'trending_brands.dart';

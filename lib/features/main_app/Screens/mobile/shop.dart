@@ -11,6 +11,7 @@ import 'package:flutter_mysale/features/main_app/widgets/sliding_banner.dart';
 import 'package:flutter_mysale/features/main_app/widgets/trending_brands.dart';
 import 'package:provider/provider.dart';
 
+import '../../controllers/main/product_details_controller.dart';
 import '../../models/main/banners_model.dart';
 import '../../models/main/productitem_model.dart';
 import '../../providers/bestsellers_provider.dart';
@@ -56,7 +57,7 @@ class _ShopState extends State<Shop> {
     (Provider.of<TrendingBrandsProvider>(
       context,
       listen: false,
-    )).getTrendingBrands();
+    )).getTrendingBrands("");
     (Provider.of<BestSellersProvider>(context, listen: false)).getBestSellers();
   }
 
@@ -277,7 +278,18 @@ class _ShopState extends State<Shop> {
           return ProductCarousel(
             products: provider.getBestSellersResponse,
             onTap: (ProductItem productItem) {
-              //TODO: pdp
+              Nav.toNamed(
+                context,
+                App.productDetail,
+                arguments: ProductDetailArguments(
+                  productId: productItem.id ?? '',
+                  masterSkuId: productItem.skus?.first.id ?? '',
+                  brandName: productItem.brandName ?? "",
+                  saleId: '',
+                  seo: productItem.seoIdentifier,
+                  product: productItem,
+                ),
+              );
             },
             title: '',
           );
