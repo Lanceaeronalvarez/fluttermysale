@@ -70,7 +70,7 @@ class App extends RouteManager {
       ProductDetailArguments args =
           (ModalRoute.of(context)?.settings.arguments
               as ProductDetailArguments);
-      return ProductDetailsController(args: args);
+      return ProductDetailController(args: args);
     });
     addRoute(App.accountMenu, (context) {
       return AccountMenuController();

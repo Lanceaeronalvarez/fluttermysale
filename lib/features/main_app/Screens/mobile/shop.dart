@@ -57,7 +57,7 @@ class _ShopState extends State<Shop> {
     (Provider.of<TrendingBrandsProvider>(
       context,
       listen: false,
-    )).getTrendingBrands("");
+    )).getTrendingBrands();
     (Provider.of<BestSellersProvider>(context, listen: false)).getBestSellers();
   }
 

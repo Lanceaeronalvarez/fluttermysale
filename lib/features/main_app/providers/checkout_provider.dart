@@ -6,7 +6,8 @@ import 'package:flutter_mysale/core/helpers/app_response_extension.dart';
 import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
 import 'package:flutter_mysale/features/main_app/models/main/addresses_model.dart';
 import 'package:flutter_mysale/features/main_app/models/main/cart/cart_model.dart';
-import 'package:flutter_mysale/features/main_app/models/main/cart/cart_request_model.dart';
+import 'package:flutter_mysale/features/main_app/models/main/cart/request/add_to_cart_request_model.dart';
+import 'package:flutter_mysale/features/main_app/models/main/cart/request/cart_request_model.dart';
 
 class CheckoutProvider extends ChangeNotifier {
   Future<AppHttp> _http;
@@ -45,6 +46,45 @@ class CheckoutProvider extends ChangeNotifier {
     return response.statusCode != null &&
         response.statusCode! >= 200 &&
         response.statusCode! < 300;
+  }
+
+  Future<String?> callAddToCart({
+    required String skuID,
+    required int userClientType,
+  }) async {
+    isLoading = true;
+    targetItemID = null;
+
+    String? errorMessage;
+
+    AppHttp http = await _http;
+
+    AddToCartRequest request = AddToCartRequest(
+      skuID: skuID,
+      userClientType: userClientType,
+    );
+
+    try {
+      Response res = await http.post(
+        ApiEndpoint.getAddToCart(),
+        data: request.toJson(),
+      );
+
+      if (_responseSuccess(res)) {
+        errorMessage = null;
+        await callCart(modifyLoading: false);
+      } else if (res.data is String) {
+        errorMessage =
+            (res.data as String?) ?? 'Please select a different size';
+      } else {
+        errorMessage = 'Please select a different size';
+      }
+    } catch (e) {
+      errorMessage = e.toString();
+    } finally {
+      isLoading = false;
+      return errorMessage;
+    }
   }
 
   Future<String?> callIncreasePublicOrderItem(String itemID) async {
@@ -144,8 +184,8 @@ class CheckoutProvider extends ChangeNotifier {
   }
 
   //TODO: JCA should be called on any login
-  Future<String?> callCart() async {
-    isLoading = true;
+  Future<String?> callCart({bool modifyLoading = false}) async {
+    if (modifyLoading) isLoading = true;
     targetItemID = null;
 
     String? errorMessage;
@@ -170,7 +210,7 @@ class CheckoutProvider extends ChangeNotifier {
       }
     }
 
-    isLoading = false;
+    if (modifyLoading) isLoading = false;
     return errorMessage;
   }
 

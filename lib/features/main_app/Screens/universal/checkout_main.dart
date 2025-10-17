@@ -6,6 +6,7 @@ import 'package:flutter_mysale/features/main_app/Screens/universal/checkout_cont
 import 'package:flutter_mysale/features/main_app/Screens/universal/checkout_shipping.dart';
 import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/providers/authentication_provider.dart';
+import 'package:flutter_mysale/features/main_app/providers/checkout_provider.dart';
 import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:flutter_mysale/features/main_app/widgets/checkout_stepper.dart';
 import 'package:flutter_mysale/features/main_app/widgets/promo_banner.dart';
@@ -125,7 +126,7 @@ class _CheckoutMain extends State<CheckoutMain> {
                 child: Text(
                   'Secure Checkout',
                   maxLines: 1,
-                  overflow: TextOverflow.ellipsis, // or TextOverflow.clip
+                  overflow: TextOverflow.ellipsis,
                   softWrap: false,
                 ),
               ),
@@ -137,19 +138,32 @@ class _CheckoutMain extends State<CheckoutMain> {
   }
 
   Widget _createOrderSummaryButton() {
-    return ElevatedButton(
-      onPressed: () {
-        Nav.toNamed(context, App.cartModal);
+    return Consumer<CheckoutProvider>(
+      builder: (_, provider, _) {
+        int itemCount = provider.cart?.itemsCount ?? 0;
+        String item = itemCount == 1 ? 'item' : 'items';
+        String price = provider.cart?.summary?.total?.toMoneyString() ?? '';
+        if (provider.cart?.isEmpty ?? true) {
+          return SizedBox.shrink();
+        } else {
+          return ElevatedButton(
+            onPressed: () {
+              Nav.toNamed(context, App.cartModal);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              minimumSize: const Size(0, 32),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text('$itemCount $item • $price'),
+          );
+        }
       },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.black, // bright cyan
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        minimumSize: const Size(0, 32), // allow narrow widths
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      ),
-      child: const Text('2 items • \$200.00'),
     );
   }
 

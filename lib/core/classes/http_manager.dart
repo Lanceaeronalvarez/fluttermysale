@@ -79,9 +79,6 @@ class HttpManager {
       );
       debugPrint("Success GET Request");
       return response;
-    } on DioException catch (e) {
-      log(e.response!.data.toString());
-      return e.response!;
     } catch (e) {
       debugPrint("Error GET Request");
       debugPrint(e.toString());
@@ -113,13 +110,12 @@ class HttpManager {
       );
       return response;
     } on DioException catch (e) {
+      //TODO: JCA httpmanager does not handle non success status codes properly, fix in a different branch
       log(e.response!.data.toString());
-      return e.response!;
-    } catch (e) {
-      debugPrint("Error GET Request");
-      debugPrint(e.toString());
+      response = e.response;
+    } finally {
+      return response!;
     }
-    return response!;
   }
 
   Future<Response> put(
@@ -144,12 +140,8 @@ class HttpManager {
         onSendProgress: sendProgress,
       );
       return response;
-    } on DioException catch (e) {
-      log(e.response!.data.toString());
-      return e.response!;
     } catch (e) {
-      debugPrint("Error GET Request");
-      debugPrint(e.toString());
+      log(e.toString());
     }
     return response!;
   }
@@ -176,9 +168,6 @@ class HttpManager {
         onSendProgress: sendProgress,
       );
       return response;
-    } on DioException catch (e) {
-      log(e.response!.data.toString());
-      return e.response!;
     } catch (e) {
       log(e.toString());
     }
@@ -203,9 +192,6 @@ class HttpManager {
         cancelToken: token,
       );
       return response;
-    } on DioException catch (e) {
-      log(e.response!.data.toString());
-      return e.response!;
     } catch (e) {
       log(e.toString());
     }

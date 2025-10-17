@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class FloatingButton extends StatelessWidget {
   final VoidCallback onAddToCart;
   final VoidCallback onBuyNow;
+  final bool isLoading;
 
   const FloatingButton({
     Key? key,
     required this.onAddToCart,
     required this.onBuyNow,
+    required this.isLoading,
   }) : super(key: key);
 
   @override
@@ -16,9 +18,9 @@ class FloatingButton extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _createAddToCartButton(),
+          _createAddToCartButton(isLoading),
           const SizedBox(width: 12),
-          _createBuyNowButton(),
+          _createBuyNowButton(isLoading),
         ],
       ),
     );
@@ -39,36 +41,60 @@ class FloatingButton extends StatelessWidget {
     );
   }
 
-  Widget _createAddToCartButton() {
+  Widget _createAddToCartButton(bool isLoading) {
     return _buildActionButton(
-      onTap: onAddToCart,
+      onTap: () {
+        if (!isLoading) onAddToCart.call();
+      },
       backgroundColor: const Color(0xFF54ECFF),
       shadowColor: Colors.black,
       highlightColor: Colors.black.withOpacity(0.4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset("assets/images/icon_cart.png", width: 25, height: 25),
-          const SizedBox(width: 6),
-          const Text(
-            "Add to Cart",
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-          ),
+          if (isLoading)
+            SizedBox(
+              height: 15,
+              width: 15,
+              child: CircularProgressIndicator(color: Colors.black),
+            ),
+          if (!isLoading)
+            Image.asset("assets/images/icon_cart.png", width: 25, height: 25),
+          if (!isLoading) const SizedBox(width: 6),
+          if (!isLoading)
+            const Text(
+              "Add to Cart",
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
         ],
       ),
     );
   }
 
-  Widget _createBuyNowButton() {
+  Widget _createBuyNowButton(bool isLoading) {
     return _buildActionButton(
-      onTap: onBuyNow,
+      onTap: () {
+        if (!isLoading) onBuyNow.call();
+      },
       backgroundColor: Colors.black,
       shadowColor: const Color(0xFF54ECFF),
       highlightColor: Colors.white.withOpacity(0.4),
-      child: const Text(
-        "Buy Now",
-        style: TextStyle(color: Color(0xFF54ECFF), fontWeight: FontWeight.bold),
-      ),
+      child: isLoading
+          ? SizedBox(
+              width: 15,
+              height: 15,
+              child: CircularProgressIndicator(color: Color(0xFF54ECFF)),
+            )
+          : const Text(
+              "Buy Now",
+              style: TextStyle(
+                color: Color(0xFF54ECFF),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
     );
   }
 

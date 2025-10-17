@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/config/app_cache.dart';
 import 'package:flutter_mysale/core/widgets/toast_message.dart';
+import 'package:flutter_mysale/features/main_app/controllers/controller.dart';
 import 'package:flutter_mysale/features/main_app/models/main/user_model.dart';
 import 'package:flutter_mysale/features/main_app/providers/authentication_provider.dart';
+import 'package:flutter_mysale/features/main_app/providers/checkout_provider.dart';
 import 'package:flutter_mysale/features/main_app/widgets/app_captcha.dart';
 import 'package:flutter_mysale/features/main_app/widgets/auth_form.dart';
 import 'package:flutter_mysale/features/main_app/widgets/checkout_contact_section.dart';
@@ -158,17 +160,20 @@ class _CheckoutContact extends State<CheckoutContact> {
 
   void _login({required String email, required String password}) {
     AuthenthicationProvider p = context.read<AuthenthicationProvider>();
+    CheckoutProvider cp = context.read<CheckoutProvider>();
     p.isLoading = true;
     AppCaptcha.showCaptcha(
       parentContext: context,
       onMessageReceived: (captchaToken) {
-        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+
         p
             .callLoginViaEmail(email, password, captchaToken)
             .then((data) {
               if (data.$1) {
                 showMessage(context, 'Login Successful');
                 _mode.value = CheckoutContactMode.loggedIn;
+                cp.callCart();
               } else {
                 showMessage(context, data.$2);
               }
@@ -194,6 +199,8 @@ class _CheckoutContact extends State<CheckoutContact> {
     required bool promoAgree,
   }) {
     AuthenthicationProvider p = context.read<AuthenthicationProvider>();
+    CheckoutProvider cp = context.read<CheckoutProvider>();
+
     p.isLoading = true;
     AppCaptcha.showCaptcha(
       parentContext: context,
@@ -213,6 +220,7 @@ class _CheckoutContact extends State<CheckoutContact> {
               if (data.$1) {
                 showMessage(context, 'Registration Successful');
                 _mode.value = CheckoutContactMode.loggedIn;
+                cp.callCart();
               } else {
                 showMessage(context, data.$2);
               }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mysale/architect.dart';
 import 'package:flutter_mysale/core/helpers/style_helper.dart';
+import 'package:flutter_mysale/features/main_app/app.dart';
 import 'package:flutter_mysale/features/main_app/models/main/cart/cart_item_model.dart';
 import 'package:flutter_mysale/features/main_app/models/main/cart/cart_shipment_model.dart';
 import 'package:flutter_mysale/features/main_app/providers/checkout_provider.dart';
@@ -432,7 +433,7 @@ class _CheckoutCart extends State<CheckoutCart> {
               ),
             _createSummaryRow(
               title:
-                  'Subtotal ($itemCount ${itemCount == 1 ? 'items' : 'item'})',
+                  'Subtotal ($itemCount ${itemCount == 1 ? 'item' : 'items'})',
               value: subtotal.toMoneyString(),
               style: _style.textRegular,
               bottomPadding: 8,
@@ -515,7 +516,13 @@ class _CheckoutCart extends State<CheckoutCart> {
         _createButton(
           title: 'CONTINUE TO CHECKOUT',
           onTap: () {
-            print('continue to checkout');
+            debugPrint('continue to checkout');
+            //TODO: JCA should navigate to checkout - contact
+            Nav.toNamed(
+              context,
+              App.checkout,
+              //arguments: CheckoutArguments(checkoutStep: CheckoutStep.contact),
+            );
           },
           bottomSpacing: 4,
         ),
