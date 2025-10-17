@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class QtyStepper extends StatelessWidget {
+  final bool isLoading;
   final int value;
   final int min;
   final int? max;
@@ -13,6 +14,7 @@ class QtyStepper extends StatelessWidget {
 
   QtyStepper({
     super.key,
+    required this.isLoading,
     required this.value,
     required this.onMinus,
     required this.onPlus,
@@ -79,13 +81,18 @@ class QtyStepper extends StatelessWidget {
   }
 
   Widget _createText(String title) {
-    return Expanded(
-      child: Center(
-        child: Text(
-          "$value",
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
-      ),
-    );
+    Widget child;
+    if (isLoading) {
+      child = const CircularProgressIndicator(
+        color: Colors.black38,
+        padding: EdgeInsets.all(8),
+      );
+    } else {
+      child = Text(
+        "$value",
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+      );
+    }
+    return Expanded(child: Center(child: child));
   }
 }

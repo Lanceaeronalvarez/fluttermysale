@@ -845,6 +845,14 @@ class ApiEndpoint {
     );
   }
 
+  static String deleteOrderItem() {
+    return _getFormattedUrl(
+      _serviceLegacy,
+      _noAkamaiExtension + "DeleteOrderItem",
+      _emptyVersion,
+    );
+  }
+
   static String decreaseOrderItem() {
     return _getFormattedUrl(
       _serviceLegacy,

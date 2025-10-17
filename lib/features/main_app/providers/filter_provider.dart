@@ -143,7 +143,6 @@ class FilterProvider extends ChangeNotifier {
       originCategory, //origin category
     );
 
-    //TODO: JCA no preapplied filters yet
     //Important to be generated
     provider._appliedFilters = arrangedFacetFilters.map<FacetFilterModel>((ff) {
       List<FacetFilterValueModel> values =

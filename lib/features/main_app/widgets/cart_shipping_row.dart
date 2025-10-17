@@ -10,6 +10,8 @@ class CartShippingRow extends StatelessWidget {
   final bool showDivider;
 
   static const double _padding = 8;
+  final String _freeShippingImage = "assets/images/free_shipping.png";
+  final double _imageHeight = 13;
 
   const CartShippingRow({
     super.key, // pass ValueKey(stableId) from the SliverList
@@ -43,6 +45,7 @@ class CartShippingRow extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: () {},
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Container(
               color: sectionColor,
@@ -68,7 +71,8 @@ class CartShippingRow extends StatelessWidget {
   }
 
   Widget _createShippingText() {
-    return RichText(
+    double amountToPromoPrice = shipment.amountToPromoPrice ?? 0;
+    Widget shipping = RichText(
       text: TextSpan(
         style: _regular,
         children: [
@@ -78,10 +82,40 @@ class CartShippingRow extends StatelessWidget {
         ],
       ),
     );
+    if (amountToPromoPrice > 0) {
+      Widget promoPrice = RichText(
+        textAlign: TextAlign.right,
+        text: TextSpan(
+          style: _regular,
+          children: [
+            TextSpan(
+              text:
+                  'Add extra ${amountToPromoPrice.toMoneyString()} of eligible products to get ',
+            ),
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              baseline: TextBaseline.alphabetic,
+              child: SizedBox(
+                height: _imageHeight,
+                child: Image.asset(_freeShippingImage),
+              ),
+            ),
+          ],
+        ),
+      );
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [shipping, promoPrice],
+      );
+    } else {
+      return shipping;
+    }
   }
 
-  //TODO: JCA change to image
   Widget _createFreeShipping() {
-    return Text('Free Shipping', style: _regular);
+    return SizedBox(
+      height: _imageHeight,
+      child: Image.asset(_freeShippingImage),
+    );
   }
 }

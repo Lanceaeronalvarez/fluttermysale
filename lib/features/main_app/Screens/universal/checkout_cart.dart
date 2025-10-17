@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mysale/architect.dart';
 import 'package:flutter_mysale/core/helpers/style_helper.dart';
 import 'package:flutter_mysale/features/main_app/models/main/cart/cart_item_model.dart';
 import 'package:flutter_mysale/features/main_app/models/main/cart/cart_shipment_model.dart';
@@ -342,17 +343,42 @@ class _CheckoutCart extends State<CheckoutCart> {
         (context, index) {
           final obj = list[index];
           if (obj.$3 is CartItem) {
+            CartItem item = obj.$3;
             final productRow = CartItemRow(
-              item: obj.$3,
+              isLoading: provider.isLoading && provider.targetItemID == item.id,
+              item: item,
               section: obj.$1,
               row: obj.$2,
               sectionColor: _style.sectionColor,
               showPriceAtBottom: _style.productRowPriceAtBottom,
               showDivider: _style.productRowShowDivider,
-              onTap: (_) {},
-              onPlus: (_) {},
-              onMinus: (_) {},
-              onRemove: (_) {},
+              onTap: (_) {
+                debugPrint('tap');
+              },
+              onPlus: (_) {
+                debugPrint('increase qty');
+                provider.callIncreasePublicOrderItem(item.id).then((
+                  errorMessage,
+                ) {
+                  _showErrorMessage(errorMessage);
+                });
+              },
+              onMinus: (_) {
+                debugPrint('decrease qty');
+                provider.callDecreasePublicOrderItem(item.id).then((
+                  errorMessage,
+                ) {
+                  _showErrorMessage(errorMessage);
+                });
+              },
+              onRemove: (_) {
+                debugPrint('remove item');
+                provider.callDeletePublicOrderItem(item.id).then((
+                  errorMessage,
+                ) {
+                  _showErrorMessage(errorMessage);
+                });
+              },
             );
             return productRow;
           } else if (obj.$3 is CartShipment) {
@@ -372,6 +398,12 @@ class _CheckoutCart extends State<CheckoutCart> {
         addRepaintBoundaries: true,
       ),
     );
+  }
+
+  void _showErrorMessage(String? errorMessage) {
+    if (errorMessage != null && errorMessage.isNotEmpty) {
+      showMessage(context, errorMessage);
+    }
   }
 
   Widget _createSummarySection(CheckoutProvider provider) {

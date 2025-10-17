@@ -4,6 +4,7 @@ import 'package:flutter_mysale/features/main_app/utils/helpers.dart';
 import 'package:flutter_mysale/features/main_app/widgets/qty_stepper.dart';
 
 class CartItemRow extends StatelessWidget {
+  final bool isLoading;
   final CartItem item;
   final int section;
   final int row;
@@ -18,6 +19,7 @@ class CartItemRow extends StatelessWidget {
 
   const CartItemRow({
     super.key, // pass ValueKey(stableId) from the SliverList
+    required this.isLoading,
     required this.item,
     required this.section,
     required this.row,
@@ -50,9 +52,11 @@ class CartItemRow extends StatelessWidget {
       key: key ?? ObjectKey(item),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () {
-          onTap?.call(item);
-        },
+        onTap: isLoading
+            ? null
+            : () {
+                onTap?.call(item);
+              },
         child: Column(
           children: [
             Container(
@@ -153,30 +157,51 @@ class CartItemRow extends StatelessWidget {
   }
 
   Widget _createPriceLabel() {
-    String price = '';
-    if (item.subtotalWithDiscount == null) {
-      price = item.subtotalWithDiscount!.toMoneyString();
+    final subtotal = item.subtotal.toMoneyString();
+    if (item.discount > 0) {
+      final subtotalWithDiscount = item.subtotalWithDiscount!.toMoneyString();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(subtotalWithDiscount, style: _bold),
+          Text(
+            'WAS $subtotal',
+            style: const TextStyle(
+              color: Colors.black38,
+              decorationColor: Colors.black38,
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+              decoration: TextDecoration.lineThrough,
+              decorationThickness: 2,
+              decorationStyle: TextDecorationStyle.solid,
+            ),
+          ),
+        ],
+      );
     } else {
-      price = item.subtotal.toMoneyString();
+      return Text(subtotal, style: _bold);
     }
-    return Text(price, style: _bold);
   }
 
   Widget _bottomRow() {
     return Row(
       children: [
         QtyStepper(
+          isLoading: isLoading,
           value: item.qty,
           onMinus: (_) {
-            onMinus?.call(item);
+            if (!isLoading) {
+              onMinus?.call(item);
+            }
           },
           onPlus: (_) {
-            onPlus?.call(item);
+            if (!isLoading) {
+              onPlus?.call(item);
+            }
           },
           width: _stepperWidth,
         ),
         _createRemoveButton(),
-        const Spacer(),
         if (showPriceAtBottom) const SizedBox(width: _padding),
         if (showPriceAtBottom) _createPriceLabel(),
       ],
@@ -184,16 +209,24 @@ class CartItemRow extends StatelessWidget {
   }
 
   Widget _createRemoveButton() {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onRemove?.call(item),
-      child: const Padding(
-        padding: EdgeInsets.all(_padding),
-        child: Text(
-          "Remove",
-          style: TextStyle(
-            color: Color(0xFFB88A5A),
-            fontWeight: FontWeight.w600,
+    return Expanded(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: isLoading
+            ? null
+            : () {
+                onRemove?.call(item);
+              },
+        child: const Padding(
+          padding: EdgeInsets.all(_padding),
+          child: Text(
+            "Remove",
+            maxLines: 1,
+            overflow: TextOverflow.clip,
+            style: TextStyle(
+              color: Color(0xFFB88A5A),
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ),

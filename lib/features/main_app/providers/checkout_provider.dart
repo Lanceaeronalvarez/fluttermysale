@@ -6,6 +6,7 @@ import 'package:flutter_mysale/core/helpers/app_response_extension.dart';
 import 'package:flutter_mysale/core/helpers/useragent_helper.dart';
 import 'package:flutter_mysale/features/main_app/models/main/addresses_model.dart';
 import 'package:flutter_mysale/features/main_app/models/main/cart/cart_model.dart';
+import 'package:flutter_mysale/features/main_app/models/main/cart/cart_request_model.dart';
 
 class CheckoutProvider extends ChangeNotifier {
   Future<AppHttp> _http;
@@ -16,6 +17,10 @@ class CheckoutProvider extends ChangeNotifier {
     _isLoading = isLoading;
     notifyListeners();
   }
+
+  String _languageId = '';
+
+  String? targetItemID;
 
   CartValue? cart;
 
@@ -30,36 +35,143 @@ class CheckoutProvider extends ChangeNotifier {
     }
 
     final p = CheckoutProvider._(_createHttp());
-
+    p._languageId = dotenv.get("SETTINGS_LANGUAGE_ID");
     p.callCart();
 
     return p;
   }
 
-  //TODO: JCA should be called on any login
-  Future<CartValue?> callCart() async {
+  bool _responseSuccess(Response response) {
+    return response.statusCode != null &&
+        response.statusCode! >= 200 &&
+        response.statusCode! < 300;
+  }
+
+  Future<String?> callIncreasePublicOrderItem(String itemID) async {
     isLoading = true;
+    targetItemID = itemID;
+
+    String? errorMessage;
 
     AppHttp http = await _http;
 
-    //TODO: JCA hardcoded params
-    dynamic data = {
-      "deliveryDetails": {"PickupPoint": null, "Postcode": null},
-      "imageSize": 100,
-      "languageID": "EN",
-    };
-    Response res = await http.post(ApiEndpoint.getCurrentOrder(), data: data);
+    CartRequest request = CartRequest(itemID: itemID, languageID: _languageId);
+    Response res = await http.post(
+      ApiEndpoint.increaseOrderItem(),
+      data: request.toJson(),
+    );
 
-    if (res.statusCode == 200) {
+    if (_responseSuccess(res)) {
       final obj = res.asAppResponse<CartValue>((e) {
         return CartValue.fromJson(e as Map<String, dynamic>);
       });
 
-      cart = obj.d.value;
+      if (obj.d.result) {
+        cart = obj.d.value;
+        errorMessage = null;
+      } else {
+        errorMessage = obj.d.message;
+      }
+    }
+
+    targetItemID = null;
+    isLoading = false;
+    return errorMessage;
+  }
+
+  Future<String?> callDecreasePublicOrderItem(String itemID) async {
+    isLoading = true;
+    targetItemID = itemID;
+
+    String? errorMessage;
+
+    AppHttp http = await _http;
+
+    CartRequest request = CartRequest(itemID: itemID, languageID: _languageId);
+    Response res = await http.post(
+      ApiEndpoint.decreaseOrderItem(),
+      data: request.toJson(),
+    );
+
+    if (_responseSuccess(res)) {
+      final obj = res.asAppResponse<CartValue>((e) {
+        return CartValue.fromJson(e as Map<String, dynamic>);
+      });
+
+      if (obj.d.result) {
+        cart = obj.d.value;
+        errorMessage = null;
+      } else {
+        errorMessage = obj.d.message;
+      }
+    }
+
+    targetItemID = null;
+    isLoading = false;
+    return errorMessage;
+  }
+
+  Future<String?> callDeletePublicOrderItem(String itemID) async {
+    isLoading = true;
+    targetItemID = itemID;
+
+    String? errorMessage;
+
+    AppHttp http = await _http;
+
+    CartRequest request = CartRequest(itemID: itemID, languageID: _languageId);
+    Response res = await http.post(
+      ApiEndpoint.deleteOrderItem(),
+      data: request.toJson(),
+    );
+
+    if (_responseSuccess(res)) {
+      final obj = res.asAppResponse<CartValue>((e) {
+        return CartValue.fromJson(e as Map<String, dynamic>);
+      });
+
+      if (obj.d.result) {
+        cart = obj.d.value;
+        errorMessage = null;
+      } else {
+        errorMessage = obj.d.message;
+      }
+    }
+
+    targetItemID = null;
+    isLoading = false;
+    return errorMessage;
+  }
+
+  //TODO: JCA should be called on any login
+  Future<String?> callCart() async {
+    isLoading = true;
+    targetItemID = null;
+
+    String? errorMessage;
+
+    AppHttp http = await _http;
+
+    Response res = await http.post(
+      ApiEndpoint.getCurrentOrder(),
+      data: CartRequest(languageID: _languageId).toJson(),
+    );
+
+    if (_responseSuccess(res)) {
+      final obj = res.asAppResponse<CartValue>((e) {
+        return CartValue.fromJson(e as Map<String, dynamic>);
+      });
+
+      if (obj.d.result) {
+        cart = obj.d.value;
+        errorMessage = null;
+      } else {
+        errorMessage = obj.d.message;
+      }
     }
 
     isLoading = false;
-    return cart;
+    return errorMessage;
   }
 
   Future<(bool, String)> applyAddress(String addressId) async {

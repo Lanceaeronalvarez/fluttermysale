@@ -102,7 +102,6 @@ class CartItem {
     final String imageId = _ci<String>(json, _kImageID) ?? '';
     final String fileName =
         _ci<String>(json, _kFileName) ?? (_ci<String>(json, _kFile) ?? '');
-    //TODO: JCA generate imageUrlString
     final String? category = _ci<String>(json, _kCategory);
     final double discount = _ci<num>(json, _kDiscount)?.toDouble() ?? 0.0;
 
